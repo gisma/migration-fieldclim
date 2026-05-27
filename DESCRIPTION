@@ -1,0 +1,41 @@
+Package: fieldClim
+Title: Calculates Fluxes for Weather Stations
+Version: 1.1.0
+Authors@R: 
+    c(
+    person("David", "Langenohl",
+           role = c("aut"),
+           email = "langenoh@students.uni-marburg.de"),
+    person("Jonas", "Viehweger",
+           role = c("aut"),
+           email = "jonas.viehweger@rwth-aachen.de"),
+    person("Jörg", "Bendix",
+           role = c("aut"),
+           email = "bendix@geo.uni-marburg.de"),
+    person("Fabian", "Mitze",
+           role = c("aut", "cre"),
+           email = "Mitze@students.uni-marburg.de"),
+    person("Hanna", "Wenzel",
+           role = c("aut"),
+           email = "wenzel@students.uni-marburg.de"),
+    person("Kai", "Richter",
+           role = c("aut"),
+           email = "richter5@students.uni-marburg.de"),
+    person("You-De", "Chen",
+           role = c("aut"),
+           email = "you-de.chen@students.uni-marburg.de")
+    )
+Description: `fieldClim` is designed as a handy tool for calculations of various weather and micromicrometeorological parameters based on the measurements of a weather station.
+			 It includes functions adressing the estimation of radiation properties, the calculations of latent, sensible, and turbulent heat fluxes, the calculation of soil heat fluxes 
+			 as well as the estimation of thermal and mechanical boundary layers. 
+License: Apache License 2.0
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+VignetteBuilder: knitr
+Suggests: water, knitr, markdown, testthat, rmarkdown
+Depends: R (>= 4.0)
+Imports: 
+    methods,
+    stats

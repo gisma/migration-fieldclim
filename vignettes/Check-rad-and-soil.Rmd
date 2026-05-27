@@ -1,0 +1,315 @@
+---
+title: "Check radiation and soil heat flux"
+subtitle: "Geländeklimatologie SoSe 2023, Philipps-Universität Marburg"
+author: "You-De Chen"
+date: "`r format(Sys.time(), tz = 'UTC', usetz = TRUE)`"
+output:
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
+---
+
+```{r setup, include = FALSE}
+caldern_path <- system.file("extdata", "caldern_wiese_2017-06-30.csv",
+                            package = "fieldClim")
+```
+
+```{r}
+# load library
+library(fieldClim)
+```
+
+# check .default methods
+```{r}
+datetime <- as.POSIXlt("2018-02-19 13:15:00", tz = "CET")
+lon = 8.683300
+lat = 50.840503
+elev = 270
+temp = 20
+rh = 50
+slope = 30
+exposition = 20
+valley = FALSE
+surface_type = "field"
+surface_temp = 20
+texture = "sand"
+moisture = 0.2
+soil_temp1 = 20
+soil_temp2 = 30
+soil_depth1 = 1
+soil_depth2 = 0
+
+# structure
+#*1 means there are optional arguments
+#*1.0 means there are optional arguments originated from this function
+
+## soil
+soil_heat_flux(texture, moisture, soil_temp1, soil_temp2, soil_depth1, soil_depth2)
+  soil_thermal_cond(texture, moisture)
+
+## rad
+rad_bal(datetime, lon, lat, elev, temp, rh, slope, exposition, valley, surface_type, surface_temp)*1
+  rad_sw_bal(datetime, lon, lat, elev, temp, slope, exposition, valley, surface_type)*1
+    rad_sw_out(datetime, lon, lat, elev, temp, slope, exposition, surface_type)*1
+      rad_sw_in(datetime, lon, lat, elev, temp, slope, exposition)*1
+        rad_sw_toa(datetime, lon, lat)*1.0
+          sol_eccentricity(datetime)
+            sol_day_angle(datetime)
+              sol_julian_day(datetime)
+          sol_elevation(datetime, lon, lat)
+            sol_declination(datetime)
+              sol_ecliptic_length(datetime)
+                sol_medium_anomaly(datetime)
+            sol_hour_angle(datetime, lon)
+              sol_medium_suntime(datetime, lon)
+              sol_time_formula(datetime, lon)
+        trans_gas(datetime, lon, lat, elev, temp)*1
+          trans_air_mass_abs(datetime, lon, lat, elev, temp)*1
+            trans_air_mass_rel(datetime, lon, lat)
+            pres_p(elev, temp)*1
+        trans_ozone(datetime, lon, lat)*1.0
+        trans_rayleigh(datetime, lon, lat, elev, temp)*1
+        trans_vapor(datetime, lon, lat, elev, temp)*1
+          hum_precipitable_water(datetime, lat, elev, temp)*1
+        trans_aerosol(datetime, lon, lat, elev, temp)*1.0
+        terr_terrain_angle(datetime, lon, lat, slope, exposition)
+          sol_azimuth(datetime, lon, lat)
+    rad_diffuse_out(datetime, lon, lat, elev, temp, slope, exposition, valley, surface_type)*1
+      rad_diffuse_in(datetime, lon, lat, elev, temp, slope, exposition, valley)*1
+        terr_sky_view(slope, valley)
+  rad_lw_bal(temp, rh, slope, valley, surface_type, surface_temp)*1
+    rad_lw_in(temp, rh, slope, valley)*1.0
+      rad_emissivity_air(temp, rh)*1
+        pres_vapor_p(temp, rh)*1
+          pres_sat_vapor_p(temp)*1.0
+    rad_lw_out(surface_type, surface_temp)*1.0
+```
+
+# prepare 1 day of data
+```{r}
+# Metadata: inst/302_caldernklimawiese_complete_meta.xml
+# Packaged five-minute teaching day extracted from the Caldern dataset.
+input_day <- read.csv(caldern_path, na.strings = c("NA", "NULL"))
+input_day <- input_day[!is.na(input_day$datetime) &
+                         input_day$datetime >= "2017-06-30 00:00:00" &
+                         input_day$datetime <= "2017-06-30 23:55:00", ]
+```
+
+# check .weather_station method with 3 day values and 3 night values
+```{r, warning = FALSE}
+# use selected complete day
+input <- input_day
+
+# Interpret timestamps as local station time for Caldern, Germany.
+input$datetime <- as.POSIXlt(input$datetime, format = "%Y-%m-%d %H:%M:%S", tz = "Europe/Berlin")
+
+# 3 day values and 3 night values
+input <- input[c(1:3, 133:135), ]
+
+# build_weather_station
+weather_station <- build_weather_station(
+  datetime = input$datetime,
+  lon = 8.6832,
+  lat = 50.8405,
+  elev = 261,
+  temp = input$Ta_2m,
+  slope = 0,
+  exposition = 0,
+  valley = FALSE,
+  surface_type = "field",
+  surface_temp = input$Ta_2m,
+  rh = input$Huma_2m,
+  texture = "peat",
+  moisture = input$water_vol_soil,
+  soil_temp1 = input$Ts,
+  soil_temp2 = input$Ta_2m,
+  soil_depth1 = 0.25,
+  soil_depth2 = 0
+)
+
+# show structure
+str(weather_station)
+
+# calculate
+## soil
+soil_heat_flux(weather_station)
+  soil_thermal_cond(weather_station)
+
+## rad
+rad_bal(weather_station)
+  rad_sw_bal(weather_station)
+    rad_sw_out(weather_station)
+      rad_sw_in(weather_station)
+        rad_sw_toa(weather_station)
+          sol_eccentricity(weather_station)
+            sol_day_angle(weather_station)
+              sol_julian_day(weather_station)
+          sol_elevation(weather_station)
+            sol_declination(weather_station)
+              sol_ecliptic_length(weather_station)
+                sol_medium_anomaly(weather_station)
+            sol_hour_angle(weather_station)
+              sol_medium_suntime(weather_station)
+              sol_time_formula(weather_station)
+        trans_gas(weather_station)
+          trans_air_mass_abs(weather_station)
+            trans_air_mass_rel(weather_station)
+            pres_p(weather_station)
+        trans_ozone(weather_station)
+        trans_rayleigh(weather_station)
+        trans_vapor(weather_station)
+          hum_precipitable_water(weather_station)
+        trans_aerosol(weather_station)
+        terr_terrain_angle(weather_station)
+          sol_azimuth(weather_station)
+    rad_diffuse_out(weather_station)
+      rad_diffuse_in(weather_station)
+        terr_sky_view(weather_station)
+  rad_lw_bal(weather_station)
+    rad_lw_in(weather_station)
+      rad_emissivity_air(weather_station)
+        pres_vapor_p(weather_station)
+          pres_sat_vapor_p(weather_station)
+    rad_lw_out(weather_station)
+```
+
+# check .weather_station method with data for 1 day
+```{r, warning = FALSE}
+# use selected complete day
+input <- input_day
+
+# show structure
+str(input)
+
+# Interpret timestamps as local station time for Caldern, Germany.
+input$datetime <- as.POSIXlt(input$datetime, format = "%Y-%m-%d %H:%M:%S", tz = "Europe/Berlin")
+
+# build_weather_station
+weather_station <- build_weather_station(
+  datetime = input$datetime,
+  lon = 8.6832,
+  lat = 50.8405,
+  elev = 261,
+  temp = input$Ta_2m,
+  slope = 0,
+  exposition = 0,
+  valley = FALSE,
+  surface_type = "field",
+  surface_temp = input$Ta_2m,
+  rh = input$Huma_2m,
+  texture = "peat",
+  moisture = input$water_vol_soil,
+  soil_temp1 = input$Ts,
+  soil_temp2 = input$Ta_2m,
+  soil_depth1 = 0.25,
+  soil_depth2 = 0
+)
+```
+
+## A function for plotting
+```{r}
+plotme <- function(topic, calculated, measured, legend_position) {
+  values_combined <- c(calculated, measured)
+  plot(
+    calculated,
+    xlab = "Day of year", ylab = "W/m2", main = topic,
+    ylim = c(min(values_combined), max(values_combined))
+  )
+  lines(measured)
+  legend(
+    legend_position,
+    c("calculated", "measured"),
+    pch = c(1, NA),
+    lty = c(0, 1)
+  )
+}
+```
+
+## Shortwave incoming
+```{r}
+topic <- "Shortwave incoming"
+calculated <- rad_sw_in(weather_station) + rad_diffuse_in(weather_station)
+measured <- input$rad_sw_in
+legend_position <- "topright"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Shortwave outgoing
+```{r}
+topic <- "Shortwave outgoing"
+calculated <- rad_sw_out(weather_station) + rad_diffuse_out(weather_station)
+measured <- input$rad_sw_out
+legend_position <- "topright"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Shortwave balance
+```{r}
+topic <- "Shortwave balance"
+calculated <- rad_sw_bal(weather_station)
+measured <- input$RsNet
+legend_position <- "topright"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Longwave incoming
+```{r}
+topic <- "Longwave incoming"
+calculated <- rad_lw_in(weather_station)
+measured <- input$LUpCo
+legend_position <- "left"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Longwave outgoing
+```{r}
+topic <- "Longwave outgoing"
+calculated <- rad_lw_out(weather_station)
+measured <- input$LDnCo
+legend_position <- "left"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Longwave balance
+```{r}
+topic <- "Longwave balance"
+calculated <- rad_lw_bal(weather_station)
+measured <- input$RlNet
+legend_position <- "left"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Radiation balance
+```{r}
+topic <- "Radiation balance"
+calculated <- rad_bal(weather_station)
+measured <- input$rad_net
+legend_position <- "topright"
+plotme(topic, calculated, measured, legend_position)
+```
+
+## Soil heat flux
+```{r}
+topic <- "Soil heat flux"
+calculated <- soil_heat_flux(weather_station)
+measured <- input$heatflux_soil
+legend_position <- "topright"
+plotme(topic, calculated, measured, legend_position)
+```
+
+# Examples
+## .default method with optional arguments
+```{r}
+pres_p(0, 20)
+pres_p(0, 20, p0 = 1013)
+```
+
+## .weather_station method with optional arguments
+```{r}
+weather_station <- build_weather_station(
+  elev = 0,
+  temp = 20
+)
+pres_p(weather_station)
+pres_p(weather_station, p0 = 1013)
+```
