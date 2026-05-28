@@ -23,9 +23,9 @@ Authors@R:
            email = "richter5@students.uni-marburg.de"),
     person("You-De", "Chen",
            role = c("aut"),
-           email = "you-de.chen@students.uni-marburg.de")
+           email = "you-de.chen@students.uni-marburg.de"),
     person("Christoph", "Reudenbach",
-           role = c("ctb"),
+           role = c("aut"),
            email = "reudenbach@uni-marburg.de")           
     )
 Description: `fieldClim` is designed as a handy tool for calculations of various weather and micromicrometeorological parameters based on the measurements of a weather station.

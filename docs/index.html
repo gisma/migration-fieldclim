@@ -4,111 +4,143 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Calculates Fluxes for Weather Stations • fieldClim</title>
-<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
-<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
-<script src="pkgdown.js"></script><meta property="og:title" content="Calculates Fluxes for Weather Stations">
+<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Calculates Fluxes for Weather Stations">
+<meta name="description" content="`fieldClim` is designed as a handy tool for calculations of various weather and micromicrometeorological parameters based on the measurements of a weather station. It includes functions adressing the estimation of radiation properties, the calculations of latent, sensible, and turbulent heat fluxes, the calculation of soil heat fluxes as well as the estimation of thermal and mechanical boundary layers.">
 <meta property="og:description" content="`fieldClim` is designed as a handy tool for calculations of various weather and micromicrometeorological parameters based on the measurements of a weather station. It includes functions adressing the estimation of radiation properties, the calculations of latent, sensible, and turbulent heat fluxes, the calculation of soil heat fluxes as well as the estimation of thermal and mechanical boundary layers.">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
-<body data-spy="scroll" data-target="#toc">
+<body>
+    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <div class="container template-home">
-      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
-  <div class="container">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <span class="navbar-brand">
-        <a class="navbar-link" href="index.html">fieldClim</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.0</span>
-      </span>
-    </div>
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav">
-<li>
-  <a href="articles/fieldClim.html">Get started</a>
-</li>
-<li>
-  <a href="reference/index.html">Reference</a>
-</li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Articles
+    <a class="navbar-brand me-2" href="index.html">fieldClim</a>
 
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
-<li>
-      <a href="articles/Check-rad-and-soil.html">Check radiation and soil heat flux</a>
-    </li>
-    <li>
-      <a href="articles/fieldclim-additional-usecases.html">fieldClim: weitere Use-Case-Workflows</a>
-    </li>
-    <li>
-      <a href="articles/fieldclim-usecase-workflows.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a>
-    </li>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar" class="collapse navbar-collapse ms-3">
+      <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/fieldClim.html">Get started</a></li>
+<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="articles/01_fieldclim-usecase-workflows.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
+    <li><a class="dropdown-item" href="articles/02-fieldclim-additional-usecases-fixed2.html">fieldClim: weitere Use-Case-Workflows</a></li>
+    <li><a class="dropdown-item" href="articles/03-fieldclim-package-update-documentation.html">FieldClim Package Update Documentation</a></li>
+    <li><a class="dropdown-item" href="articles/04-Check-rad-and-soil.html">fieldClim: Check radiation and soil heat flux</a></li>
   </ul>
 </li>
       </ul>
-<ul class="nav navbar-nav navbar-right"></ul>
+<ul class="navbar-nav"></ul>
 </div>
-<!--/.nav-collapse -->
+
+
   </div>
-<!--/.container -->
+</nav><div class="container template-home">
+<div class="row">
+  <main id="main" class="col-md-9"><p>Ersetze den README-Inhalt durch diese Fassung:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu"># fieldClim</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="in">`fieldClim`</span> is an R package for calculations of weather-station based microclimate and micrometeorological parameters.</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>It provides functions for:</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="ss">- </span>estimating radiation properties,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="ss">- </span>calculating latent and sensible heat fluxes,</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="ss">- </span>calculating turbulent heat flux diagnostics,</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="ss">- </span>calculating soil heat fluxes,</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="ss">- </span>estimating thermal and mechanical boundary-layer properties,</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="ss">- </span>organizing station data in a structured <span class="in">`weather_station`</span> object.</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>The package was originally cloned from:</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="in">```text</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="in">https://gitlab.uni-marburg.de/fb19/ag-bendix/fieldClim.git</span></span></code></pre></div>
+<p>This repository is a private development and migration repository. It is currently under construction and should not be treated as a stable public release.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<p>Install the current development version with:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"https://github.com/gisma/migration-fieldclim.git"</span><span class="op">)</span></span></code></pre></div>
+<p>Then load the package with:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">fieldClim</span><span class="op">)</span></span></code></pre></div>
+<p>For private repository access, R must be authenticated against GitHub, for example via a valid <code>GITHUB_PAT</code>.</p>
 </div>
-<!--/.navbar -->
-
-
-
-      </header><div class="row">
-  <div class="contents col-md-9">
-
-<p>Cloned from <a href="https://github.com/FabianMitze/fieldClim" class="external-link uri">https://github.com/FabianMitze/fieldClim</a></p>
-<p><code>fieldClim</code> is designed as a handy tool for calculations of various weather and micromicrometeorological parameters based on the measurements of a weather station. It includes functions adressing the estimation of radiation properties, the calculations of latent, sensible, and turbulent heat fluxes, the calculation of soil heat fluxes as well as the estimation of thermal and mechanical boundary layers.</p>
-<p>Note that this package is currently under development.</p>
-<p>The rendered HTML vignettes included in this repository are historical outputs and are not current numerical references. In the Caldern metadata, <code>EC</code> means electric conductivity; the package does not implement complete Eddy Covariance processing.</p>
-<p>Use with:</p>
-<p>remotes::install_git(“<a href="https://gitlab.uni-marburg.de/fb19/ag-bendix/fieldClim.git" class="external-link uri">https://gitlab.uni-marburg.de/fb19/ag-bendix/fieldClim.git</a>”)</p>
-<p>library(“fieldClim”)</p>
-<p>TEACHING-READY ENERGY BALANCE WORKFLOW</p>
-<p>This branch adds a stable teaching workflow for microclimate energy-balance calculations.</p>
+<div class="section level2">
+<h2 id="current-status">Current status<a class="anchor" aria-label="anchor" href="#current-status"></a>
+</h2>
+<p>The package is under active consolidation. Some historical rendered HTML vignettes included in the repository are archived outputs and should not be treated as current numerical references.</p>
+<p>In the Caldern metadata, <code>EC</code> means electric conductivity. The package does not implement a complete Eddy Covariance processing chain.</p>
+</div>
+<div class="section level2">
+<h2 id="teaching-ready-energy-balance-workflow">Teaching-ready energy balance workflow<a class="anchor" aria-label="anchor" href="#teaching-ready-energy-balance-workflow"></a>
+</h2>
+<p>This development branch adds a stable teaching workflow for microclimate energy-balance calculations.</p>
 <p>A small packaged teaching dataset is provided:</p>
-<p>inst/extdata/caldern_wiese_2017-06-30.csv</p>
+<pre class="text"><code>inst/extdata/caldern_wiese_2017-06-30.csv</code></pre>
 <p>It contains one complete 5-minute day with 288 observations. The full Caldern raw dataset is intentionally not included in the package.</p>
 <p>The consolidated sign convention is:</p>
 <ul>
-<li>Rn &gt; 0: radiative energy input at the surface</li>
-<li>G &gt; 0: heat flux into the soil</li>
-<li>H &gt; 0: sensible heat flux away from the surface</li>
-<li>LE &gt; 0: latent heat flux away from the surface</li>
+<li>
+<code>Rn &gt; 0</code>: radiative energy input at the surface</li>
+<li>
+<code>G &gt; 0</code>: heat flux into the soil</li>
+<li>
+<code>H &gt; 0</code>: sensible heat flux away from the surface</li>
+<li>
+<code>LE &gt; 0</code>: latent heat flux away from the surface</li>
 </ul>
 <p>For the Priestley-Taylor teaching path:</p>
-<p>H + LE = Rn - G</p>
-<p>The PT formulas were not changed. Documentation and tests were updated to match the already implemented Rn - G convention.</p>
+<pre class="text"><code><span><span class="va">H</span> <span class="op">+</span> <span class="va">LE</span> <span class="op">=</span> <span class="va">Rn</span> <span class="op">-</span> <span class="va">G</span></span></code></pre>
+<p>The Priestley-Taylor formulas were not changed. Documentation and tests were updated to match the already implemented <code>Rn - G</code> convention.</p>
 <p>A beginner-safe workflow is available through:</p>
-<p>turb_flux_calc(weather_station, pt_only = TRUE)</p>
-<p>This computes only sensible_priestley_taylor and latent_priestley_taylor, avoiding optional Penman, Bowen and Monin-Obukhov paths in first teaching exercises.</p>
-<p>This branch also fixes small robustness issues in as.data.frame.weather_station(), numeric warning checks, soil_attenuation(), Bowen denominator handling, and non-fatal Penman behavior inside turb_flux_calc().</p>
-<p>This is not an Eddy Covariance implementation. In the Caldern metadata, EC means electric conductivity, not Eddy Covariance.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">weather_station</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p>This computes only:</p>
+<pre class="text"><code><span><span class="va">sensible_priestley_taylor</span></span>
+<span><span class="va">latent_priestley_taylor</span></span></code></pre>
+<p>and avoids optional Penman, Bowen and Monin-Obukhov paths in first teaching exercises.</p>
+</div>
+<div class="section level2">
+<h2 id="consolidation-changes-in-this-branch">Consolidation changes in this branch<a class="anchor" aria-label="anchor" href="#consolidation-changes-in-this-branch"></a>
+</h2>
+<p>This branch includes small robustness fixes and documentation clarifications:</p>
+<ul>
+<li>
+<code><a href="reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> supports the current flat <code>weather_station</code> object structure.</li>
+<li>Numeric warning checks in heat-flux functions were repaired.</li>
+<li>
+<code><a href="reference/soil_attenuation.html">soil_attenuation()</a></code> argument forwarding was corrected.</li>
+<li>Bowen denominator handling was made more robust.</li>
+<li>Penman failures in <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> are non-fatal.</li>
+<li>Penman surface-type handling was consolidated so common <code>fieldClim</code> surface types such as <code>field</code> can be mapped to Penman-compatible resistance classes.</li>
+<li>The teaching dataset is kept small and package-compatible.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="what-this-package-does-not-currently-provide">What this package does not currently provide<a class="anchor" aria-label="anchor" href="#what-this-package-does-not-currently-provide"></a>
+</h2>
+<p><code>fieldClim</code> currently does not provide a full Eddy Covariance workflow. It does not implement a complete chain including Reynolds decomposition, covariance calculation, coordinate rotation, WPL correction, quality control and 30-minute flux aggregation.</p>
+<p>The current teaching workflow is therefore an energy-balance and heat-flux-methods workflow, not an Eddy Covariance workflow.</p>
+<pre><code></code></pre>
+</div>
 
-  </div>
-
-  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
-    <div class="license">
+  </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li>Apache License 2.0</li>
@@ -133,28 +165,26 @@
 <li>Hanna Wenzel <br><small class="roles"> Author </small>   </li>
 <li>Kai Richter <br><small class="roles"> Author </small>   </li>
 <li>You-De Chen <br><small class="roles"> Author </small>   </li>
+<li>Christoph Reudenbach <br><small class="roles"> Author </small>   </li>
 </ul>
 </div>
 
 
 
-  </div>
+  </aside>
 </div>
 
 
-      <footer><div class="copyright">
-  <p></p>
-<p>Developed by David Langenohl, Jonas Viehweger, Jörg Bendix, Fabian Mitze, Hanna Wenzel, Kai Richter, You-De Chen.</p>
+    <footer><div class="pkgdown-footer-left">
+  <p>Developed by David Langenohl, Jonas Viehweger, Jörg Bendix, Fabian Mitze, Hanna Wenzel, Kai Richter, You-De Chen, Christoph Reudenbach.</p>
 </div>
 
-<div class="pkgdown">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<div class="pkgdown-footer-right">
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
-      </footer>
+    </footer>
 </div>
-
 
 
 

@@ -1,0 +1,15 @@
+url: https://gisma.github.io/migration-fieldclim
+template:
+  bootstrap: 5
+  bootswatch: united
+  bslib:
+    code_font: {google: "JetBrains Mono"}
+navbar:
+  structure:
+    left:  [intro, reference, articles, tutorials, news]
+    right: [github]
+    
+# development:
+#   mode: auto
+#   version_label: default
+#   version_tooltip: "Version"
