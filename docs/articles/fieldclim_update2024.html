@@ -6,7 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>FieldClim Package Update Documentation • fieldClim</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -217,46 +223,46 @@ Society 120.520 (1994): 1699. The parameters <code>obs_height</code> and
 <code>surface_type</code> to calculate the aerodynamic resistance and
 get the right value for surface resistance. The formula used looks like
 this:</p>
-<p><span class="math display">\<span class="math display">$$ Q_e =
+<p><span class="math display">\<span class="math display">\[ Q_e =
 \\frac{\\Delta \\times (R_n - G) + \\gamma \\times
 \\left(\\frac{c_p \\times \\rho}{r_a}\\right) \\times (e_s -
 e_a)}{\\Delta + \\gamma \\times \\left(1 + \\frac{r_s}{r_a}\\right)}
-\\$$</span></span></p>
+\\\]</span></span></p>
 <p>where:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>e</mi></msub><annotation encoding="application/x-tex">Q_e</annotation></semantics></math>
-is the latent heat flux (W/m²).</li>
+<span class="math inline">\(Q_e\)</span> is the latent heat flux
+(W/m²).</li>
 <li>
-<span class="math inline">$\\Delta$</span> is the slope of the vapor
-pressure curve (kPa/°C).</li>
+<span class="math inline">\(\\Delta\)</span> is the slope of the
+vapor pressure curve (kPa/°C).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>R</mi><mi>n</mi></msub><annotation encoding="application/x-tex">R_n</annotation></semantics></math>
-is the net radiation (W/m²).</li>
+<span class="math inline">\(R_n\)</span> is the net radiation
+(W/m²).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>G</mi><annotation encoding="application/x-tex">G</annotation></semantics></math>
-is the soil heat flux density (W/m²).</li>
+<span class="math inline">\(G\)</span> is the soil heat flux density
+(W/m²).</li>
 <li>
-<span class="math inline">$\\gamma$</span> is the psychrometric
+<span class="math inline">\(\\gamma\)</span> is the psychrometric
 constant (kPa/°C).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>c</mi><mi>p</mi></msub><annotation encoding="application/x-tex">c_p</annotation></semantics></math>
-is the specific heat of air at constant pressure (J/kg/°C).</li>
+<span class="math inline">\(c_p\)</span> is the specific heat of air
+at constant pressure (J/kg/°C).</li>
 <li>
-<span class="math inline">$\\rho$</span> is the air density
+<span class="math inline">\(\\rho\)</span> is the air density
 (kg/m³).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>r</mi><mi>a</mi></msub><annotation encoding="application/x-tex">r_a</annotation></semantics></math>
-is the aerodynamic resistance (s/m).</li>
+<span class="math inline">\(r_a\)</span> is the aerodynamic
+resistance (s/m).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>r</mi><mi>s</mi></msub><annotation encoding="application/x-tex">r_s</annotation></semantics></math>
-is the surface resistance (s/m).</li>
+<span class="math inline">\(r_s\)</span> is the surface resistance
+(s/m).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>e</mi><mi>s</mi></msub><annotation encoding="application/x-tex">e_s</annotation></semantics></math>
-is the saturation vapor pressure (kPa).</li>
+<span class="math inline">\(e_s\)</span> is the saturation vapor
+pressure (kPa).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>e</mi><mi>a</mi></msub><annotation encoding="application/x-tex">e_a</annotation></semantics></math>
-is the actual vapor pressure (kPa). ]</li>
+<span class="math inline">\(e_a\)</span> is the actual vapor
+pressure (kPa). ]</li>
 </ul>
 <!-- Figure removed from self-contained HTML: Comparison of results of old and new latent_penman() function using --><p><strong>Figure 2:</strong> Comparison of results of old and new
 <code><a href="../reference/latent_penman.html">latent_penman()</a></code> function using ‘energie_bil_wiese.csv’</p>
@@ -266,16 +272,14 @@ is the actual vapor pressure (kPa). ]</li>
 </h3>
 <p>The function <code><a href="../reference/latent_monin.html">latent_monin()</a></code> includes the stability
 correction for humidity. The calculation of this correction is based on
-the stability parameter
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mn>1</mn></msub><annotation encoding="application/x-tex">s_1</annotation></semantics></math>,
-which is defined as:</p>
-<p><span class="math display">\<span class="math display">$$ s_1 =
+the stability parameter <span class="math inline">\(s_1\)</span>, which
+is defined as:</p>
+<p><span class="math display">\<span class="math display">\[ s_1 =
 \\frac{\\text{measurement height}}{\\text{Monin-Obukhov
-length}} \\$$</span></span></p>
+length}} \\\]</span></span></p>
 <p>However when the Monin-Obukhov length approaches zero, <span class="math inline">\(s_1\)</span> can become extremely large, leading
 to unrealistic values in further calculations. To address this, a
-possibility to set a cap for
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mn>1</mn></msub><annotation encoding="application/x-tex">s_1</annotation></semantics></math>
+possibility to set a cap for <span class="math inline">\(s_1\)</span>
 was added. The cap is <code>NULL</code> by default and can be set with
 <code>cap = x</code>.</p>
 <p>In the function the cap use looks like this:</p>
@@ -294,35 +298,29 @@ where positive values were expected.</p>
 <div class="section level3">
 <h3 id="latent_bowen">7. <code>latent_bowen()</code><a class="anchor" aria-label="anchor" href="#latent_bowen"></a>
 </h3>
-<p>The latent heat flux
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>e</mi></msub><annotation encoding="application/x-tex">Q_e</annotation></semantics></math>
-in the Bowen ratio method is calculated using the formula:</p>
-<p><span class="math display">\<span class="math display">$$ Q_e =
-\\frac{Q_n - Q_g}{1 + B} \\$$</span></span></p>
+<p>The latent heat flux <span class="math inline">\(Q_e\)</span> in the
+Bowen ratio method is calculated using the formula:</p>
+<p><span class="math display">\<span class="math display">\[ Q_e =
+\\frac{Q_n - Q_g}{1 + B} \\\]</span></span></p>
 <p>Where:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>e</mi></msub><annotation encoding="application/x-tex">Q_e</annotation></semantics></math>
-is the latent heat flux (W/m²).</li>
+<span class="math inline">\(Q_e\)</span> is the latent heat flux
+(W/m²).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>n</mi></msub><annotation encoding="application/x-tex">Q_n</annotation></semantics></math>
-is the net radiation (W/m²).</li>
+<span class="math inline">\(Q_n\)</span> is the net radiation
+(W/m²).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>g</mi></msub><annotation encoding="application/x-tex">Q_g</annotation></semantics></math>
-is the soil heat flux (W/m²).</li>
+<span class="math inline">\(Q_g\)</span> is the soil heat flux
+(W/m²).</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-is the Bowen ratio, defined as the ratio of sensible heat flux to latent
-heat flux. Here there was a similar problem as for the
-<code><a href="../reference/latent_monin.html">latent_monin()</a></code> function. When <span class="math inline">\((1 + B)\)</span> approaches zero,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>Q</mi><mi>e</mi></msub><annotation encoding="application/x-tex">Q_e</annotation></semantics></math>
-can become extremely large, leading to unrealistic values. To prevent
-this, a cap
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>C</mi><annotation encoding="application/x-tex">C</annotation></semantics></math>
-is introduced ensuring that <span class="math inline">\((1 + B)\)</span>
-does not approach zero by maintaining a minimum value set by the cap.
-The cap is <code>NULL</code> by default and can be set with
-<code>cap = x</code>.</li>
+<span class="math inline">\(B\)</span> is the Bowen ratio, defined
+as the ratio of sensible heat flux to latent heat flux. Here there was a
+similar problem as for the <code><a href="../reference/latent_monin.html">latent_monin()</a></code> function. When
+<span class="math inline">\((1 + B)\)</span> approaches zero, <span class="math inline">\(Q_e\)</span> can become extremely large, leading
+to unrealistic values. To prevent this, a cap <span class="math inline">\(C\)</span> is introduced ensuring that <span class="math inline">\((1 + B)\)</span> does not approach zero by
+maintaining a minimum value set by the cap. The cap is <code>NULL</code>
+by default and can be set with <code>cap = x</code>.</li>
 </ul>
 <p>In the function the cap use looks like this:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">

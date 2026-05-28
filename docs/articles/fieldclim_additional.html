@@ -6,7 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>fieldClim: weitere Use-Case-Workflows • fieldClim</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -73,14 +79,9 @@ Reudenbach</h4>
 <h2 id="ziel-dieser-vignette">Ziel dieser Vignette<a class="anchor" aria-label="anchor" href="#ziel-dieser-vignette"></a>
 </h2>
 <p>Diese Vignette ergänzt die Energiebilanz-Vignette. Dort steht der
-vollständige Caldern-Workflow mit
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-im Zentrum. Diese Seite ordnet die weiteren Paketmöglichkeiten als
-eigenständige Use Cases.</p>
+vollständige Caldern-Workflow mit <span class="math inline">\(Q^{*}\)</span>, <span class="math inline">\(B\)</span>, <span class="math inline">\(L\)</span>
+und <span class="math inline">\(V\)</span> im Zentrum. Diese Seite
+ordnet die weiteren Paketmöglichkeiten als eigenständige Use Cases.</p>
 <p>Im vorhandenen Material liegen die Beispiele nicht in einem separaten
 <code>examples/</code>-Ordner. Sie stecken vor allem in den bestehenden
 Vignetten, Hilfeseiten, Tests und Update-Notizen. Daraus ergeben sich
@@ -326,52 +327,50 @@ dieselbe Datenstruktur durch mehrere Berechnungsschritte trägt.</p>
 <h2 id="use-case-1-strahlungsreihen-prüfen-und-reparaturfähig-machen">Use Case 1: Strahlungsreihen prüfen und reparaturfähig machen<a class="anchor" aria-label="anchor" href="#use-case-1-strahlungsreihen-pr%C3%BCfen-und-reparaturf%C3%A4hig-machen"></a>
 </h2>
 <p>Strahlungsreihen sind oft der wichtigste Eingang für
-Energiebilanzrechnungen. Bevor
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-als Netto-Strahlung verwendet wird, müssen die Komponenten geprüft
-werden.</p>
+Energiebilanzrechnungen. Bevor <span class="math inline">\(Q^{*}\)</span> als Netto-Strahlung verwendet wird,
+müssen die Komponenten geprüft werden.</p>
 <p>Die kurzwellige Bilanz lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>K</mi><mo>*</mo></msup><mo>=</mo><msub><mi>K</mi><mo>↓</mo></msub><mo>−</mo><msub><mi>K</mi><mo>↑</mo></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 K^{*} = K_{\downarrow} - K_{\uparrow}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>mit:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>K</mi><mo>*</mo></msup><annotation encoding="application/x-tex">K^{*}</annotation></semantics></math>:
-kurzwellige Bilanz [W/m²]</li>
+<span class="math inline">\(K^{*}\)</span>: kurzwellige Bilanz
+[W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mo>↓</mo></msub><annotation encoding="application/x-tex">K_{\downarrow}</annotation></semantics></math>:
-einfallende kurzwellige Strahlung [W/m²]</li>
+<span class="math inline">\(K_{\downarrow}\)</span>: einfallende
+kurzwellige Strahlung [W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>K</mi><mo>↑</mo></msub><annotation encoding="application/x-tex">K_{\uparrow}</annotation></semantics></math>:
-reflektierte kurzwellige Strahlung [W/m²]</li>
+<span class="math inline">\(K_{\uparrow}\)</span>: reflektierte
+kurzwellige Strahlung [W/m²]</li>
 </ul>
 <p>Die langwellige Bilanz wird hier in derselben Richtung
 geschrieben:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>L</mi><mo>*</mo></msup><mo>=</mo><msub><mi>L</mi><mo>↓</mo></msub><mo>−</mo><msub><mi>L</mi><mo>↑</mo></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L^{*} = L_{\downarrow} - L_{\uparrow}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>mit:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>L</mi><mo>*</mo></msup><annotation encoding="application/x-tex">L^{*}</annotation></semantics></math>:
-langwellige Bilanz [W/m²]</li>
+<span class="math inline">\(L^{*}\)</span>: langwellige Bilanz
+[W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>L</mi><mo>↓</mo></msub><annotation encoding="application/x-tex">L_{\downarrow}</annotation></semantics></math>:
-langwellige Gegenstrahlung [W/m²]</li>
+<span class="math inline">\(L_{\downarrow}\)</span>: langwellige
+Gegenstrahlung [W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>L</mi><mo>↑</mo></msub><annotation encoding="application/x-tex">L_{\uparrow}</annotation></semantics></math>:
-langwellige Ausstrahlung der Oberfläche [W/m²]</li>
+<span class="math inline">\(L_{\uparrow}\)</span>: langwellige
+Ausstrahlung der Oberfläche [W/m²]</li>
 </ul>
 <p>Die Netto-Strahlung ergibt sich theoretisch als:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>=</mo><msup><mi>K</mi><mo>*</mo></msup><mo>+</mo><msup><mi>L</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 Q^{*} = K^{*} + L^{*}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>mit:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>:
-Netto-Strahlung bzw. Strahlungsbilanz [W/m²]</li>
+<span class="math inline">\(Q^{*}\)</span>: Netto-Strahlung bzw.
+Strahlungsbilanz [W/m²]</li>
 </ul>
 <div class="section level3">
 <h3 id="komponenten-berechnen-und-mit-gespeicherten-nettospalten-vergleichen">1.1 Komponenten berechnen und mit gespeicherten Nettospalten
@@ -514,9 +513,7 @@ Spalte welche Bilanzebene repräsentiert.</p>
 <p><strong>Interpretation.</strong> Das ist der eigentliche „Fix“: nicht
 Werte still überschreiben, sondern eine Arbeitsreihe festlegen und die
 Alternativen als Diagnosegrößen behalten. Wenn später Wärmeflüsse
-berechnet werden, ist transparent, welche Version von
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-verwendet wurde.</p>
+berechnet werden, ist transparent, welche Version von <span class="math inline">\(Q^{*}\)</span> verwendet wurde.</p>
 </div>
 <div class="section level3">
 <h3 id="zeitversatz-prüfen">1.4 Zeitversatz prüfen<a class="anchor" aria-label="anchor" href="#zeitversatz-pr%C3%BCfen"></a>
@@ -757,33 +754,29 @@ realistische Größenordnungen liefern.</p>
 </h2>
 <p>Der Bodenwärmestrom kann gemessen oder aus Temperaturgradient, Tiefe,
 Feuchte und Bodenart geschätzt werden. Der Paketworkflow lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi><mo>=</mo><mi>−</mi><msub><mi>λ</mi><mi>s</mi></msub><mfrac><mrow><msub><mi>T</mi><mn>1</mn></msub><mo>−</mo><msub><mi>T</mi><mn>2</mn></msub></mrow><mrow><msub><mi>z</mi><mn>1</mn></msub><mo>−</mo><msub><mi>z</mi><mn>2</mn></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>mit:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>:
-Bodenwärmestrom [W/m²]</li>
+<span class="math inline">\(B\)</span>: Bodenwärmestrom [W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>λ</mi><mi>s</mi></msub><annotation encoding="application/x-tex">\lambda_s</annotation></semantics></math>:
-Wärmeleitfähigkeit des Bodens [W/(m K)]</li>
+<span class="math inline">\(\lambda_s\)</span>: Wärmeleitfähigkeit
+des Bodens [W/(m K)]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mn>1</mn></msub><annotation encoding="application/x-tex">T_1</annotation></semantics></math>:
-Bodentemperatur in Tiefe
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>z</mi><mn>1</mn></msub><annotation encoding="application/x-tex">z_1</annotation></semantics></math>
-[°C oder K]</li>
+<span class="math inline">\(T_1\)</span>: Bodentemperatur in Tiefe
+<span class="math inline">\(z_1\)</span> [°C oder K]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>T</mi><mn>2</mn></msub><annotation encoding="application/x-tex">T_2</annotation></semantics></math>:
-Temperatur an zweiter Tiefe bzw. Oberfläche
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>z</mi><mn>2</mn></msub><annotation encoding="application/x-tex">z_2</annotation></semantics></math>
-[°C oder K]</li>
+<span class="math inline">\(T_2\)</span>: Temperatur an zweiter
+Tiefe bzw. Oberfläche <span class="math inline">\(z_2\)</span> [°C oder
+K]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>z</mi><mn>1</mn></msub><annotation encoding="application/x-tex">z_1</annotation></semantics></math>:
-Tiefe des ersten Sensors [m]</li>
+<span class="math inline">\(z_1\)</span>: Tiefe des ersten Sensors
+[m]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>z</mi><mn>2</mn></msub><annotation encoding="application/x-tex">z_2</annotation></semantics></math>:
-Tiefe der zweiten Referenz [m]</li>
+<span class="math inline">\(z_2\)</span>: Tiefe der zweiten Referenz
+[m]</li>
 </ul>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Wärmeleitfähigkeit für die gewählte Bodenart und Feuchte.</span></span>
@@ -1162,9 +1155,7 @@ Paket-Use-Cases. Die zentrale Logik lautet:</p>
 <ol style="list-style-type: decimal">
 <li>
 <code>weather_station</code> ist das Paket-Arbeitsobjekt.</li>
-<li>Strahlungsreihen müssen geprüft werden, bevor
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-verwendet wird.</li>
+<li>Strahlungsreihen müssen geprüft werden, bevor <span class="math inline">\(Q^{*}\)</span> verwendet wird.</li>
 <li>Strahlung kann gemessen, modelliert oder als Plausibilitätskontrolle
 berechnet werden.</li>
 <li>Bodenwärmestrom kann gemessen oder aus Bodenparametern geschätzt

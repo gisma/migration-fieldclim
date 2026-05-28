@@ -148,24 +148,24 @@ parameters `obs_height` and `surface_type` to calculate the aerodynamic
 resistance and get the right value for surface resistance. The formula
 used looks like this:
 
-\\\$\$ Q_e = \\frac{\\Delta \\times (R_n - G) + \\gamma \\times
+\\\\ Q_e = \\frac{\\Delta \\times (R_n - G) + \\gamma \\times
 \\left(\\frac{c_p \\times \\rho}{r_a}\\right) \\times (e_s -
 e_a)}{\\Delta + \\gamma \\times \\left(1 + \\frac{r_s}{r_a}\\right)}
-\\\$\$
+\\\\
 
 where:
 
-- $`Q_e`$ is the latent heat flux (W/m²).
-- \$\\Delta\$ is the slope of the vapor pressure curve (kPa/°C).
-- $`R_n`$ is the net radiation (W/m²).
-- $`G`$ is the soil heat flux density (W/m²).
-- \$\\gamma\$ is the psychrometric constant (kPa/°C).
-- $`c_p`$ is the specific heat of air at constant pressure (J/kg/°C).
-- \$\\rho\$ is the air density (kg/m³).
-- $`r_a`$ is the aerodynamic resistance (s/m).
-- $`r_s`$ is the surface resistance (s/m).
-- $`e_s`$ is the saturation vapor pressure (kPa).
-- $`e_a`$ is the actual vapor pressure (kPa). \]
+- \\Q_e\\ is the latent heat flux (W/m²).
+- \\\\Delta\\ is the slope of the vapor pressure curve (kPa/°C).
+- \\R_n\\ is the net radiation (W/m²).
+- \\G\\ is the soil heat flux density (W/m²).
+- \\\\gamma\\ is the psychrometric constant (kPa/°C).
+- \\c_p\\ is the specific heat of air at constant pressure (J/kg/°C).
+- \\\\rho\\ is the air density (kg/m³).
+- \\r_a\\ is the aerodynamic resistance (s/m).
+- \\r_s\\ is the surface resistance (s/m).
+- \\e_s\\ is the saturation vapor pressure (kPa).
+- \\e_a\\ is the actual vapor pressure (kPa). \]
 
 **Figure 2:** Comparison of results of old and new
 [`latent_penman()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
@@ -176,15 +176,15 @@ function using ‘energie_bil_wiese.csv’
 The function
 [`latent_monin()`](https://gisma.github.io/migration-fieldclim/reference/latent_monin.md)
 includes the stability correction for humidity. The calculation of this
-correction is based on the stability parameter $`s_1`$, which is defined
+correction is based on the stability parameter \\s_1\\, which is defined
 as:
 
-\\\$\$ s_1 = \\frac{\\text{measurement height}}{\\text{Monin-Obukhov
-length}} \\\$\$
+\\\\ s_1 = \\frac{\\text{measurement height}}{\\text{Monin-Obukhov
+length}} \\\\
 
 However when the Monin-Obukhov length approaches zero, \\s_1\\ can
 become extremely large, leading to unrealistic values in further
-calculations. To address this, a possibility to set a cap for $`s_1`$
+calculations. To address this, a possibility to set a cap for \\s_1\\
 was added. The cap is `NULL` by default and can be set with `cap = x`.
 
 In the function the cap use looks like this:
@@ -206,22 +206,22 @@ function using `cap = 20` and ‘energie_bil_wiese.csv’
 
 ### 7. `latent_bowen()`
 
-The latent heat flux $`Q_e`$ in the Bowen ratio method is calculated
+The latent heat flux \\Q_e\\ in the Bowen ratio method is calculated
 using the formula:
 
-\\\$\$ Q_e = \\frac{Q_n - Q_g}{1 + B} \\\$\$
+\\\\ Q_e = \\frac{Q_n - Q_g}{1 + B} \\\\
 
 Where:
 
-- $`Q_e`$ is the latent heat flux (W/m²).
-- $`Q_n`$ is the net radiation (W/m²).
-- $`Q_g`$ is the soil heat flux (W/m²).
-- $`B`$ is the Bowen ratio, defined as the ratio of sensible heat flux
+- \\Q_e\\ is the latent heat flux (W/m²).
+- \\Q_n\\ is the net radiation (W/m²).
+- \\Q_g\\ is the soil heat flux (W/m²).
+- \\B\\ is the Bowen ratio, defined as the ratio of sensible heat flux
   to latent heat flux. Here there was a similar problem as for the
   [`latent_monin()`](https://gisma.github.io/migration-fieldclim/reference/latent_monin.md)
-  function. When \\(1 + B)\\ approaches zero, $`Q_e`$ can become
+  function. When \\(1 + B)\\ approaches zero, \\Q_e\\ can become
   extremely large, leading to unrealistic values. To prevent this, a cap
-  $`C`$ is introduced ensuring that \\(1 + B)\\ does not approach zero
+  \\C\\ is introduced ensuring that \\(1 + B)\\ does not approach zero
   by maintaining a minimum value set by the cap. The cap is `NULL` by
   default and can be set with `cap = x`.
 

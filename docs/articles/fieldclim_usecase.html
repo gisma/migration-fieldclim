@@ -6,7 +6,13 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden • fieldClim</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
+  window.MathJax = {
+    chtml: {
+      fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
+    }
+  };
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
@@ -208,26 +214,26 @@ des <code>fieldClim</code> Pakets gemappt.</p>
 </tbody>
 </table>
 <p>Die Arbeitsbilanz lautet in der Theorie-Notation:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>=</mo><mi>B</mi><mo>+</mo><mi>L</mi><mo>+</mo><mi>V</mi><mo>+</mo><mi>S</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 Q^{*} = B + L + V + S
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Der Speicherterm <code>S</code> wird in diesem Lehrdatensatz nicht
 separat berechnet. Das bedeutet nicht, dass Speicherung nicht existiert.
 Es bedeutet nur, dass die Datengrundlage keine vollständige Auflösung
 von Wärmespeicherung in Luftvolumen, Vegetation, Wasserfilmen,
 oberflächennahem Boden und Messumgebung erlaubt. Für die transparente
 Referenzrechnung wird deshalb gesetzt:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mo>≈</mo><mn>0</mn></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 S \approx 0
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Damit wird:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>=</mo><mi>L</mi><mo>+</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 Q^{*} - B = L + V
-</annotation></semantics></math></p>
+\]</span></p>
 <p>und für die Residualrechnung:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 V = Q^{*} - B - L
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Der Ausdruck <strong>Kontrolle aus Einzelkomponenten</strong> ersetzt
 hier das missverständliche Wort „Rekonstruktion“. Gemeint ist kein neues
 Messverfahren, sondern eine arithmetische Prüfung: Aus kurzwelliger und
@@ -388,13 +394,13 @@ wird. Die Albedo-Folie definiert den reflektierten Anteil als Verhältnis
 von ausgehender zu einfallender kurzwelliger Strahlung.</p>
 <p><img src="figures/anchor_mesoklima_p18.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p20.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p33.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p34.png" class="r-plt" alt="" width="100%"></p>
 <p>Die kurzwellige Bilanz lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>K</mi><mo>*</mo></msup><mo>=</mo><msub><mi>K</mi><mrow><mi>d</mi><mi>o</mi><mi>w</mi><mi>n</mi></mrow></msub><mo>−</mo><msub><mi>K</mi><mrow><mi>u</mi><mi>p</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 K^{*} = K_{down} - K_{up}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Die Albedo lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>α</mi><mo>=</mo><mfrac><msub><mi>K</mi><mrow><mi>u</mi><mi>p</mi></mrow></msub><msub><mi>K</mi><mrow><mi>d</mi><mi>o</mi><mi>w</mi><mi>n</mi></mrow></msub></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 \alpha = \frac{K_{up}}{K_{down}}
-</annotation></semantics></math></p>
+\]</span></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Einfallende kurzwellige Strahlung aus der Messspalte übernehmen.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">K_down</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">rad_sw_in</span></span>
@@ -480,12 +486,12 @@ Stefan-Boltzmann-Logik, Emissionsvermögen und atmosphärische
 Gegenstrahlung. Für die Stationsdaten wird daraus die langwellige
 Bilanz.</p>
 <p><img src="figures/anchor_mesoklima_p39.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p41.png" class="r-plt" alt="" width="100%"></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>L</mi><mo>*</mo></msup><mo>=</mo><msub><mi>L</mi><mrow><mi>d</mi><mi>o</mi><mi>w</mi><mi>n</mi></mrow></msub><mo>−</mo><msub><mi>L</mi><mrow><mi>u</mi><mi>p</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L^{*} = L_{down} - L_{up}
-</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>=</mo><msup><mi>K</mi><mo>*</mo></msup><mo>+</mo><msup><mi>L</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">
+\]</span></p>
+<p><span class="math display">\[
 Q^{*} = K^{*} + L^{*}
-</annotation></semantics></math></p>
+\]</span></p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Langwellige Gegenstrahlung aus der Atmosphäre.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_down</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">LDnCo</span></span>
@@ -530,9 +536,9 @@ Temperatur und Emissionsverhältnisse gekoppelt.</p>
 <p>Die Netto-Strahlung <code>Q*</code> ist der zentrale Eingang in die
 Energiebilanz. In der Theorie steht <code>Q*</code> als Strahlungsbilanz
 auf der linken Seite der bodennahen Energiebilanz:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><mi>L</mi><mo>−</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 0 = Q^{*} - B - L - V
-</annotation></semantics></math></p>
+\]</span></p>
 <p>In dieser Vignette entspricht:</p>
 <table class="table">
 <thead><tr class="header">
@@ -573,15 +579,15 @@ auf der linken Seite der bodennahen Energiebilanz:</p>
 </table>
 <p>Theoretisch kann <code>Q*</code> aus kurzwelligen und langwelligen
 Einzelkomponenten gebildet werden:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>K</mi><mo>*</mo></msup><mo>=</mo><msub><mi>K</mi><mo>↓</mo></msub><mo>−</mo><msub><mi>K</mi><mo>↑</mo></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 K^{*} = K_\downarrow - K_\uparrow
-</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>L</mi><mo>*</mo></msup><mo>=</mo><msub><mi>L</mi><mo>↓</mo></msub><mo>−</mo><msub><mi>L</mi><mo>↑</mo></msub></mrow><annotation encoding="application/x-tex">
+\]</span></p>
+<p><span class="math display">\[
 L^{*} = L_\downarrow - L_\uparrow
-</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>=</mo><msup><mi>K</mi><mo>*</mo></msup><mo>+</mo><msup><mi>L</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">
+\]</span></p>
+<p><span class="math display">\[
 Q^{*} = K^{*} + L^{*}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Im Datensatz liegt aber zusätzlich bereits eine Spalte
 <code>rad_net</code> vor. Deshalb wird hier nicht einfach eine neue
 Netto-Strahlung “rekonstruiert”, sondern geprüft, ob die vorhandene
@@ -668,9 +674,9 @@ in diesem Datensatz nicht ohne Prüfung als identische Größe zu
 behandeln.</p>
 <p>Für die weitere Energiebilanz ist das entscheidend. <code>Q*</code>
 bestimmt die verfügbare Energie:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 Q^{*} - B
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Wenn <code>Q*</code> unterschiedlich definiert oder unterschiedlich
 verarbeitet ist, ändern sich danach alle Ansätze, die direkt mit
 verfügbarer Energie arbeiten. Das betrifft insbesondere die manuelle
@@ -692,9 +698,9 @@ Residualrechnung, Priestley-Taylor, Bowen und Penman.</p>
 Strahlungsbilanz auf derselben Verarbeitungsstufe wären, müssten die
 Punkte nahe an der 1:1-Linie liegen. Hier liegt die Punktwolke
 systematisch oberhalb der 1:1-Linie. Das heißt:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>K</mi><mo>*</mo></msup><mo>+</mo><msup><mi>L</mi><mo>*</mo></msup><mo>&gt;</mo><mi>r</mi><mi>a</mi><mi>d</mi><mi>_</mi><mi>n</mi><mi>e</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 K^{*} + L^{*} &gt; rad\_net
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Die Abweichung ist also nicht zufällig um null verteilt. Damit ist
 die Komponentensumme keine unproblematische Ersatzgröße für
 <code>rad_net</code>.</p>
@@ -746,33 +752,22 @@ stammen können.</p>
 </blockquote>
 <blockquote>
 <p>Priestley-Taylor, Bowen, Penman und die manuelle Residualrechnung
-hängen direkt an
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-beziehungsweise
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>.
-Wenn
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-um 100 W/m² verschoben ist, verschiebt sich auch die verfügbare Energie.
-Bei der Residualrechnung landet der Fehler direkt in
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mi>E</mi></mrow><annotation encoding="application/x-tex">LE</annotation></semantics></math>.
-Bei Priestley-Taylor wird die Aufteilung von
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>H</mi><annotation encoding="application/x-tex">H</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mi>E</mi></mrow><annotation encoding="application/x-tex">LE</annotation></semantics></math>
-skaliert. Bei Bowen wird eine ohnehin gradientenempfindliche Methode
-zusätzlich mit einer unsicheren Energiemenge gespeist. Bei Penman
-verschiebt sich der Energieanteil. Die Monin-Wärmeflüsse kommen primär
-aus Temperatur-, Feuchte-, Windprofil und Stabilitätsannahmen.
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-geht dort nicht in gleicher Weise als direkter Energieterm ein. Aber wir
-brauchen
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>,
-um zu prüfen, ob die Monin-Werte energetisch plausibel sind. Wenn
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-selbst unklar ist, kannst bei großen Monin-Werten nicht sauber
-entschieden werden: Ist der Monin-Ansatz instabil, sind die Gradienten
-problematisch, oder ist schon die Strahlungsbilanz als Vergleichsmaßstab
-uneindeutig?</p>
+hängen direkt an <span class="math inline">\(Q^{*}\)</span>
+beziehungsweise <span class="math inline">\(Q^{*} - B\)</span>. Wenn
+<span class="math inline">\(Q^{*}\)</span> um 100 W/m² verschoben ist,
+verschiebt sich auch die verfügbare Energie. Bei der Residualrechnung
+landet der Fehler direkt in <span class="math inline">\(LE\)</span>. Bei
+Priestley-Taylor wird die Aufteilung von <span class="math inline">\(H\)</span> und <span class="math inline">\(LE\)</span> skaliert. Bei Bowen wird eine ohnehin
+gradientenempfindliche Methode zusätzlich mit einer unsicheren
+Energiemenge gespeist. Bei Penman verschiebt sich der Energieanteil. Die
+Monin-Wärmeflüsse kommen primär aus Temperatur-, Feuchte-, Windprofil
+und Stabilitätsannahmen. <span class="math inline">\(Q^{*}\)</span> geht
+dort nicht in gleicher Weise als direkter Energieterm ein. Aber wir
+brauchen <span class="math inline">\(Q^{*} - B\)</span>, um zu prüfen,
+ob die Monin-Werte energetisch plausibel sind. Wenn <span class="math inline">\(Q^{*}\)</span> selbst unklar ist, kannst bei
+großen Monin-Werten nicht sauber entschieden werden: Ist der
+Monin-Ansatz instabil, sind die Gradienten problematisch, oder ist schon
+die Strahlungsbilanz als Vergleichsmaßstab uneindeutig?</p>
 </blockquote>
 </div>
 </div>
@@ -784,9 +779,9 @@ Wärmeleitungsproblem. In den Caldern-Daten wird <code>B</code> direkt
 als <code>heatflux_soil</code> verwendet.</p>
 <p><img src="figures/anchor_mesoklima_p47.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p50.png" class="r-plt" alt="" width="100%"></p>
 <p>Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 Q^{*} - B
-</annotation></semantics></math></p>
+\]</span></p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Theoriegröße Q*: gemessene Netto-Strahlung.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star_measured</span></span>
@@ -928,31 +923,31 @@ Oberfläche</td>
 Der fühlbare Wärmestrom wird aus einem Temperaturgradienten und einem
 vereinfachten aerodynamischen Widerstand geschätzt. Der latente
 Wärmestrom wird anschließend als Rest der Energiebilanz berechnet.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub><mo>=</mo><mi>ρ</mi><msub><mi>c</mi><mi>p</mi></msub><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><msub><mi>r</mi><mi>a</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>L_bulk</code> der manuell geschätzte fühlbare
 Wärmestrom in W/m², <code>rho</code> die Luftdichte in kg/m³,
 <code>c_p</code> die spezifische Wärmekapazität der Luft in J kg⁻¹ K⁻¹,
 <code>Delta T</code> die Temperaturdifferenz zwischen zwei Messhöhen in
 K und <code>r_a</code> der vereinfachte aerodynamische Widerstand in
 s/m.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi><mo>=</mo><msub><mi>T</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>−</mo><msub><mi>T</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 \Delta T = T_{2m} - T_{10m}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>T_2m</code> die Lufttemperatur in 2 m Höhe und
 <code>T_10m</code> die Lufttemperatur in 10 m Höhe. Positive Werte
 bedeuten hier, dass die untere Luftschicht wärmer ist als die obere.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>a</mi></msub><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mn>2</mn></msub><mi>/</mi><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>k</mi><mover><mi>u</mi><mo accent="true">‾</mo></mover></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>z_1</code> die untere Messhöhe, <code>z_2</code> die
 obere Messhöhe, <code>k</code> die von-Kármán-Konstante und
 <code>u_bar</code> eine mittlere Windgeschwindigkeit zwischen den
 Messhöhen.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>i</mi><mi>d</mi><mi>u</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 V_{residual} = Q^{*} - B - L_{bulk}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>V_residual</code> der residual berechnete latente
 Wärmestrom, <code>Q_star</code> die Netto-Strahlung, <code>B</code> der
 Bodenwärmestrom und <code>L_bulk</code> der zuvor berechnete fühlbare
@@ -967,25 +962,25 @@ direkt im Residuum.</p>
 <p>Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad.
 Der Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
 keine empfindliche Aufteilung über kleine Feuchtegradienten.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L + V = Q^{*} - B
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>L</code> der fühlbare Wärmestrom, <code>V</code> der
 latente Wärmestrom, <code>Q_star</code> die Netto-Strahlung und
 <code>B</code> der Bodenwärmestrom. Die rechte Seite ist die verfügbare
 Energie für turbulente Wärmeflüsse.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub><mo>≈</mo><msub><mi>α</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub><mfrac><mi mathvariant="normal">Δ</mi><mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 V_{PT} \approx \alpha_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{*} - B)
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>V_PT</code> der Priestley-Taylor-Wert für den
 latenten Wärmestrom, <code>alpha_PT</code> der
 Priestley-Taylor-Parameter, <code>Delta</code> die Steigung der
 Sättigungsdampfdruckkurve und <code>gamma</code> die psychrometrische
 Konstante. Der Faktor vor <code>Q_star - B</code> beschreibt, welcher
 Anteil der verfügbaren Energie in Verdunstung geht.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub><mo>=</mo><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><msub><mi>V</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L_{PT} = (Q^{*} - B) - V_{PT}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>L_PT</code> der verbleibende fühlbare Wärmestrom. Der
 Vorteil dieses Pfads ist die Bilanzbindung: Wenn <code>Q_star</code> und
 <code>B</code> korrekt gesetzt sind, bleibt die Summe aus
@@ -998,24 +993,24 @@ Vorteil dieses Pfads ist die Bilanzbindung: Wenn <code>Q_star</code> und
 <p>Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
 latenten Wärmestrom.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo>≈</mo><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><mrow><mi mathvariant="normal">Δ</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 \beta \approx \frac{\Delta T}{\Delta e}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>beta</code> das Bowen-Verhältnis,
 <code>Delta T</code> der Temperaturgradient zwischen zwei Messhöhen und
 <code>Delta e</code> der Dampfdruck- beziehungsweise Feuchtegradient
 zwischen denselben Messhöhen. In der vollständigen Form gehen weitere
 Konstanten und Einheitenkorrekturen ein; didaktisch entscheidend ist
 hier das Gradientenverhältnis.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>B</mi><mi>o</mi><mi>w</mi><mi>e</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mi>β</mi><mrow><mn>1</mn><mo>+</mo><mi>β</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L_{Bowen} = \frac{\beta}{1 + \beta} (Q^{*} - B)
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>L_Bowen</code> der fühlbare Wärmestrom nach Bowen.
 Der Anteil <code>beta / (1 + beta)</code> bestimmt, welcher Teil der
 verfügbaren Energie in fühlbare Wärme geht.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>B</mi><mi>o</mi><mi>w</mi><mi>e</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mi>β</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 V_{Bowen} = \frac{1}{1 + \beta} (Q^{*} - B)
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>V_Bowen</code> der latente Wärmestrom nach Bowen. Der
 Ansatz ist formal bilanzgebunden, aber gradientenempfindlich. Wenn
 <code>Delta e</code> sehr klein wird, das Vorzeichen wechselt oder
@@ -1031,23 +1026,23 @@ vertikale Profile von Wind, Temperatur und Feuchte sowie Rauigkeits- und
 Stabilitätsannahmen. Im Gegensatz zu Priestley-Taylor und Bowen ist
 dieser Pfad nicht primär eine direkte Partitionierung von
 <code>Q_star - B</code>.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mo>*</mo></msub><mo>=</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>u</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>,</mo><msub><mi>u</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub><mo>,</mo><msub><mi>z</mi><mn>1</mn></msub><mo>,</mo><msub><mi>z</mi><mn>2</mn></msub><mo>,</mo><msub><mi>z</mi><mn>0</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 u_* = f(u_{2m}, u_{10m}, z_1, z_2, z_0)
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>u_star</code> die Schubspannungsgeschwindigkeit,
 <code>u_2m</code> und <code>u_10m</code> sind Windgeschwindigkeiten in 2
 m und 10 m Höhe, <code>z_1</code> und <code>z_2</code> sind die
 Messhöhen und <code>z_0</code> ist die Rauigkeitslänge der
 Oberfläche.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mi>z</mi><msub><mi>L</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub></mfrac><mo>=</mo><mtext mathvariant="normal">Stabilitätsmaß</mtext></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 \frac{z}{L_{MO}} = \text{Stabilitätsmaß}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>z</code> eine Bezugshöhe und <code>L_MO</code> die
 Monin-Obukhov-Länge. Das Verhältnis beschreibt, ob die bodennahe Schicht
 stabil, neutral oder instabil geschichtet ist.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub><mo>,</mo><msub><mi>V</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub><mo>=</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>u</mi><mo>*</mo></msub><mo>,</mo><mi>T</mi><mo stretchy="false" form="prefix">(</mo><mi>z</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>q</mi><mo stretchy="false" form="prefix">(</mo><mi>z</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>z</mi><mi>/</mi><msub><mi>L</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L_{MO}, V_{MO} = f(u_*, T(z), q(z), z / L_{MO})
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei sind <code>L_MO</code> und <code>V_MO</code> die
 Monin-Obukhov-Flüsse für fühlbare und latente Wärme, <code>T(z)</code>
 das Temperaturprofil, <code>q(z)</code> das Feuchteprofil und
@@ -1064,17 +1059,18 @@ Werte müssen deshalb gegen <code>Q_star - B</code> geprüft werden.</p>
 verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
 Im aktuellen Paketpfad liefert Penman vor allem <code>V</code>, aber
 keinen eigenen fühlbaren Wärmestrom <code>L</code>.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>P</mi><mi>e</mi><mi>n</mi><mi>m</mi><mi>a</mi><mi>n</mi></mrow></msub><mo>≈</mo><mfrac><mi mathvariant="normal">Δ</mi><mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mfrac><mi>γ</mi><mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi></mrow></mfrac><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">
-V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) + \frac{\gamma}{\Delta + \gamma} E_a
-</annotation></semantics></math></p>
+<p><span class="math display">\[
+V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) +
+\frac{\gamma}{\Delta + \gamma} E_a
+\]</span></p>
 <p>Dabei ist <code>V_Penman</code> der latente Wärmestrom nach Penman,
 <code>Delta</code> die Steigung der Sättigungsdampfdruckkurve,
 <code>gamma</code> die psychrometrische Konstante,
 <code>Q_star - B</code> die verfügbare Energie und <code>E_a</code> der
 aerodynamische Verdunstungsterm.</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>u</mi><mo>,</mo><msub><mi>e</mi><mi>s</mi></msub><mo>−</mo><msub><mi>e</mi><mi>a</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 E_a = f(u, e_s - e_a)
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Dabei ist <code>u</code> die Windgeschwindigkeit, <code>e_s</code>
 der Sättigungsdampfdruck und <code>e_a</code> der aktuelle Dampfdruck
 der Luft. Die Differenz <code>e_s - e_a</code> ist der
@@ -1093,21 +1089,21 @@ Sie ist kein vollständiges Monin-Obukhov-Verfahren. Sie verwendet nur
 eine vereinfachte Bulk-Transfer-Rechnung für <code>L</code> und
 berechnet <code>V</code> als Residuum.</p>
 <p>Der Bulk-Teil lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub><mo>=</mo><mi>ρ</mi><msub><mi>c</mi><mi>p</mi></msub><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><msub><mi>r</mi><mi>a</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>mit:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi><mo>=</mo><msub><mi>T</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>−</mo><msub><mi>T</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 \Delta T = T_{2m} - T_{10m}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>und einem einfachen aerodynamischen Widerstand:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>a</mi></msub><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mn>2</mn></msub><mi>/</mi><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>k</mi><mover><mi>u</mi><mo accent="true">‾</mo></mover></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Der Residualteil lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>i</mi><mi>d</mi><mi>u</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 V_{residual} = Q^{*} - B - L_{bulk}
-</annotation></semantics></math></p>
+\]</span></p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Konstanten für die vereinfachte Bulk-Rechnung.</span></span>
 <span><span class="va">rho_air</span> <span class="op">&lt;-</span> <span class="fl">1.225</span></span>
@@ -1311,38 +1307,20 @@ instabilen Gradientenquotienten benötigt.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Der Priestley-Taylor-Pfad schließt
-in dieser Paketfassung die verfügbare Energie
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>.
-Dabei ist
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-die Netto-Strahlung und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-der Bodenwärmestrom. Die Summe aus fühlbarem Wärmestrom
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und latentem Wärmestrom
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-liegt deshalb auf derselben Energiebasis wie die manuelle
-Bilanzrechnung.</p>
+in dieser Paketfassung die verfügbare Energie <span class="math inline">\(Q^{*} - B\)</span>. Dabei ist <span class="math inline">\(Q^{*}\)</span> die Netto-Strahlung und <span class="math inline">\(B\)</span> der Bodenwärmestrom. Die Summe aus
+fühlbarem Wärmestrom <span class="math inline">\(L\)</span> und latentem
+Wärmestrom <span class="math inline">\(V\)</span> liegt deshalb auf
+derselben Energiebasis wie die manuelle Bilanzrechnung.</p>
 <p>Das ist der wichtigste didaktische Vorteil dieses Pfads: Die Methode
 bleibt direkt an die Energiebilanz gekoppelt. Sie erzeugt keine
 unabhängige Flussgröße aus einem instabilen Gradientenverhältnis,
 sondern partitioniert die verfügbare Energie. Priestley-Taylor ist damit
 nicht „wahrer“ als die anderen Methoden, aber als erster Paketpfad
 kontrollierbarer.</p>
-<p>Für die Interpretation heißt das: Wenn
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-oder
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-falsch definiert sind, wird auch Priestley-Taylor falsch skaliert. Der
-Fehler bleibt aber sichtbar, weil
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">L + V</annotation></semantics></math>
-weiterhin gegen
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-geprüft werden kann. Genau deshalb steht die Kontrolle von
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-vor diesem Methodenvergleich.</p>
+<p>Für die Interpretation heißt das: Wenn <span class="math inline">\(Q^{*}\)</span> oder <span class="math inline">\(B\)</span> falsch definiert sind, wird auch
+Priestley-Taylor falsch skaliert. Der Fehler bleibt aber sichtbar, weil
+<span class="math inline">\(L + V\)</span> weiterhin gegen <span class="math inline">\(Q^{*} - B\)</span> geprüft werden kann. Genau
+deshalb steht die Kontrolle von <span class="math inline">\(Q^{*}\)</span> und <span class="math inline">\(B\)</span> vor diesem Methodenvergleich.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Alle im Sammelworkflow verfügbaren Methoden berechnen.</span></span>
 <span><span class="co"># Bowen und Monin-Obukhov können Warnungen erzeugen, weil sie auf Gradienten</span></span>
@@ -1397,56 +1375,34 @@ vor diesem Methodenvergleich.</p>
 Tagesmittelwerte der berechneten Zeitreihen. Sie sind keine Rangliste
 der Methoden. Sie zeigen, wie stark sich die Rechenwege bei gleicher
 Datenbasis unterscheiden.</p>
-<p>Beim fühlbaren Wärmestrom
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+<p>Beim fühlbaren Wärmestrom <span class="math inline">\(L\)</span>
 fällt zuerst der Unterschied zwischen Priestley-Taylor und Monin-Obukhov
 auf. Die manuelle Bulk-Referenz liefert im Tagesmittel einen negativen
 Wert. Das entsteht, weil der einfache Bulk-Ansatz direkt am
 Temperaturgradienten zwischen 2 m und 10 m hängt. Wenn dieser Gradient
 über längere Phasen schwach, negativ oder nachts invers ist, schlägt das
-unmittelbar auf
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-durch. Die manuelle Referenz ist deshalb transparent, aber grob.</p>
+unmittelbar auf <span class="math inline">\(L\)</span> durch. Die
+manuelle Referenz ist deshalb transparent, aber grob.</p>
 <p>Priestley-Taylor liefert dagegen einen moderat positiven
-Tagesmittelwert für
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>.
-Das passt zur Rolle dieser Methode im Paket: Sie bleibt an die
-verfügbare Energie
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-gekoppelt und verteilt diese Energie parametrisiert auf
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>.</p>
+Tagesmittelwert für <span class="math inline">\(L\)</span>. Das passt
+zur Rolle dieser Methode im Paket: Sie bleibt an die verfügbare Energie
+<span class="math inline">\(Q^{*} - B\)</span> gekoppelt und verteilt
+diese Energie parametrisiert auf <span class="math inline">\(L\)</span>
+und <span class="math inline">\(V\)</span>.</p>
 <p>Bowen liegt im Tagesmittel ebenfalls nahe an der manuellen Referenz,
 aber das ist nicht automatisch ein Qualitätsmerkmal. Bowen kann einzelne
 extreme Werte erzeugen, die sich im Mittel teilweise wieder ausgleichen.
 Der Tagesmittelwert allein verdeckt also mögliche Instabilitäten.</p>
-<p>Monin-Obukhov ist der auffällige Fall. Der Tagesmittelwert von
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-ist mit etwa 401 W/m² extrem hoch. Das ist für einen Tagesmittelwert aus
-5-Minuten-Daten nicht als unkritisch plausibler Wärmefluss zu lesen. Es
-zeigt, dass dieser Pfad in diesem Datensatz stark auf Profil-, Wind- und
-Stabilitätsannahmen reagiert.</p>
-<p>Beim latenten Wärmestrom
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
+<p>Monin-Obukhov ist der auffällige Fall. Der Tagesmittelwert von <span class="math inline">\(L\)</span> ist mit etwa 401 W/m² extrem hoch. Das
+ist für einen Tagesmittelwert aus 5-Minuten-Daten nicht als unkritisch
+plausibler Wärmefluss zu lesen. Es zeigt, dass dieser Pfad in diesem
+Datensatz stark auf Profil-, Wind- und Stabilitätsannahmen reagiert.</p>
+<p>Beim latenten Wärmestrom <span class="math inline">\(V\)</span>
 liegen manuelles Residuum und Bowen im Tagesmittel relativ hoch,
 Priestley-Taylor und Penman niedriger, Monin-Obukhov nochmals niedriger.
 Auch hier gilt: Die Differenzen sind keine Messwahrheiten, sondern
 Folgen unterschiedlicher Rechenlogiken. Das manuelle Residuum enthält
-alle Fehler aus
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>,
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>.
-Penman liefert nur
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>,
-keinen eigenen
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>-Wert.
-Deshalb werden
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-getrennt tabelliert.</p>
+alle Fehler aus <span class="math inline">\(Q^{*}\)</span>, <span class="math inline">\(B\)</span> und <span class="math inline">\(L\)</span>. Penman liefert nur <span class="math inline">\(V\)</span>, keinen eigenen <span class="math inline">\(L\)</span>-Wert. Deshalb werden <span class="math inline">\(L\)</span> und <span class="math inline">\(V\)</span> getrennt tabelliert.</p>
 </div>
 <div class="section level3">
 <h3 id="einzelplots-der-paketmethoden">Einzelplots der Paketmethoden<a class="anchor" aria-label="anchor" href="#einzelplots-der-paketmethoden"></a>
@@ -1510,28 +1466,27 @@ verdecken.</p>
 <p>Die folgenden Ergebnisse sind nicht nur ein Methodenvergleich. Sie
 sind auch eine Konsistenzprüfung der Energiebilanz.</p>
 <p>Die Theorie schreibt die bodennahe Energiebilanz als:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>0</mn><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><mi>L</mi><mo>−</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 0 = Q^{*} - B - L - V
-</annotation></semantics></math></p>
+\]</span></p>
 <p>mit:</p>
 <ul>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>:
-Netto-Strahlung bzw. Strahlungsbilanz [W/m²]</li>
+<span class="math inline">\(Q^{*}\)</span>: Netto-Strahlung bzw.
+Strahlungsbilanz [W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>:
-Bodenwärmestrom [W/m²]</li>
+<span class="math inline">\(B\)</span>: Bodenwärmestrom [W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>:
-fühlbarer Wärmestrom [W/m²]</li>
+<span class="math inline">\(L\)</span>: fühlbarer Wärmestrom
+[W/m²]</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>:
-latenter Wärmestrom [W/m²]</li>
+<span class="math inline">\(V\)</span>: latenter Wärmestrom
+[W/m²]</li>
 </ul>
 <p>Für diese Vignette gilt als Plausibilitätsprüfung:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi><mo>≈</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 L + V \approx Q^{*} - B
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Diese Beziehung ist keine zusätzliche Methode. Sie prüft, ob die
 berechneten turbulenten Wärmeflüsse energetisch zur verfügbaren Energie
 passen. Gerade bei Bowen und Monin-Obukhov ist dieser Schritt notwendig,
@@ -1620,48 +1575,33 @@ Konsistenzprüfung. Sie vergleicht nicht nur Mittelwerte einzelner
 Flüsse, sondern prüft, ob die Summe aus fühlbarem und latentem
 Wärmestrom zur verfügbaren Energie passt.</p>
 <p>Die verfügbare Energie ist:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+<p><span class="math display">\[
 Q^{*} - B
-</annotation></semantics></math></p>
-<p>Dabei ist
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-die Netto-Strahlung und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-der Bodenwärmestrom. Wenn der Speicherterm
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>S</mi><annotation encoding="application/x-tex">S</annotation></semantics></math>
-nicht separat berechnet wird, muss für eine bilanzgebundene Methode
-näherungsweise gelten:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi><mo>≈</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+\]</span></p>
+<p>Dabei ist <span class="math inline">\(Q^{*}\)</span> die
+Netto-Strahlung und <span class="math inline">\(B\)</span> der
+Bodenwärmestrom. Wenn der Speicherterm <span class="math inline">\(S\)</span> nicht separat berechnet wird, muss für
+eine bilanzgebundene Methode näherungsweise gelten:</p>
+<p><span class="math display">\[
 L + V \approx Q^{*} - B
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Die manuelle Bulk-Residual-Referenz erfüllt diese Beziehung
-konstruktiv. Das ist erwartbar, weil
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-dort als Restgröße berechnet wird:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><mi>L</mi></mrow><annotation encoding="application/x-tex">
+konstruktiv. Das ist erwartbar, weil <span class="math inline">\(V\)</span> dort als Restgröße berechnet wird:</p>
+<p><span class="math display">\[
 V = Q^{*} - B - L
-</annotation></semantics></math></p>
+\]</span></p>
 <p>Priestley-Taylor schließt die Bilanz ebenfalls. Auch das ist
-erwartbar, weil dieser Paketpfad die verfügbare Energie
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-partitioniert.</p>
+erwartbar, weil dieser Paketpfad die verfügbare Energie <span class="math inline">\(Q^{*} - B\)</span> partitioniert.</p>
 <p>Bowen schließt in dieser Tabelle ebenfalls die Energiebilanz. Das
 bedeutet aber nicht, dass alle Bowen-Einzelwerte unproblematisch sind.
-Bowen kann die verfügbare Energie formal auf
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-aufteilen und trotzdem bei einzelnen Zeitpunkten extreme
-Partitionierungen erzeugen. Deshalb reicht die Konsistenzprüfung allein
-für Bowen nicht aus; die Extremwerte müssen zusätzlich geprüft
-werden.</p>
-<p>Monin-Obukhov ist der klare Bruch. Im Tagesmittel ergibt
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">L + V</annotation></semantics></math>
-etwa 453.5 W/m², während
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-nur etwa 108.7 W/m² beträgt. Die mittlere Abweichung liegt damit bei
-etwa 344.8 W/m². Die maximale absolute Abweichung ist mit über 11000
-W/m² extrem. Das ist kein kleiner Rundungs- oder Darstellungsfehler.</p>
+Bowen kann die verfügbare Energie formal auf <span class="math inline">\(L\)</span> und <span class="math inline">\(V\)</span> aufteilen und trotzdem bei einzelnen
+Zeitpunkten extreme Partitionierungen erzeugen. Deshalb reicht die
+Konsistenzprüfung allein für Bowen nicht aus; die Extremwerte müssen
+zusätzlich geprüft werden.</p>
+<p>Monin-Obukhov ist der klare Bruch. Im Tagesmittel ergibt <span class="math inline">\(L + V\)</span> etwa 453.5 W/m², während <span class="math inline">\(Q^{*} - B\)</span> nur etwa 108.7 W/m² beträgt.
+Die mittlere Abweichung liegt damit bei etwa 344.8 W/m². Die maximale
+absolute Abweichung ist mit über 11000 W/m² extrem. Das ist kein kleiner
+Rundungs- oder Darstellungsfehler.</p>
 <p>Die Konsequenz ist eindeutig: Der Monin-Obukhov-Pfad liefert in
 diesem Datensatz einzelne Werte, die energetisch nicht mehr plausibel
 zur verfügbaren Energie passen. Das kann an kleinen oder verrauschten
@@ -1795,23 +1735,15 @@ danach nur die stärksten Fälle.</p>
 <span><span class="co">#&gt; 710          698.2   3390.9</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Die Extremwertzählung zeigt, dass
 die auffälligen Werte nicht gleichmäßig über alle Methoden verteilt
-sind. Bowen erzeugt nur wenige Extremwerte: vier bei
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und vier bei
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>.
-Monin-Obukhov erzeugt dagegen 47 Extremwerte bei
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>,
-aber nur drei bei
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>.
-Das Problem liegt hier also vor allem im fühlbaren Wärmestrom des
-Monin-Obukhov-Pfads.</p>
+sind. Bowen erzeugt nur wenige Extremwerte: vier bei <span class="math inline">\(L\)</span> und vier bei <span class="math inline">\(V\)</span>. Monin-Obukhov erzeugt dagegen 47
+Extremwerte bei <span class="math inline">\(L\)</span>, aber nur drei
+bei <span class="math inline">\(V\)</span>. Das Problem liegt hier also
+vor allem im fühlbaren Wärmestrom des Monin-Obukhov-Pfads.</p>
 <p>Die Top-10-Tabelle bestätigt das. Alle stärksten Extremwerte stammen
-aus Monin-Obukhov und betreffen
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>.
+aus Monin-Obukhov und betreffen <span class="math inline">\(L\)</span>.
 Die Werte liegen zwischen etwa 3390 und 8550 W/m². Gleichzeitig liegt
-die verfügbare Energie
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-an diesen Zeitpunkten nur zwischen etwa 208 und 698 W/m². Diese
+die verfügbare Energie <span class="math inline">\(Q^{*} - B\)</span> an
+diesen Zeitpunkten nur zwischen etwa 208 und 698 W/m². Diese
 Größenordnung passt nicht zusammen. Ein fühlbarer Wärmestrom von
 mehreren tausend W/m² ist unter diesen Energierandbedingungen nicht
 plausibel.</p>
@@ -1829,15 +1761,14 @@ Verhältnis bilden oder ein Nenner der Energieaufteilung nahe null liegt.
 Die geringe Anzahl der Bowen-Extremwerte zeigt: Bowen ist in diesem
 Datensatz nicht durchgehend instabil, kann aber einzelne problematische
 5-Minuten-Zeitschritte erzeugen.</p>
-<p>Für Monin-Obukhov ist der Befund härter. Die hohe Zahl extremer
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>-Werte
-und die sehr großen Top-Werte sprechen dafür, dass dieser Pfad mit den
-vorliegenden 5-Minuten-Profilgrößen nicht robust läuft. Das kann ein
-Datenproblem sein, ein Gradientenproblem, ein Stabilitätsproblem oder
-eine Kombination daraus. Mit diesem Datensatz sollte Monin-Obukhov
-deshalb nicht als belastbarer Ergebnisfluss verwendet werden, sondern
-nur als Diagnose dafür, wie empfindlich ein komplexerer Profilansatz
-reagieren kann.</p>
+<p>Für Monin-Obukhov ist der Befund härter. Die hohe Zahl extremer <span class="math inline">\(L\)</span>-Werte und die sehr großen Top-Werte
+sprechen dafür, dass dieser Pfad mit den vorliegenden
+5-Minuten-Profilgrößen nicht robust läuft. Das kann ein Datenproblem
+sein, ein Gradientenproblem, ein Stabilitätsproblem oder eine
+Kombination daraus. Mit diesem Datensatz sollte Monin-Obukhov deshalb
+nicht als belastbarer Ergebnisfluss verwendet werden, sondern nur als
+Diagnose dafür, wie empfindlich ein komplexerer Profilansatz reagieren
+kann.</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Zeitreihen der Abweichung von Q_star - B darstellen.</span></span>
 <span><span class="co"># Werte nahe null bedeuten: L + V passt zur verfügbaren Energie.</span></span>
@@ -1896,14 +1827,12 @@ reagieren kann.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Die Nulllinie zeigt energetische
-Konsistenz mit
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>.
-Die manuelle Bulk-Residual-Referenz liegt erwartungsgemäß nahe an dieser
-Linie, weil
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-als Rest berechnet wurde. Priestley-Taylor sollte ebenfalls eng an der
-verfügbaren Energie liegen. Bowen und Monin-Obukhov können deutlichere
-Ausschläge zeigen. Diese Ausschläge sind Hinweise auf Gradienten- oder
+Konsistenz mit <span class="math inline">\(Q^{*} - B\)</span>. Die
+manuelle Bulk-Residual-Referenz liegt erwartungsgemäß nahe an dieser
+Linie, weil <span class="math inline">\(V\)</span> als Rest berechnet
+wurde. Priestley-Taylor sollte ebenfalls eng an der verfügbaren Energie
+liegen. Bowen und Monin-Obukhov können deutlichere Ausschläge zeigen.
+Diese Ausschläge sind Hinweise auf Gradienten- oder
 Stabilitätsempfindlichkeit, nicht automatisch auf reale
 mikrometeorologische Ereignisse.</p>
 </div>
@@ -1918,15 +1847,10 @@ Deshalb gilt:</p>
 <li>Die manuelle Bulk-Residual-Referenz ist der transparente
 Kontrollweg.</li>
 <li>Priestley-Taylor ist der stabile erste Paketpfad.</li>
-<li>Penman ist ein zusätzlicher Vergleich für
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>,
-aber liefert hier kein eigenes
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>.</li>
+<li>Penman ist ein zusätzlicher Vergleich für <span class="math inline">\(V\)</span>, aber liefert hier kein eigenes <span class="math inline">\(L\)</span>.</li>
 <li>Bowen und Monin-Obukhov sind Diagnosemethoden, keine unkommentierte
 Einstiegslösung.</li>
-<li>Große Ausschläge müssen immer gegen Messdaten, Gradienten und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-geprüft werden.</li>
+<li>Große Ausschläge müssen immer gegen Messdaten, Gradienten und <span class="math inline">\(Q^{*} - B\)</span> geprüft werden.</li>
 </ul>
 <p>Komplexere Methoden liefern nicht automatisch robustere Ergebnisse.
 Sie machen zusätzliche Annahmen sichtbar. Genau deshalb werden die

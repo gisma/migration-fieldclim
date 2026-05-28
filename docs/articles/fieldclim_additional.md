@@ -3,7 +3,7 @@
 ## Ziel dieser Vignette
 
 Diese Vignette ergänzt die Energiebilanz-Vignette. Dort steht der
-vollständige Caldern-Workflow mit $`Q^{*}`$, $`B`$, $`L`$ und $`V`$ im
+vollständige Caldern-Workflow mit \\Q^{\*}\\, \\B\\, \\L\\ und \\V\\ im
 Zentrum. Diese Seite ordnet die weiteren Paketmöglichkeiten als
 eigenständige Use Cases.
 
@@ -203,42 +203,36 @@ Berechnungsschritte trägt.
 ## Use Case 1: Strahlungsreihen prüfen und reparaturfähig machen
 
 Strahlungsreihen sind oft der wichtigste Eingang für
-Energiebilanzrechnungen. Bevor $`Q^{*}`$ als Netto-Strahlung verwendet
+Energiebilanzrechnungen. Bevor \\Q^{\*}\\ als Netto-Strahlung verwendet
 wird, müssen die Komponenten geprüft werden.
 
 Die kurzwellige Bilanz lautet:
 
-``` math
-K^{*} = K_{\downarrow} - K_{\uparrow}
-```
+\\ K^{\*} = K\_{\downarrow} - K\_{\uparrow} \\
 
 mit:
 
-- $`K^{*}`$: kurzwellige Bilanz \[W/m²\]
-- $`K_{\downarrow}`$: einfallende kurzwellige Strahlung \[W/m²\]
-- $`K_{\uparrow}`$: reflektierte kurzwellige Strahlung \[W/m²\]
+- \\K^{\*}\\: kurzwellige Bilanz \[W/m²\]
+- \\K\_{\downarrow}\\: einfallende kurzwellige Strahlung \[W/m²\]
+- \\K\_{\uparrow}\\: reflektierte kurzwellige Strahlung \[W/m²\]
 
 Die langwellige Bilanz wird hier in derselben Richtung geschrieben:
 
-``` math
-L^{*} = L_{\downarrow} - L_{\uparrow}
-```
+\\ L^{\*} = L\_{\downarrow} - L\_{\uparrow} \\
 
 mit:
 
-- $`L^{*}`$: langwellige Bilanz \[W/m²\]
-- $`L_{\downarrow}`$: langwellige Gegenstrahlung \[W/m²\]
-- $`L_{\uparrow}`$: langwellige Ausstrahlung der Oberfläche \[W/m²\]
+- \\L^{\*}\\: langwellige Bilanz \[W/m²\]
+- \\L\_{\downarrow}\\: langwellige Gegenstrahlung \[W/m²\]
+- \\L\_{\uparrow}\\: langwellige Ausstrahlung der Oberfläche \[W/m²\]
 
 Die Netto-Strahlung ergibt sich theoretisch als:
 
-``` math
-Q^{*} = K^{*} + L^{*}
-```
+\\ Q^{\*} = K^{\*} + L^{\*} \\
 
 mit:
 
-- $`Q^{*}`$: Netto-Strahlung bzw. Strahlungsbilanz \[W/m²\]
+- \\Q^{\*}\\: Netto-Strahlung bzw. Strahlungsbilanz \[W/m²\]
 
 ### 1.1 Komponenten berechnen und mit gespeicherten Nettospalten vergleichen
 
@@ -390,7 +384,7 @@ radiation_decision
 **Interpretation.** Das ist der eigentliche „Fix“: nicht Werte still
 überschreiben, sondern eine Arbeitsreihe festlegen und die Alternativen
 als Diagnosegrößen behalten. Wenn später Wärmeflüsse berechnet werden,
-ist transparent, welche Version von $`Q^{*}`$ verwendet wurde.
+ist transparent, welche Version von \\Q^{\*}\\ verwendet wurde.
 
 ### 1.4 Zeitversatz prüfen
 
@@ -615,19 +609,17 @@ realistische Größenordnungen liefern.
 Der Bodenwärmestrom kann gemessen oder aus Temperaturgradient, Tiefe,
 Feuchte und Bodenart geschätzt werden. Der Paketworkflow lautet:
 
-``` math
-B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2}
-```
+\\ B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2} \\
 
 mit:
 
-- $`B`$: Bodenwärmestrom \[W/m²\]
-- $`\lambda_s`$: Wärmeleitfähigkeit des Bodens \[W/(m K)\]
-- $`T_1`$: Bodentemperatur in Tiefe $`z_1`$ \[°C oder K\]
-- $`T_2`$: Temperatur an zweiter Tiefe bzw. Oberfläche $`z_2`$ \[°C oder
+- \\B\\: Bodenwärmestrom \[W/m²\]
+- \\\lambda_s\\: Wärmeleitfähigkeit des Bodens \[W/(m K)\]
+- \\T_1\\: Bodentemperatur in Tiefe \\z_1\\ \[°C oder K\]
+- \\T_2\\: Temperatur an zweiter Tiefe bzw. Oberfläche \\z_2\\ \[°C oder
   K\]
-- $`z_1`$: Tiefe des ersten Sensors \[m\]
-- $`z_2`$: Tiefe der zweiten Referenz \[m\]
+- \\z_1\\: Tiefe des ersten Sensors \[m\]
+- \\z_2\\: Tiefe der zweiten Referenz \[m\]
 
 ``` r
 
@@ -1051,7 +1043,7 @@ Diese Vignette ergänzt den Energiebilanz-Workflow um weitere
 Paket-Use-Cases. Die zentrale Logik lautet:
 
 1.  `weather_station` ist das Paket-Arbeitsobjekt.
-2.  Strahlungsreihen müssen geprüft werden, bevor $`Q^{*}`$ verwendet
+2.  Strahlungsreihen müssen geprüft werden, bevor \\Q^{\*}\\ verwendet
     wird.
 3.  Strahlung kann gemessen, modelliert oder als Plausibilitätskontrolle
     berechnet werden.

@@ -51,9 +51,7 @@ Erklärungsteil bei. Erst an der Schnittstelle zum Datensatz und zu
 
 Die Arbeitsbilanz lautet in der Theorie-Notation:
 
-``` math
-Q^{*} = B + L + V + S
-```
+\\ Q^{\*} = B + L + V + S \\
 
 Der Speicherterm `S` wird in diesem Lehrdatensatz nicht separat
 berechnet. Das bedeutet nicht, dass Speicherung nicht existiert. Es
@@ -62,21 +60,15 @@ Wärmespeicherung in Luftvolumen, Vegetation, Wasserfilmen,
 oberflächennahem Boden und Messumgebung erlaubt. Für die transparente
 Referenzrechnung wird deshalb gesetzt:
 
-``` math
-S \approx 0
-```
+\\ S \approx 0 \\
 
 Damit wird:
 
-``` math
-Q^{*} - B = L + V
-```
+\\ Q^{\*} - B = L + V \\
 
 und für die Residualrechnung:
 
-``` math
-V = Q^{*} - B - L
-```
+\\ V = Q^{\*} - B - L \\
 
 Der Ausdruck **Kontrolle aus Einzelkomponenten** ersetzt hier das
 missverständliche Wort „Rekonstruktion“. Gemeint ist kein neues
@@ -186,15 +178,11 @@ ausgehender zu einfallender kurzwelliger Strahlung.
 
 Die kurzwellige Bilanz lautet:
 
-``` math
-K^{*} = K_{down} - K_{up}
-```
+\\ K^{\*} = K\_{down} - K\_{up} \\
 
 Die Albedo lautet:
 
-``` math
-\alpha = \frac{K_{up}}{K_{down}}
-```
+\\ \alpha = \frac{K\_{up}}{K\_{down}} \\
 
 ``` r
 
@@ -299,13 +287,9 @@ Bilanz.
 
 ![](figures/anchor_mesoklima_p39.png)![](figures/anchor_mesoklima_p41.png)
 
-``` math
-L^{*} = L_{down} - L_{up}
-```
+\\ L^{\*} = L\_{down} - L\_{up} \\
 
-``` math
-Q^{*} = K^{*} + L^{*}
-```
+\\ Q^{\*} = K^{\*} + L^{\*} \\
 
 ``` r
 
@@ -360,9 +344,7 @@ Die Netto-Strahlung `Q*` ist der zentrale Eingang in die Energiebilanz.
 In der Theorie steht `Q*` als Strahlungsbilanz auf der linken Seite der
 bodennahen Energiebilanz:
 
-``` math
-0 = Q^{*} - B - L - V
-```
+\\ 0 = Q^{\*} - B - L - V \\
 
 In dieser Vignette entspricht:
 
@@ -376,17 +358,11 @@ In dieser Vignette entspricht:
 Theoretisch kann `Q*` aus kurzwelligen und langwelligen
 Einzelkomponenten gebildet werden:
 
-``` math
-K^{*} = K_\downarrow - K_\uparrow
-```
+\\ K^{\*} = K\_\downarrow - K\_\uparrow \\
 
-``` math
-L^{*} = L_\downarrow - L_\uparrow
-```
+\\ L^{\*} = L\_\downarrow - L\_\uparrow \\
 
-``` math
-Q^{*} = K^{*} + L^{*}
-```
+\\ Q^{\*} = K^{\*} + L^{\*} \\
 
 Im Datensatz liegt aber zusätzlich bereits eine Spalte `rad_net` vor.
 Deshalb wird hier nicht einfach eine neue Netto-Strahlung
@@ -485,9 +461,7 @@ Prüfung als identische Größe zu behandeln.
 Für die weitere Energiebilanz ist das entscheidend. `Q*` bestimmt die
 verfügbare Energie:
 
-``` math
-Q^{*} - B
-```
+\\ Q^{\*} - B \\
 
 Wenn `Q*` unterschiedlich definiert oder unterschiedlich verarbeitet
 ist, ändern sich danach alle Ansätze, die direkt mit verfügbarer Energie
@@ -516,9 +490,7 @@ derselben Verarbeitungsstufe wären, müssten die Punkte nahe an der
 1:1-Linie liegen. Hier liegt die Punktwolke systematisch oberhalb der
 1:1-Linie. Das heißt:
 
-``` math
-K^{*} + L^{*} > rad\_net
-```
+\\ K^{\*} + L^{\*} \> rad\\net \\
 
 Die Abweichung ist also nicht zufällig um null verteilt. Damit ist die
 Komponentensumme keine unproblematische Ersatzgröße für `rad_net`.
@@ -577,20 +549,20 @@ andere Definition oder Verarbeitung der Strahlungskomponenten.
 > stammen können.
 
 > Priestley-Taylor, Bowen, Penman und die manuelle Residualrechnung
-> hängen direkt an $`Q^{*}`$ beziehungsweise $`Q^{*} - B`$. Wenn
-> $`Q^{*}`$ um 100 W/m² verschoben ist, verschiebt sich auch die
+> hängen direkt an \\Q^{\*}\\ beziehungsweise \\Q^{\*} - B\\. Wenn
+> \\Q^{\*}\\ um 100 W/m² verschoben ist, verschiebt sich auch die
 > verfügbare Energie. Bei der Residualrechnung landet der Fehler direkt
-> in $`LE`$. Bei Priestley-Taylor wird die Aufteilung von $`H`$ und
-> $`LE`$ skaliert. Bei Bowen wird eine ohnehin gradientenempfindliche
+> in \\LE\\. Bei Priestley-Taylor wird die Aufteilung von \\H\\ und
+> \\LE\\ skaliert. Bei Bowen wird eine ohnehin gradientenempfindliche
 > Methode zusätzlich mit einer unsicheren Energiemenge gespeist. Bei
 > Penman verschiebt sich der Energieanteil. Die Monin-Wärmeflüsse kommen
 > primär aus Temperatur-, Feuchte-, Windprofil und Stabilitätsannahmen.
-> $`Q^{*}`$ geht dort nicht in gleicher Weise als direkter Energieterm
-> ein. Aber wir brauchen $`Q^{*} - B`$, um zu prüfen, ob die Monin-Werte
-> energetisch plausibel sind. Wenn $`Q^{*}`$ selbst unklar ist, kannst
-> bei großen Monin-Werten nicht sauber entschieden werden: Ist der
-> Monin-Ansatz instabil, sind die Gradienten problematisch, oder ist
-> schon die Strahlungsbilanz als Vergleichsmaßstab uneindeutig?
+> \\Q^{\*}\\ geht dort nicht in gleicher Weise als direkter Energieterm
+> ein. Aber wir brauchen \\Q^{\*} - B\\, um zu prüfen, ob die
+> Monin-Werte energetisch plausibel sind. Wenn \\Q^{\*}\\ selbst unklar
+> ist, kannst bei großen Monin-Werten nicht sauber entschieden werden:
+> Ist der Monin-Ansatz instabil, sind die Gradienten problematisch, oder
+> ist schon die Strahlungsbilanz als Vergleichsmaßstab uneindeutig?
 
 ## Use Case 4: Bodenwärmestrom und verfügbare Energie
 
@@ -602,9 +574,7 @@ Wärmeleitungsproblem. In den Caldern-Daten wird `B` direkt als
 
 Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:
 
-``` math
-Q^{*} - B
-```
+\\ Q^{\*} - B \\
 
 ``` r
 
@@ -705,9 +675,7 @@ fühlbare Wärmestrom wird aus einem Temperaturgradienten und einem
 vereinfachten aerodynamischen Widerstand geschätzt. Der latente
 Wärmestrom wird anschließend als Rest der Energiebilanz berechnet.
 
-``` math
-L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
-```
+\\ L\_{bulk} = \rho c_p \frac{\Delta T}{r_a} \\
 
 Dabei ist `L_bulk` der manuell geschätzte fühlbare Wärmestrom in W/m²,
 `rho` die Luftdichte in kg/m³, `c_p` die spezifische Wärmekapazität der
@@ -715,25 +683,19 @@ Luft in J kg⁻¹ K⁻¹, `Delta T` die Temperaturdifferenz zwischen zwei
 Messhöhen in K und `r_a` der vereinfachte aerodynamische Widerstand in
 s/m.
 
-``` math
-\Delta T = T_{2m} - T_{10m}
-```
+\\ \Delta T = T\_{2m} - T\_{10m} \\
 
 Dabei ist `T_2m` die Lufttemperatur in 2 m Höhe und `T_10m` die
 Lufttemperatur in 10 m Höhe. Positive Werte bedeuten hier, dass die
 untere Luftschicht wärmer ist als die obere.
 
-``` math
-r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
-```
+\\ r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}} \\
 
 Dabei ist `z_1` die untere Messhöhe, `z_2` die obere Messhöhe, `k` die
 von-Kármán-Konstante und `u_bar` eine mittlere Windgeschwindigkeit
 zwischen den Messhöhen.
 
-``` math
-V_{residual} = Q^{*} - B - L_{bulk}
-```
+\\ V\_{residual} = Q^{\*} - B - L\_{bulk} \\
 
 Dabei ist `V_residual` der residual berechnete latente Wärmestrom,
 `Q_star` die Netto-Strahlung, `B` der Bodenwärmestrom und `L_bulk` der
@@ -749,17 +711,14 @@ Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad. Der
 Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
 keine empfindliche Aufteilung über kleine Feuchtegradienten.
 
-``` math
-L + V = Q^{*} - B
-```
+\\ L + V = Q^{\*} - B \\
 
 Dabei ist `L` der fühlbare Wärmestrom, `V` der latente Wärmestrom,
 `Q_star` die Netto-Strahlung und `B` der Bodenwärmestrom. Die rechte
 Seite ist die verfügbare Energie für turbulente Wärmeflüsse.
 
-``` math
-V_{PT} \approx \alpha_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{*} - B)
-```
+\\ V\_{PT} \approx \alpha\_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{\*} -
+B) \\
 
 Dabei ist `V_PT` der Priestley-Taylor-Wert für den latenten Wärmestrom,
 `alpha_PT` der Priestley-Taylor-Parameter, `Delta` die Steigung der
@@ -767,9 +726,7 @@ Sättigungsdampfdruckkurve und `gamma` die psychrometrische Konstante.
 Der Faktor vor `Q_star - B` beschreibt, welcher Anteil der verfügbaren
 Energie in Verdunstung geht.
 
-``` math
-L_{PT} = (Q^{*} - B) - V_{PT}
-```
+\\ L\_{PT} = (Q^{\*} - B) - V\_{PT} \\
 
 Dabei ist `L_PT` der verbleibende fühlbare Wärmestrom. Der Vorteil
 dieses Pfads ist die Bilanzbindung: Wenn `Q_star` und `B` korrekt
@@ -784,9 +741,7 @@ Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
 latenten Wärmestrom.
 
-``` math
-\beta \approx \frac{\Delta T}{\Delta e}
-```
+\\ \beta \approx \frac{\Delta T}{\Delta e} \\
 
 Dabei ist `beta` das Bowen-Verhältnis, `Delta T` der Temperaturgradient
 zwischen zwei Messhöhen und `Delta e` der Dampfdruck- beziehungsweise
@@ -794,17 +749,13 @@ Feuchtegradient zwischen denselben Messhöhen. In der vollständigen Form
 gehen weitere Konstanten und Einheitenkorrekturen ein; didaktisch
 entscheidend ist hier das Gradientenverhältnis.
 
-``` math
-L_{Bowen} = \frac{\beta}{1 + \beta} (Q^{*} - B)
-```
+\\ L\_{Bowen} = \frac{\beta}{1 + \beta} (Q^{\*} - B) \\
 
 Dabei ist `L_Bowen` der fühlbare Wärmestrom nach Bowen. Der Anteil
 `beta / (1 + beta)` bestimmt, welcher Teil der verfügbaren Energie in
 fühlbare Wärme geht.
 
-``` math
-V_{Bowen} = \frac{1}{1 + \beta} (Q^{*} - B)
-```
+\\ V\_{Bowen} = \frac{1}{1 + \beta} (Q^{\*} - B) \\
 
 Dabei ist `V_Bowen` der latente Wärmestrom nach Bowen. Der Ansatz ist
 formal bilanzgebunden, aber gradientenempfindlich. Wenn `Delta e` sehr
@@ -820,25 +771,19 @@ Profile von Wind, Temperatur und Feuchte sowie Rauigkeits- und
 Stabilitätsannahmen. Im Gegensatz zu Priestley-Taylor und Bowen ist
 dieser Pfad nicht primär eine direkte Partitionierung von `Q_star - B`.
 
-``` math
-u_* = f(u_{2m}, u_{10m}, z_1, z_2, z_0)
-```
+\\ u\_\* = f(u\_{2m}, u\_{10m}, z_1, z_2, z_0) \\
 
 Dabei ist `u_star` die Schubspannungsgeschwindigkeit, `u_2m` und `u_10m`
 sind Windgeschwindigkeiten in 2 m und 10 m Höhe, `z_1` und `z_2` sind
 die Messhöhen und `z_0` ist die Rauigkeitslänge der Oberfläche.
 
-``` math
-\frac{z}{L_{MO}} = \text{Stabilitätsmaß}
-```
+\\ \frac{z}{L\_{MO}} = \text{Stabilitätsmaß} \\
 
 Dabei ist `z` eine Bezugshöhe und `L_MO` die Monin-Obukhov-Länge. Das
 Verhältnis beschreibt, ob die bodennahe Schicht stabil, neutral oder
 instabil geschichtet ist.
 
-``` math
-L_{MO}, V_{MO} = f(u_*, T(z), q(z), z / L_{MO})
-```
+\\ L\_{MO}, V\_{MO} = f(u\_\*, T(z), q(z), z / L\_{MO}) \\
 
 Dabei sind `L_MO` und `V_MO` die Monin-Obukhov-Flüsse für fühlbare und
 latente Wärme, `T(z)` das Temperaturprofil, `q(z)` das Feuchteprofil und
@@ -856,18 +801,15 @@ verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
 Im aktuellen Paketpfad liefert Penman vor allem `V`, aber keinen eigenen
 fühlbaren Wärmestrom `L`.
 
-``` math
-V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) + \frac{\gamma}{\Delta + \gamma} E_a
-```
+\\ V\_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{\*} - B) +
+\frac{\gamma}{\Delta + \gamma} E_a \\
 
 Dabei ist `V_Penman` der latente Wärmestrom nach Penman, `Delta` die
 Steigung der Sättigungsdampfdruckkurve, `gamma` die psychrometrische
 Konstante, `Q_star - B` die verfügbare Energie und `E_a` der
 aerodynamische Verdunstungsterm.
 
-``` math
-E_a = f(u, e_s - e_a)
-```
+\\ E_a = f(u, e_s - e_a) \\
 
 Dabei ist `u` die Windgeschwindigkeit, `e_s` der Sättigungsdampfdruck
 und `e_a` der aktuelle Dampfdruck der Luft. Die Differenz `e_s - e_a`
@@ -885,27 +827,19 @@ Residuum.
 
 Der Bulk-Teil lautet:
 
-``` math
-L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
-```
+\\ L\_{bulk} = \rho c_p \frac{\Delta T}{r_a} \\
 
 mit:
 
-``` math
-\Delta T = T_{2m} - T_{10m}
-```
+\\ \Delta T = T\_{2m} - T\_{10m} \\
 
 und einem einfachen aerodynamischen Widerstand:
 
-``` math
-r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
-```
+\\ r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}} \\
 
 Der Residualteil lautet:
 
-``` math
-V_{residual} = Q^{*} - B - L_{bulk}
-```
+\\ V\_{residual} = Q^{\*} - B - L\_{bulk} \\
 
 ``` r
 
@@ -1139,9 +1073,9 @@ par(op)
 ```
 
 **Interpretation.** Der Priestley-Taylor-Pfad schließt in dieser
-Paketfassung die verfügbare Energie $`Q^{*} - B`$. Dabei ist $`Q^{*}`$
-die Netto-Strahlung und $`B`$ der Bodenwärmestrom. Die Summe aus
-fühlbarem Wärmestrom $`L`$ und latentem Wärmestrom $`V`$ liegt deshalb
+Paketfassung die verfügbare Energie \\Q^{\*} - B\\. Dabei ist \\Q^{\*}\\
+die Netto-Strahlung und \\B\\ der Bodenwärmestrom. Die Summe aus
+fühlbarem Wärmestrom \\L\\ und latentem Wärmestrom \\V\\ liegt deshalb
 auf derselben Energiebasis wie die manuelle Bilanzrechnung.
 
 Das ist der wichtigste didaktische Vorteil dieses Pfads: Die Methode
@@ -1151,11 +1085,11 @@ sondern partitioniert die verfügbare Energie. Priestley-Taylor ist damit
 nicht „wahrer“ als die anderen Methoden, aber als erster Paketpfad
 kontrollierbarer.
 
-Für die Interpretation heißt das: Wenn $`Q^{*}`$ oder $`B`$ falsch
+Für die Interpretation heißt das: Wenn \\Q^{\*}\\ oder \\B\\ falsch
 definiert sind, wird auch Priestley-Taylor falsch skaliert. Der Fehler
-bleibt aber sichtbar, weil $`L + V`$ weiterhin gegen $`Q^{*} - B`$
-geprüft werden kann. Genau deshalb steht die Kontrolle von $`Q^{*}`$ und
-$`B`$ vor diesem Methodenvergleich.
+bleibt aber sichtbar, weil \\L + V\\ weiterhin gegen \\Q^{\*} - B\\
+geprüft werden kann. Genau deshalb steht die Kontrolle von \\Q^{\*}\\
+und \\B\\ vor diesem Methodenvergleich.
 
 ``` r
 
@@ -1218,37 +1152,37 @@ berechneten Zeitreihen. Sie sind keine Rangliste der Methoden. Sie
 zeigen, wie stark sich die Rechenwege bei gleicher Datenbasis
 unterscheiden.
 
-Beim fühlbaren Wärmestrom $`L`$ fällt zuerst der Unterschied zwischen
+Beim fühlbaren Wärmestrom \\L\\ fällt zuerst der Unterschied zwischen
 Priestley-Taylor und Monin-Obukhov auf. Die manuelle Bulk-Referenz
 liefert im Tagesmittel einen negativen Wert. Das entsteht, weil der
 einfache Bulk-Ansatz direkt am Temperaturgradienten zwischen 2 m und 10
 m hängt. Wenn dieser Gradient über längere Phasen schwach, negativ oder
-nachts invers ist, schlägt das unmittelbar auf $`L`$ durch. Die manuelle
+nachts invers ist, schlägt das unmittelbar auf \\L\\ durch. Die manuelle
 Referenz ist deshalb transparent, aber grob.
 
 Priestley-Taylor liefert dagegen einen moderat positiven Tagesmittelwert
-für $`L`$. Das passt zur Rolle dieser Methode im Paket: Sie bleibt an
-die verfügbare Energie $`Q^{*} - B`$ gekoppelt und verteilt diese
-Energie parametrisiert auf $`L`$ und $`V`$.
+für \\L\\. Das passt zur Rolle dieser Methode im Paket: Sie bleibt an
+die verfügbare Energie \\Q^{\*} - B\\ gekoppelt und verteilt diese
+Energie parametrisiert auf \\L\\ und \\V\\.
 
 Bowen liegt im Tagesmittel ebenfalls nahe an der manuellen Referenz,
 aber das ist nicht automatisch ein Qualitätsmerkmal. Bowen kann einzelne
 extreme Werte erzeugen, die sich im Mittel teilweise wieder ausgleichen.
 Der Tagesmittelwert allein verdeckt also mögliche Instabilitäten.
 
-Monin-Obukhov ist der auffällige Fall. Der Tagesmittelwert von $`L`$ ist
+Monin-Obukhov ist der auffällige Fall. Der Tagesmittelwert von \\L\\ ist
 mit etwa 401 W/m² extrem hoch. Das ist für einen Tagesmittelwert aus
 5-Minuten-Daten nicht als unkritisch plausibler Wärmefluss zu lesen. Es
 zeigt, dass dieser Pfad in diesem Datensatz stark auf Profil-, Wind- und
 Stabilitätsannahmen reagiert.
 
-Beim latenten Wärmestrom $`V`$ liegen manuelles Residuum und Bowen im
+Beim latenten Wärmestrom \\V\\ liegen manuelles Residuum und Bowen im
 Tagesmittel relativ hoch, Priestley-Taylor und Penman niedriger,
 Monin-Obukhov nochmals niedriger. Auch hier gilt: Die Differenzen sind
 keine Messwahrheiten, sondern Folgen unterschiedlicher Rechenlogiken.
-Das manuelle Residuum enthält alle Fehler aus $`Q^{*}`$, $`B`$ und
-$`L`$. Penman liefert nur $`V`$, keinen eigenen $`L`$-Wert. Deshalb
-werden $`L`$ und $`V`$ getrennt tabelliert.
+Das manuelle Residuum enthält alle Fehler aus \\Q^{\*}\\, \\B\\ und
+\\L\\. Penman liefert nur \\V\\, keinen eigenen \\L\\-Wert. Deshalb
+werden \\L\\ und \\V\\ getrennt tabelliert.
 
 ### Einzelplots der Paketmethoden
 
@@ -1325,22 +1259,18 @@ auch eine Konsistenzprüfung der Energiebilanz.
 
 Die Theorie schreibt die bodennahe Energiebilanz als:
 
-``` math
-0 = Q^{*} - B - L - V
-```
+\\ 0 = Q^{\*} - B - L - V \\
 
 mit:
 
-- $`Q^{*}`$: Netto-Strahlung bzw. Strahlungsbilanz \[W/m²\]
-- $`B`$: Bodenwärmestrom \[W/m²\]
-- $`L`$: fühlbarer Wärmestrom \[W/m²\]
-- $`V`$: latenter Wärmestrom \[W/m²\]
+- \\Q^{\*}\\: Netto-Strahlung bzw. Strahlungsbilanz \[W/m²\]
+- \\B\\: Bodenwärmestrom \[W/m²\]
+- \\L\\: fühlbarer Wärmestrom \[W/m²\]
+- \\V\\: latenter Wärmestrom \[W/m²\]
 
 Für diese Vignette gilt als Plausibilitätsprüfung:
 
-``` math
-L + V \approx Q^{*} - B
-```
+\\ L + V \approx Q^{\*} - B \\
 
 Diese Beziehung ist keine zusätzliche Methode. Sie prüft, ob die
 berechneten turbulenten Wärmeflüsse energetisch zur verfügbaren Energie
@@ -1436,38 +1366,32 @@ passt.
 
 Die verfügbare Energie ist:
 
-``` math
-Q^{*} - B
-```
+\\ Q^{\*} - B \\
 
-Dabei ist $`Q^{*}`$ die Netto-Strahlung und $`B`$ der Bodenwärmestrom.
-Wenn der Speicherterm $`S`$ nicht separat berechnet wird, muss für eine
+Dabei ist \\Q^{\*}\\ die Netto-Strahlung und \\B\\ der Bodenwärmestrom.
+Wenn der Speicherterm \\S\\ nicht separat berechnet wird, muss für eine
 bilanzgebundene Methode näherungsweise gelten:
 
-``` math
-L + V \approx Q^{*} - B
-```
+\\ L + V \approx Q^{\*} - B \\
 
 Die manuelle Bulk-Residual-Referenz erfüllt diese Beziehung konstruktiv.
-Das ist erwartbar, weil $`V`$ dort als Restgröße berechnet wird:
+Das ist erwartbar, weil \\V\\ dort als Restgröße berechnet wird:
 
-``` math
-V = Q^{*} - B - L
-```
+\\ V = Q^{\*} - B - L \\
 
 Priestley-Taylor schließt die Bilanz ebenfalls. Auch das ist erwartbar,
-weil dieser Paketpfad die verfügbare Energie $`Q^{*} - B`$
+weil dieser Paketpfad die verfügbare Energie \\Q^{\*} - B\\
 partitioniert.
 
 Bowen schließt in dieser Tabelle ebenfalls die Energiebilanz. Das
 bedeutet aber nicht, dass alle Bowen-Einzelwerte unproblematisch sind.
-Bowen kann die verfügbare Energie formal auf $`L`$ und $`V`$ aufteilen
+Bowen kann die verfügbare Energie formal auf \\L\\ und \\V\\ aufteilen
 und trotzdem bei einzelnen Zeitpunkten extreme Partitionierungen
 erzeugen. Deshalb reicht die Konsistenzprüfung allein für Bowen nicht
 aus; die Extremwerte müssen zusätzlich geprüft werden.
 
-Monin-Obukhov ist der klare Bruch. Im Tagesmittel ergibt $`L + V`$ etwa
-453.5 W/m², während $`Q^{*} - B`$ nur etwa 108.7 W/m² beträgt. Die
+Monin-Obukhov ist der klare Bruch. Im Tagesmittel ergibt \\L + V\\ etwa
+453.5 W/m², während \\Q^{\*} - B\\ nur etwa 108.7 W/m² beträgt. Die
 mittlere Abweichung liegt damit bei etwa 344.8 W/m². Die maximale
 absolute Abweichung ist mit über 11000 W/m² extrem. Das ist kein kleiner
 Rundungs- oder Darstellungsfehler.
@@ -1611,14 +1535,14 @@ if (nrow(extreme_cases) > 0) {
 
 **Interpretation.** Die Extremwertzählung zeigt, dass die auffälligen
 Werte nicht gleichmäßig über alle Methoden verteilt sind. Bowen erzeugt
-nur wenige Extremwerte: vier bei $`L`$ und vier bei $`V`$. Monin-Obukhov
-erzeugt dagegen 47 Extremwerte bei $`L`$, aber nur drei bei $`V`$. Das
+nur wenige Extremwerte: vier bei \\L\\ und vier bei \\V\\. Monin-Obukhov
+erzeugt dagegen 47 Extremwerte bei \\L\\, aber nur drei bei \\V\\. Das
 Problem liegt hier also vor allem im fühlbaren Wärmestrom des
 Monin-Obukhov-Pfads.
 
 Die Top-10-Tabelle bestätigt das. Alle stärksten Extremwerte stammen aus
-Monin-Obukhov und betreffen $`L`$. Die Werte liegen zwischen etwa 3390
-und 8550 W/m². Gleichzeitig liegt die verfügbare Energie $`Q^{*} - B`$
+Monin-Obukhov und betreffen \\L\\. Die Werte liegen zwischen etwa 3390
+und 8550 W/m². Gleichzeitig liegt die verfügbare Energie \\Q^{\*} - B\\
 an diesen Zeitpunkten nur zwischen etwa 208 und 698 W/m². Diese
 Größenordnung passt nicht zusammen. Ein fühlbarer Wärmestrom von
 mehreren tausend W/m² ist unter diesen Energierandbedingungen nicht
@@ -1641,7 +1565,7 @@ Datensatz nicht durchgehend instabil, kann aber einzelne problematische
 5-Minuten-Zeitschritte erzeugen.
 
 Für Monin-Obukhov ist der Befund härter. Die hohe Zahl extremer
-$`L`$-Werte und die sehr großen Top-Werte sprechen dafür, dass dieser
+\\L\\-Werte und die sehr großen Top-Werte sprechen dafür, dass dieser
 Pfad mit den vorliegenden 5-Minuten-Profilgrößen nicht robust läuft. Das
 kann ein Datenproblem sein, ein Gradientenproblem, ein
 Stabilitätsproblem oder eine Kombination daraus. Mit diesem Datensatz
@@ -1714,11 +1638,11 @@ par(op)
 ```
 
 **Interpretation.** Die Nulllinie zeigt energetische Konsistenz mit
-$`Q^{*} - B`$. Die manuelle Bulk-Residual-Referenz liegt erwartungsgemäß
-nahe an dieser Linie, weil $`V`$ als Rest berechnet wurde.
-Priestley-Taylor sollte ebenfalls eng an der verfügbaren Energie liegen.
-Bowen und Monin-Obukhov können deutlichere Ausschläge zeigen. Diese
-Ausschläge sind Hinweise auf Gradienten- oder
+\\Q^{\*} - B\\. Die manuelle Bulk-Residual-Referenz liegt
+erwartungsgemäß nahe an dieser Linie, weil \\V\\ als Rest berechnet
+wurde. Priestley-Taylor sollte ebenfalls eng an der verfügbaren Energie
+liegen. Bowen und Monin-Obukhov können deutlichere Ausschläge zeigen.
+Diese Ausschläge sind Hinweise auf Gradienten- oder
 Stabilitätsempfindlichkeit, nicht automatisch auf reale
 mikrometeorologische Ereignisse.
 
@@ -1731,12 +1655,12 @@ Deshalb gilt:
 
 - Die manuelle Bulk-Residual-Referenz ist der transparente Kontrollweg.
 - Priestley-Taylor ist der stabile erste Paketpfad.
-- Penman ist ein zusätzlicher Vergleich für $`V`$, aber liefert hier
-  kein eigenes $`L`$.
+- Penman ist ein zusätzlicher Vergleich für \\V\\, aber liefert hier
+  kein eigenes \\L\\.
 - Bowen und Monin-Obukhov sind Diagnosemethoden, keine unkommentierte
   Einstiegslösung.
 - Große Ausschläge müssen immer gegen Messdaten, Gradienten und
-  $`Q^{*} - B`$ geprüft werden.
+  \\Q^{\*} - B\\ geprüft werden.
 
 Komplexere Methoden liefern nicht automatisch robustere Ergebnisse. Sie
 machen zusätzliche Annahmen sichtbar. Genau deshalb werden die Methoden

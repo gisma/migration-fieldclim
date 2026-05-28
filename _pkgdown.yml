@@ -5,7 +5,7 @@ template:
   bootswatch: flatly
   bslib:
     code_font: {google: "JetBrains Mono"}
-
+  math-rendering: mathjax
 navbar:
   structure:
     left:  [intro, reference, articles, tutorials, news]
