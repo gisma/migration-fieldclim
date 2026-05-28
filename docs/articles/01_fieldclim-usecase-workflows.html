@@ -42,7 +42,9 @@
   </ul>
 </li>
       </ul>
-<ul class="navbar-nav"></ul>
+<ul class="navbar-nav">
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/gisma/migration-fieldclim/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+      </ul>
 </div>
 
 
@@ -61,7 +63,7 @@ Reudenbach</h4>
             
             <h4 data-toc-skip class="date">2026-05-28</h4>
       
-
+      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/vignettes/01_fieldclim-usecase-workflows.rmd" class="external-link"><code>vignettes/01_fieldclim-usecase-workflows.rmd</code></a></small>
       <div class="d-none name"><code>01_fieldclim-usecase-workflows.rmd</code></div>
     </div>
 
@@ -70,14 +72,13 @@ Reudenbach</h4>
 <div class="section level2">
 <h2 id="ziel-dieser-vignette">Ziel dieser Vignette<a class="anchor" aria-label="anchor" href="#ziel-dieser-vignette"></a>
 </h2>
-<p>Diese Vignette gießt die vorhandenen
-<code>fieldClim</code>-Beispiele, Vignetten und Hilfetexte in konkrete
-Use-Case-Workflows. Sie ist keine allgemeine Mikroklima-Vorlesung. Sie
-zeigt, wofür das Paket praktisch genutzt werden kann: Messdaten einer
-Mikroklima-Station werden als <code>weather_station</code>-Objekt
-organisiert, Strahlungs- und Bodenwärmegrößen werden geprüft, und
-Wärmeflussmethoden werden auf derselben Datenbasis nebeneinander
-berechnet.</p>
+<p>Diese Vignette zeigt auf der Grundlage der
+<code>fieldClim</code>-Beispiele, mit konkreten Use-Case-Workflows die
+Kern-Funktionalität des Pakets. Sie zeigt also, wofür das Paket
+praktisch genutzt werden kann: Messdaten einer Mikroklima-Station werden
+als <code>weather_station</code>-Objekt organisiert, Strahlungs- und
+Bodenwärmegrößen werden geprüft, und Wärmeflussmethoden werden auf
+derselben Datenbasis nebeneinander berechnet.</p>
 <p>Die vorhandene Paketdokumentation deckt im Kern folgende
 Arbeitsbereiche ab: Wetterstationsobjekte, kurz- und langwellige
 Strahlung, Solar- und Geländegeometrie, atmosphärische Transmission,
@@ -147,14 +148,15 @@ nebeneinander genutzt?</td>
 </table>
 </div>
 <div class="section level2">
-<h2 id="notation-theorie-zuerst-paketnamen-danach">Notation: Theorie zuerst, Paketnamen danach<a class="anchor" aria-label="anchor" href="#notation-theorie-zuerst-paketnamen-danach"></a>
+<h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
 </h2>
 <p>Die Vorlesungsfolien verwenden für die bodennahe Energiebilanz die
 Größen <code>Q*</code>, <code>B</code>, <code>L</code> und
 <code>V</code>. Diese Vignette behält diese Notation im Erklärungsteil
 bei. Erst an der Schnittstelle zum Datensatz und zu
-<code>fieldClim</code> wird auf Paket- und Spaltennamen gemappt.</p>
-<p><img src="figures/mesoklima_p45.png" class="r-plt" alt="" width="100%"><img src="figures/mesoklima_p46.png" class="r-plt" alt="" width="100%"></p>
+<code>fieldClim</code> wird auf die spezifischen Paket- und Spaltennamen
+des <code>fieldClim</code> Pakets gemappt.</p>
+<p><img src="figures/anchor_mesoklima_p45.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p46.png" class="r-plt" alt="" width="100%"></p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -309,6 +311,7 @@ prüfen</td>
 </tr>
 </tbody>
 </table>
+<p><img src="figures/fieldclim-package.png" class="r-plt" alt="" width="100%"></p>
 <p>Die Use Cases unten zeigen nicht jede Einzelfunktion isoliert. Sie
 ordnen die vorhandenen Funktionsgruppen in Arbeitsabläufe: vom
 Stationsdatensatz über Strahlung und Bodenwärmestrom bis zu mehreren
@@ -323,7 +326,7 @@ Messzeitpunkte.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Das Paket laden.</span></span>
 <span><span class="co"># Die Vignette setzt voraus, dass fieldClim installiert oder im Paketprojekt verfügbar ist.</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">fieldClim</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://gisma.github.io/migration-fieldclim">fieldClim</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Pfad zur kleinen Paket-Beispieldatei.</span></span>
 <span><span class="co"># Für eine Paketvignette ist system.file() der passende Weg, weil die Datei</span></span>
@@ -383,7 +386,7 @@ späteren Flüsse unklar.</p>
 Strahlung durch Sonnenstand, optische Weglänge und Transmission bestimmt
 wird. Die Albedo-Folie definiert den reflektierten Anteil als Verhältnis
 von ausgehender zu einfallender kurzwelliger Strahlung.</p>
-<p><img src="figures/mesoklima_p18.png" class="r-plt" alt="" width="100%"><img src="figures/mesoklima_p20.png" class="r-plt" alt="" width="100%"><img src="figures/mesoklima_p33.png" class="r-plt" alt="" width="100%"><img src="figures/mesoklima_p34.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="figures/anchor_mesoklima_p18.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p20.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p33.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p34.png" class="r-plt" alt="" width="100%"></p>
 <p>Die kurzwellige Bilanz lautet:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>K</mi><mo>*</mo></msup><mo>=</mo><msub><mi>K</mi><mrow><mi>d</mi><mi>o</mi><mi>w</mi><mi>n</mi></mrow></msub><mo>−</mo><msub><mi>K</mi><mrow><mi>u</mi><mi>p</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
 K^{*} = K_{down} - K_{up}
@@ -476,7 +479,7 @@ aus den beiden kurzwelligen Komponenten berechnet.</p>
 Stefan-Boltzmann-Logik, Emissionsvermögen und atmosphärische
 Gegenstrahlung. Für die Stationsdaten wird daraus die langwellige
 Bilanz.</p>
-<p><img src="figures/mesoklima_p39.png" class="r-plt" alt="" width="100%"><img src="figures/mesoklima_p41.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="figures/anchor_mesoklima_p39.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p41.png" class="r-plt" alt="" width="100%"></p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>L</mi><mo>*</mo></msup><mo>=</mo><msub><mi>L</mi><mrow><mi>d</mi><mi>o</mi><mi>w</mi><mi>n</mi></mrow></msub><mo>−</mo><msub><mi>L</mi><mrow><mi>u</mi><mi>p</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
 L^{*} = L_{down} - L_{up}
 </annotation></semantics></math></p>
@@ -779,7 +782,7 @@ uneindeutig?</p>
 <p>Die Bodenwärme-Folien zeigen den Bodenwärmestrom als
 Wärmeleitungsproblem. In den Caldern-Daten wird <code>B</code> direkt
 als <code>heatflux_soil</code> verwendet.</p>
-<p><img src="figures/mesoklima_p47.png" class="r-plt" alt="" width="100%"><img src="figures/mesoklima_p50.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="figures/anchor_mesoklima_p47.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p50.png" class="r-plt" alt="" width="100%"></p>
 <p>Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
 Q^{*} - B
@@ -1096,11 +1099,244 @@ und
 vor diesem Methodenvergleich.</p>
 </div>
 <div class="section level3">
-<h3 id="alle-paketmethoden-nebeneinander">Alle Paketmethoden nebeneinander<a class="anchor" aria-label="anchor" href="#alle-paketmethoden-nebeneinander"></a>
+<h3 id="methodenüberblick">Methodenüberblick<a class="anchor" aria-label="anchor" href="#methoden%C3%BCberblick"></a>
 </h3>
-<p>Die vorhandenen Wärmeflussvignetten und Hilfeseiten zeigen mehrere
-methodische Familien. Diese Vignette führt sie auf derselben Datenbasis
-zusammen.</p>
+<p>Die folgende Übersichtsgrafik zeigt die gemeinsame Messsituation:
+eine Wiesenstation mit Strahlungsbilanz, Bodenwärmestrom, Temperatur-,
+Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren
+greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
+unterschiedliche Teilinformationen.</p>
+<p><img src="figures/method_overview_meadow_station.png" class="r-plt" alt="" width="100%"></p>
+<p>Die Methoden sind deshalb nicht als fünf gleichartige Messverfahren
+zu lesen. Sie sind fünf unterschiedliche Rechenansätze mit
+unterschiedlicher Nähe zur Energiebilanz, zu Gradienten und zu
+Profilannahmen.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Methode</th>
+<th>Hauptfrage</th>
+<th>Direkte Eingänge</th>
+<th>Ergebnis</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Manuelle Bulk-Residual-Referenz</td>
+<td>Wie lässt sich die Bilanzlogik transparent nachrechnen?</td>
+<td>Temperaturgradient, Wind, <code>Q_star</code>, <code>B</code>
+</td>
+<td>
+<code>L_bulk</code>, <code>V_residual</code>
+</td>
+</tr>
+<tr class="even">
+<td>Priestley-Taylor</td>
+<td>Wie wird die verfügbare Energie stabil partitioniert?</td>
+<td>
+<code>Q_star</code>, <code>B</code>, Parameter</td>
+<td>
+<code>L_pt</code>, <code>V_pt</code>
+</td>
+</tr>
+<tr class="odd">
+<td>Bowen-Verhältnis</td>
+<td>Wie teilt ein Temperatur-/Feuchtegradient die verfügbare Energie
+auf?</td>
+<td>Temperaturgradient, Feuchtegradient, <code>Q_star</code>,
+<code>B</code>
+</td>
+<td>
+<code>L_bowen</code>, <code>V_bowen</code>
+</td>
+</tr>
+<tr class="even">
+<td>Monin-Obukhov</td>
+<td>Wie lassen sich turbulente Flüsse aus Profilen und Stabilität
+ableiten?</td>
+<td>Windprofil, Temperaturprofil, Feuchteprofil, Rauigkeit,
+Stabilität</td>
+<td>
+<code>L_monin</code>, <code>V_monin</code>
+</td>
+</tr>
+<tr class="odd">
+<td>Penman</td>
+<td>Wie groß ist der latente Wärmestrom aus Energie- und
+Verdunstungsantrieb?</td>
+<td>
+<code>Q_star</code>, <code>B</code>, Wind, Temperatur, Feuchte,
+Oberfläche</td>
+<td><code>V_penman</code></td>
+</tr>
+</tbody>
+</table>
+<div class="section level4">
+<h4 id="manuelle-bulk-residual-referenz">1. Manuelle Bulk-Residual-Referenz<a class="anchor" aria-label="anchor" href="#manuelle-bulk-residual-referenz"></a>
+</h4>
+<p><img src="figures/method_bulk_residual.png" class="r-plt" alt="" width="100%"></p>
+<p>Die manuelle Bulk-Residual-Referenz ist der didaktische Kontrollweg.
+Der fühlbare Wärmestrom wird aus einem Temperaturgradienten und einem
+vereinfachten aerodynamischen Widerstand geschätzt. Der latente
+Wärmestrom wird anschließend als Rest der Energiebilanz berechnet.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub><mo>=</mo><mi>ρ</mi><msub><mi>c</mi><mi>p</mi></msub><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><msub><mi>r</mi><mi>a</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
+L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>L_bulk</code> der manuell geschätzte fühlbare
+Wärmestrom in W/m², <code>rho</code> die Luftdichte in kg/m³,
+<code>c_p</code> die spezifische Wärmekapazität der Luft in J kg⁻¹ K⁻¹,
+<code>Delta T</code> die Temperaturdifferenz zwischen zwei Messhöhen in
+K und <code>r_a</code> der vereinfachte aerodynamische Widerstand in
+s/m.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi><mo>=</mo><msub><mi>T</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>−</mo><msub><mi>T</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+\Delta T = T_{2m} - T_{10m}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>T_2m</code> die Lufttemperatur in 2 m Höhe und
+<code>T_10m</code> die Lufttemperatur in 10 m Höhe. Positive Werte
+bedeuten hier, dass die untere Luftschicht wärmer ist als die obere.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>a</mi></msub><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mn>2</mn></msub><mi>/</mi><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>k</mi><mover><mi>u</mi><mo accent="true">‾</mo></mover></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>z_1</code> die untere Messhöhe, <code>z_2</code> die
+obere Messhöhe, <code>k</code> die von-Kármán-Konstante und
+<code>u_bar</code> eine mittlere Windgeschwindigkeit zwischen den
+Messhöhen.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>i</mi><mi>d</mi><mi>u</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+V_{residual} = Q^{*} - B - L_{bulk}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>V_residual</code> der residual berechnete latente
+Wärmestrom, <code>Q_star</code> die Netto-Strahlung, <code>B</code> der
+Bodenwärmestrom und <code>L_bulk</code> der zuvor berechnete fühlbare
+Wärmestrom. Der Ansatz ist transparent, aber grob. Alle Fehler in
+<code>Q_star</code>, <code>B</code> oder <code>L_bulk</code> landen
+direkt im Residuum.</p>
+</div>
+<div class="section level4">
+<h4 id="priestley-taylor">2. Priestley-Taylor<a class="anchor" aria-label="anchor" href="#priestley-taylor"></a>
+</h4>
+<p><img src="figures/method_priestley_taylor.png" class="r-plt" alt="" width="100%"></p>
+<p>Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad.
+Der Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
+keine empfindliche Aufteilung über kleine Feuchtegradienten.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">
+L + V = Q^{*} - B
+</annotation></semantics></math></p>
+<p>Dabei ist <code>L</code> der fühlbare Wärmestrom, <code>V</code> der
+latente Wärmestrom, <code>Q_star</code> die Netto-Strahlung und
+<code>B</code> der Bodenwärmestrom. Die rechte Seite ist die verfügbare
+Energie für turbulente Wärmeflüsse.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub><mo>≈</mo><msub><mi>α</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub><mfrac><mi mathvariant="normal">Δ</mi><mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+V_{PT} \approx \alpha_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{*} - B)
+</annotation></semantics></math></p>
+<p>Dabei ist <code>V_PT</code> der Priestley-Taylor-Wert für den
+latenten Wärmestrom, <code>alpha_PT</code> der
+Priestley-Taylor-Parameter, <code>Delta</code> die Steigung der
+Sättigungsdampfdruckkurve und <code>gamma</code> die psychrometrische
+Konstante. Der Faktor vor <code>Q_star - B</code> beschreibt, welcher
+Anteil der verfügbaren Energie in Verdunstung geht.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub><mo>=</mo><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><msub><mi>V</mi><mrow><mi>P</mi><mi>T</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+L_{PT} = (Q^{*} - B) - V_{PT}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>L_PT</code> der verbleibende fühlbare Wärmestrom. Der
+Vorteil dieses Pfads ist die Bilanzbindung: Wenn <code>Q_star</code> und
+<code>B</code> korrekt gesetzt sind, bleibt die Summe aus
+<code>L_PT</code> und <code>V_PT</code> auf der verfügbaren Energie.</p>
+</div>
+<div class="section level4">
+<h4 id="bowen-verhältnis">3. Bowen-Verhältnis<a class="anchor" aria-label="anchor" href="#bowen-verh%C3%A4ltnis"></a>
+</h4>
+<p><img src="figures/method_bowen.png" class="r-plt" alt="" width="100%"></p>
+<p>Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
+Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
+latenten Wärmestrom.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi><mo>≈</mo><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><mrow><mi mathvariant="normal">Δ</mi><mi>e</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+\beta \approx \frac{\Delta T}{\Delta e}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>beta</code> das Bowen-Verhältnis,
+<code>Delta T</code> der Temperaturgradient zwischen zwei Messhöhen und
+<code>Delta e</code> der Dampfdruck- beziehungsweise Feuchtegradient
+zwischen denselben Messhöhen. In der vollständigen Form gehen weitere
+Konstanten und Einheitenkorrekturen ein; didaktisch entscheidend ist
+hier das Gradientenverhältnis.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>B</mi><mi>o</mi><mi>w</mi><mi>e</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mi>β</mi><mrow><mn>1</mn><mo>+</mo><mi>β</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+L_{Bowen} = \frac{\beta}{1 + \beta} (Q^{*} - B)
+</annotation></semantics></math></p>
+<p>Dabei ist <code>L_Bowen</code> der fühlbare Wärmestrom nach Bowen.
+Der Anteil <code>beta / (1 + beta)</code> bestimmt, welcher Teil der
+verfügbaren Energie in fühlbare Wärme geht.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>B</mi><mi>o</mi><mi>w</mi><mi>e</mi><mi>n</mi></mrow></msub><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mi>β</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+V_{Bowen} = \frac{1}{1 + \beta} (Q^{*} - B)
+</annotation></semantics></math></p>
+<p>Dabei ist <code>V_Bowen</code> der latente Wärmestrom nach Bowen. Der
+Ansatz ist formal bilanzgebunden, aber gradientenempfindlich. Wenn
+<code>Delta e</code> sehr klein wird, das Vorzeichen wechselt oder
+<code>1 + beta</code> nahe null liegt, können einzelne Zeitschritte
+stark ausschlagen.</p>
+</div>
+<div class="section level4">
+<h4 id="monin-obukhov">4. Monin-Obukhov<a class="anchor" aria-label="anchor" href="#monin-obukhov"></a>
+</h4>
+<p><img src="figures/method_monin_obukhov.png" class="r-plt" alt="" width="100%"></p>
+<p>Monin-Obukhov ist ein Profil- und Stabilitätsansatz. Er nutzt
+vertikale Profile von Wind, Temperatur und Feuchte sowie Rauigkeits- und
+Stabilitätsannahmen. Im Gegensatz zu Priestley-Taylor und Bowen ist
+dieser Pfad nicht primär eine direkte Partitionierung von
+<code>Q_star - B</code>.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mo>*</mo></msub><mo>=</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>u</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>,</mo><msub><mi>u</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub><mo>,</mo><msub><mi>z</mi><mn>1</mn></msub><mo>,</mo><msub><mi>z</mi><mn>2</mn></msub><mo>,</mo><msub><mi>z</mi><mn>0</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+u_* = f(u_{2m}, u_{10m}, z_1, z_2, z_0)
+</annotation></semantics></math></p>
+<p>Dabei ist <code>u_star</code> die Schubspannungsgeschwindigkeit,
+<code>u_2m</code> und <code>u_10m</code> sind Windgeschwindigkeiten in 2
+m und 10 m Höhe, <code>z_1</code> und <code>z_2</code> sind die
+Messhöhen und <code>z_0</code> ist die Rauigkeitslänge der
+Oberfläche.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mi>z</mi><msub><mi>L</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub></mfrac><mo>=</mo><mtext mathvariant="normal">Stabilitätsmaß</mtext></mrow><annotation encoding="application/x-tex">
+\frac{z}{L_{MO}} = \text{Stabilitätsmaß}
+</annotation></semantics></math></p>
+<p>Dabei ist <code>z</code> eine Bezugshöhe und <code>L_MO</code> die
+Monin-Obukhov-Länge. Das Verhältnis beschreibt, ob die bodennahe Schicht
+stabil, neutral oder instabil geschichtet ist.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub><mo>,</mo><msub><mi>V</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub><mo>=</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>u</mi><mo>*</mo></msub><mo>,</mo><mi>T</mi><mo stretchy="false" form="prefix">(</mo><mi>z</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>q</mi><mo stretchy="false" form="prefix">(</mo><mi>z</mi><mo stretchy="false" form="postfix">)</mo><mo>,</mo><mi>z</mi><mi>/</mi><msub><mi>L</mi><mrow><mi>M</mi><mi>O</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+L_{MO}, V_{MO} = f(u_*, T(z), q(z), z / L_{MO})
+</annotation></semantics></math></p>
+<p>Dabei sind <code>L_MO</code> und <code>V_MO</code> die
+Monin-Obukhov-Flüsse für fühlbare und latente Wärme, <code>T(z)</code>
+das Temperaturprofil, <code>q(z)</code> das Feuchteprofil und
+<code>z / L_MO</code> die Stabilitätskorrektur. Dieser Ansatz ist
+fachlich reichhaltig, aber sehr empfindlich gegenüber kleinen
+Gradienten, schwachen Windunterschieden und 5-Minuten-Rauschen. Große
+Werte müssen deshalb gegen <code>Q_star - B</code> geprüft werden.</p>
+</div>
+<div class="section level4">
+<h4 id="penman">5. Penman<a class="anchor" aria-label="anchor" href="#penman"></a>
+</h4>
+<p><img src="figures/method_penman.png" class="r-plt" alt="" width="100%"></p>
+<p>Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
+verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
+Im aktuellen Paketpfad liefert Penman vor allem <code>V</code>, aber
+keinen eigenen fühlbaren Wärmestrom <code>L</code>.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>P</mi><mi>e</mi><mi>n</mi><mi>m</mi><mi>a</mi><mi>n</mi></mrow></msub><mo>≈</mo><mfrac><mi mathvariant="normal">Δ</mi><mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi></mrow></mfrac><mo stretchy="false" form="prefix">(</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mfrac><mi>γ</mi><mrow><mi mathvariant="normal">Δ</mi><mo>+</mo><mi>γ</mi></mrow></mfrac><msub><mi>E</mi><mi>a</mi></msub></mrow><annotation encoding="application/x-tex">
+V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) + \frac{\gamma}{\Delta + \gamma} E_a
+</annotation></semantics></math></p>
+<p>Dabei ist <code>V_Penman</code> der latente Wärmestrom nach Penman,
+<code>Delta</code> die Steigung der Sättigungsdampfdruckkurve,
+<code>gamma</code> die psychrometrische Konstante,
+<code>Q_star - B</code> die verfügbare Energie und <code>E_a</code> der
+aerodynamische Verdunstungsterm.</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mi>f</mi><mo stretchy="false" form="prefix">(</mo><mi>u</mi><mo>,</mo><msub><mi>e</mi><mi>s</mi></msub><mo>−</mo><msub><mi>e</mi><mi>a</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+E_a = f(u, e_s - e_a)
+</annotation></semantics></math></p>
+<p>Dabei ist <code>u</code> die Windgeschwindigkeit, <code>e_s</code>
+der Sättigungsdampfdruck und <code>e_a</code> der aktuelle Dampfdruck
+der Luft. Die Differenz <code>e_s - e_a</code> ist der
+Verdunstungsantrieb der Luft. Penman ist deshalb besonders nützlich als
+Vergleichs- und Prüfpfad für <code>V</code>, aber keine vollständige
+<code>L</code>/<code>V</code>-Partitionierung wie Priestley-Taylor oder
+Bowen.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Alle im Sammelworkflow verfügbaren Methoden berechnen.</span></span>
 <span><span class="co"># Bowen und Monin-Obukhov können Warnungen erzeugen, weil sie auf Gradienten</span></span>
@@ -1205,6 +1441,7 @@ Deshalb werden
 und
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
 getrennt tabelliert.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="einzelplots-der-paketmethoden">Einzelplots der Paketmethoden<a class="anchor" aria-label="anchor" href="#einzelplots-der-paketmethoden"></a>

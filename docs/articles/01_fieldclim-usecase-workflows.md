@@ -2,13 +2,13 @@
 
 ## Ziel dieser Vignette
 
-Diese Vignette gießt die vorhandenen `fieldClim`-Beispiele, Vignetten
-und Hilfetexte in konkrete Use-Case-Workflows. Sie ist keine allgemeine
-Mikroklima-Vorlesung. Sie zeigt, wofür das Paket praktisch genutzt
-werden kann: Messdaten einer Mikroklima-Station werden als
-`weather_station`-Objekt organisiert, Strahlungs- und Bodenwärmegrößen
-werden geprüft, und Wärmeflussmethoden werden auf derselben Datenbasis
-nebeneinander berechnet.
+Diese Vignette zeigt auf der Grundlage der `fieldClim`-Beispiele, mit
+konkreten Use-Case-Workflows die Kern-Funktionalität des Pakets. Sie
+zeigt also, wofür das Paket praktisch genutzt werden kann: Messdaten
+einer Mikroklima-Station werden als `weather_station`-Objekt
+organisiert, Strahlungs- und Bodenwärmegrößen werden geprüft, und
+Wärmeflussmethoden werden auf derselben Datenbasis nebeneinander
+berechnet.
 
 Die vorhandene Paketdokumentation deckt im Kern folgende Arbeitsbereiche
 ab: Wetterstationsobjekte, kurz- und langwellige Strahlung, Solar- und
@@ -31,14 +31,15 @@ Diese Vignette macht daraus sieben Use Cases:
 | 5 | Wie wird derselbe Datensatz an `fieldClim` übergeben? | [`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md) |
 | 6 | Wie werden Priestley-Taylor, Bowen, Monin-Obukhov und Penman nebeneinander genutzt? | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md) und Einzelmethoden |
 
-## Notation: Theorie zuerst, Paketnamen danach
+## Notation
 
 Die Vorlesungsfolien verwenden für die bodennahe Energiebilanz die
 Größen `Q*`, `B`, `L` und `V`. Diese Vignette behält diese Notation im
 Erklärungsteil bei. Erst an der Schnittstelle zum Datensatz und zu
-`fieldClim` wird auf Paket- und Spaltennamen gemappt.
+`fieldClim` wird auf die spezifischen Paket- und Spaltennamen des
+`fieldClim` Pakets gemappt.
 
-![](figures/mesoklima_p45.png)![](figures/mesoklima_p46.png)
+![](figures/anchor_mesoklima_p45.png)![](figures/anchor_mesoklima_p46.png)
 
 | Theoriegröße | Bedeutung | Code-Variable in dieser Vignette | Feld im Datensatz oder Paket |
 |----|----|----|----|
@@ -102,6 +103,8 @@ Tabelle ausgeben.
 | Feuchte, Druck, Temperatur | Hilfsgrößen für weitere Berechnungen bereitstellen | `hum_*`, `pres_*`, `temp_*` |
 | Wärmeflüsse | fühlbare und latente Wärmeflüsse schätzen | `sensible_*`, `latent_*` |
 | Sammelworkflow | mehrere Wärmeflussmethoden in einem Schritt berechnen | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md) |
+
+![](figures/fieldclim-package.png)
 
 Die Use Cases unten zeigen nicht jede Einzelfunktion isoliert. Sie
 ordnen die vorhandenen Funktionsgruppen in Arbeitsabläufe: vom
@@ -179,7 +182,7 @@ durch Sonnenstand, optische Weglänge und Transmission bestimmt wird. Die
 Albedo-Folie definiert den reflektierten Anteil als Verhältnis von
 ausgehender zu einfallender kurzwelliger Strahlung.
 
-![](figures/mesoklima_p18.png)![](figures/mesoklima_p20.png)![](figures/mesoklima_p33.png)![](figures/mesoklima_p34.png)
+![](figures/anchor_mesoklima_p18.png)![](figures/anchor_mesoklima_p20.png)![](figures/anchor_mesoklima_p33.png)![](figures/anchor_mesoklima_p34.png)
 
 Die kurzwellige Bilanz lautet:
 
@@ -294,7 +297,7 @@ Stefan-Boltzmann-Logik, Emissionsvermögen und atmosphärische
 Gegenstrahlung. Für die Stationsdaten wird daraus die langwellige
 Bilanz.
 
-![](figures/mesoklima_p39.png)![](figures/mesoklima_p41.png)
+![](figures/anchor_mesoklima_p39.png)![](figures/anchor_mesoklima_p41.png)
 
 ``` math
 L^{*} = L_{down} - L_{up}
@@ -595,7 +598,7 @@ Die Bodenwärme-Folien zeigen den Bodenwärmestrom als
 Wärmeleitungsproblem. In den Caldern-Daten wird `B` direkt als
 `heatflux_soil` verwendet.
 
-![](figures/mesoklima_p47.png)![](figures/mesoklima_p50.png)
+![](figures/anchor_mesoklima_p47.png)![](figures/anchor_mesoklima_p50.png)
 
 Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:
 
@@ -950,11 +953,207 @@ bleibt aber sichtbar, weil $`L + V`$ weiterhin gegen $`Q^{*} - B`$
 geprüft werden kann. Genau deshalb steht die Kontrolle von $`Q^{*}`$ und
 $`B`$ vor diesem Methodenvergleich.
 
-### Alle Paketmethoden nebeneinander
+### Methodenüberblick
 
-Die vorhandenen Wärmeflussvignetten und Hilfeseiten zeigen mehrere
-methodische Familien. Diese Vignette führt sie auf derselben Datenbasis
-zusammen.
+Die folgende Übersichtsgrafik zeigt die gemeinsame Messsituation: eine
+Wiesenstation mit Strahlungsbilanz, Bodenwärmestrom, Temperatur-,
+Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren
+greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
+unterschiedliche Teilinformationen.
+
+![](figures/method_overview_meadow_station.png)
+
+Die Methoden sind deshalb nicht als fünf gleichartige Messverfahren zu
+lesen. Sie sind fünf unterschiedliche Rechenansätze mit
+unterschiedlicher Nähe zur Energiebilanz, zu Gradienten und zu
+Profilannahmen.
+
+| Methode | Hauptfrage | Direkte Eingänge | Ergebnis |
+|----|----|----|----|
+| Manuelle Bulk-Residual-Referenz | Wie lässt sich die Bilanzlogik transparent nachrechnen? | Temperaturgradient, Wind, `Q_star`, `B` | `L_bulk`, `V_residual` |
+| Priestley-Taylor | Wie wird die verfügbare Energie stabil partitioniert? | `Q_star`, `B`, Parameter | `L_pt`, `V_pt` |
+| Bowen-Verhältnis | Wie teilt ein Temperatur-/Feuchtegradient die verfügbare Energie auf? | Temperaturgradient, Feuchtegradient, `Q_star`, `B` | `L_bowen`, `V_bowen` |
+| Monin-Obukhov | Wie lassen sich turbulente Flüsse aus Profilen und Stabilität ableiten? | Windprofil, Temperaturprofil, Feuchteprofil, Rauigkeit, Stabilität | `L_monin`, `V_monin` |
+| Penman | Wie groß ist der latente Wärmestrom aus Energie- und Verdunstungsantrieb? | `Q_star`, `B`, Wind, Temperatur, Feuchte, Oberfläche | `V_penman` |
+
+#### 1. Manuelle Bulk-Residual-Referenz
+
+![](figures/method_bulk_residual.png)
+
+Die manuelle Bulk-Residual-Referenz ist der didaktische Kontrollweg. Der
+fühlbare Wärmestrom wird aus einem Temperaturgradienten und einem
+vereinfachten aerodynamischen Widerstand geschätzt. Der latente
+Wärmestrom wird anschließend als Rest der Energiebilanz berechnet.
+
+``` math
+L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
+```
+
+Dabei ist `L_bulk` der manuell geschätzte fühlbare Wärmestrom in W/m²,
+`rho` die Luftdichte in kg/m³, `c_p` die spezifische Wärmekapazität der
+Luft in J kg⁻¹ K⁻¹, `Delta T` die Temperaturdifferenz zwischen zwei
+Messhöhen in K und `r_a` der vereinfachte aerodynamische Widerstand in
+s/m.
+
+``` math
+\Delta T = T_{2m} - T_{10m}
+```
+
+Dabei ist `T_2m` die Lufttemperatur in 2 m Höhe und `T_10m` die
+Lufttemperatur in 10 m Höhe. Positive Werte bedeuten hier, dass die
+untere Luftschicht wärmer ist als die obere.
+
+``` math
+r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
+```
+
+Dabei ist `z_1` die untere Messhöhe, `z_2` die obere Messhöhe, `k` die
+von-Kármán-Konstante und `u_bar` eine mittlere Windgeschwindigkeit
+zwischen den Messhöhen.
+
+``` math
+V_{residual} = Q^{*} - B - L_{bulk}
+```
+
+Dabei ist `V_residual` der residual berechnete latente Wärmestrom,
+`Q_star` die Netto-Strahlung, `B` der Bodenwärmestrom und `L_bulk` der
+zuvor berechnete fühlbare Wärmestrom. Der Ansatz ist transparent, aber
+grob. Alle Fehler in `Q_star`, `B` oder `L_bulk` landen direkt im
+Residuum.
+
+#### 2. Priestley-Taylor
+
+![](figures/method_priestley_taylor.png)
+
+Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad. Der
+Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
+keine empfindliche Aufteilung über kleine Feuchtegradienten.
+
+``` math
+L + V = Q^{*} - B
+```
+
+Dabei ist `L` der fühlbare Wärmestrom, `V` der latente Wärmestrom,
+`Q_star` die Netto-Strahlung und `B` der Bodenwärmestrom. Die rechte
+Seite ist die verfügbare Energie für turbulente Wärmeflüsse.
+
+``` math
+V_{PT} \approx \alpha_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{*} - B)
+```
+
+Dabei ist `V_PT` der Priestley-Taylor-Wert für den latenten Wärmestrom,
+`alpha_PT` der Priestley-Taylor-Parameter, `Delta` die Steigung der
+Sättigungsdampfdruckkurve und `gamma` die psychrometrische Konstante.
+Der Faktor vor `Q_star - B` beschreibt, welcher Anteil der verfügbaren
+Energie in Verdunstung geht.
+
+``` math
+L_{PT} = (Q^{*} - B) - V_{PT}
+```
+
+Dabei ist `L_PT` der verbleibende fühlbare Wärmestrom. Der Vorteil
+dieses Pfads ist die Bilanzbindung: Wenn `Q_star` und `B` korrekt
+gesetzt sind, bleibt die Summe aus `L_PT` und `V_PT` auf der verfügbaren
+Energie.
+
+#### 3. Bowen-Verhältnis
+
+![](figures/method_bowen.png)
+
+Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
+Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
+latenten Wärmestrom.
+
+``` math
+\beta \approx \frac{\Delta T}{\Delta e}
+```
+
+Dabei ist `beta` das Bowen-Verhältnis, `Delta T` der Temperaturgradient
+zwischen zwei Messhöhen und `Delta e` der Dampfdruck- beziehungsweise
+Feuchtegradient zwischen denselben Messhöhen. In der vollständigen Form
+gehen weitere Konstanten und Einheitenkorrekturen ein; didaktisch
+entscheidend ist hier das Gradientenverhältnis.
+
+``` math
+L_{Bowen} = \frac{\beta}{1 + \beta} (Q^{*} - B)
+```
+
+Dabei ist `L_Bowen` der fühlbare Wärmestrom nach Bowen. Der Anteil
+`beta / (1 + beta)` bestimmt, welcher Teil der verfügbaren Energie in
+fühlbare Wärme geht.
+
+``` math
+V_{Bowen} = \frac{1}{1 + \beta} (Q^{*} - B)
+```
+
+Dabei ist `V_Bowen` der latente Wärmestrom nach Bowen. Der Ansatz ist
+formal bilanzgebunden, aber gradientenempfindlich. Wenn `Delta e` sehr
+klein wird, das Vorzeichen wechselt oder `1 + beta` nahe null liegt,
+können einzelne Zeitschritte stark ausschlagen.
+
+#### 4. Monin-Obukhov
+
+![](figures/method_monin_obukhov.png)
+
+Monin-Obukhov ist ein Profil- und Stabilitätsansatz. Er nutzt vertikale
+Profile von Wind, Temperatur und Feuchte sowie Rauigkeits- und
+Stabilitätsannahmen. Im Gegensatz zu Priestley-Taylor und Bowen ist
+dieser Pfad nicht primär eine direkte Partitionierung von `Q_star - B`.
+
+``` math
+u_* = f(u_{2m}, u_{10m}, z_1, z_2, z_0)
+```
+
+Dabei ist `u_star` die Schubspannungsgeschwindigkeit, `u_2m` und `u_10m`
+sind Windgeschwindigkeiten in 2 m und 10 m Höhe, `z_1` und `z_2` sind
+die Messhöhen und `z_0` ist die Rauigkeitslänge der Oberfläche.
+
+``` math
+\frac{z}{L_{MO}} = \text{Stabilitätsmaß}
+```
+
+Dabei ist `z` eine Bezugshöhe und `L_MO` die Monin-Obukhov-Länge. Das
+Verhältnis beschreibt, ob die bodennahe Schicht stabil, neutral oder
+instabil geschichtet ist.
+
+``` math
+L_{MO}, V_{MO} = f(u_*, T(z), q(z), z / L_{MO})
+```
+
+Dabei sind `L_MO` und `V_MO` die Monin-Obukhov-Flüsse für fühlbare und
+latente Wärme, `T(z)` das Temperaturprofil, `q(z)` das Feuchteprofil und
+`z / L_MO` die Stabilitätskorrektur. Dieser Ansatz ist fachlich
+reichhaltig, aber sehr empfindlich gegenüber kleinen Gradienten,
+schwachen Windunterschieden und 5-Minuten-Rauschen. Große Werte müssen
+deshalb gegen `Q_star - B` geprüft werden.
+
+#### 5. Penman
+
+![](figures/method_penman.png)
+
+Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
+verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
+Im aktuellen Paketpfad liefert Penman vor allem `V`, aber keinen eigenen
+fühlbaren Wärmestrom `L`.
+
+``` math
+V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) + \frac{\gamma}{\Delta + \gamma} E_a
+```
+
+Dabei ist `V_Penman` der latente Wärmestrom nach Penman, `Delta` die
+Steigung der Sättigungsdampfdruckkurve, `gamma` die psychrometrische
+Konstante, `Q_star - B` die verfügbare Energie und `E_a` der
+aerodynamische Verdunstungsterm.
+
+``` math
+E_a = f(u, e_s - e_a)
+```
+
+Dabei ist `u` die Windgeschwindigkeit, `e_s` der Sättigungsdampfdruck
+und `e_a` der aktuelle Dampfdruck der Luft. Die Differenz `e_s - e_a`
+ist der Verdunstungsantrieb der Luft. Penman ist deshalb besonders
+nützlich als Vergleichs- und Prüfpfad für `V`, aber keine vollständige
+`L`/`V`-Partitionierung wie Priestley-Taylor oder Bowen.
 
 ``` r
 

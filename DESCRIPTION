@@ -34,6 +34,8 @@ Description: `fieldClim` is designed as a handy tool for calculations of various
 License: Apache License 2.0
 Encoding: UTF-8
 LazyData: true
+URL: https://gisma.github.io/migration-fieldclim, https://github.com/gisma/migration-fieldclim
+BugReports: https://github.com/gisma/migration-fieldclim/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 8.0.0
 VignetteBuilder: knitr
