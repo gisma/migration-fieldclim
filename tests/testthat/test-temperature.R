@@ -1,7 +1,10 @@
+#' The argument `elev` is converted internally to air pressure using `pres_p()`.
+#' The sea-level pressure used in `pres_p()` is not the same as the
+#' potential-temperature reference pressure of 1000 hPa.
 test_that("Potential Temperature", {
-  expect_equal(temp_pot_temp(25, 270),
-    27.7,
-    tolerance = 1e-2  )
-  # expect_equal(temp_pot_temp(c(25, NA), c(NA, 1000)),
-  #             c(NA_integer_, NA_integer_))
+  expect_equal(
+    temp_pot_temp(25, 270),
+    26.520455365680,
+    tolerance = 1e-8
+  )
 })

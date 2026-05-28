@@ -23,10 +23,10 @@ towards the surface."></head><body>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/01_fieldclim-usecase-workflows.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="../articles/02-fieldclim-additional-usecases-fixed2.html">fieldClim: weitere Use-Case-Workflows</a></li>
-    <li><a class="dropdown-item" href="../articles/03-fieldclim-package-update-documentation.html">FieldClim Package Update Documentation</a></li>
-    <li><a class="dropdown-item" href="../articles/04-Check-rad-and-soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><a class="external-link nav-link" href="https://github.com/gisma/migration-fieldclim/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
@@ -90,11 +90,11 @@ towards the surface.</p>
 
 
 <dt id="arg-t-">t1<a class="anchor" aria-label="anchor" href="#arg-t-"></a></dt>
-<dd><p>Air temperature at lower height in °C.</p></dd>
+<dd><p>Air temperature at lower height in degrees C.</p></dd>
 
 
 <dt id="arg-t-">t2<a class="anchor" aria-label="anchor" href="#arg-t-"></a></dt>
-<dd><p>Air temperature at upper height in °C.</p></dd>
+<dd><p>Air temperature at upper height in degrees C.</p></dd>
 
 
 <dt id="arg-v-">v1<a class="anchor" aria-label="anchor" href="#arg-v-"></a></dt>
@@ -135,7 +135,7 @@ towards the surface.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Latent heat flux in W/m².</p>
+    <p>Latent heat flux in W m-2.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -144,7 +144,7 @@ $$Q_e = -\rho \cdot L_v \cdot \frac{k \cdot u_*}{\phi_q} \cdot \frac{\Delta q}{\
 where:
 \(\rho\) is the air density,
 \(L_v\) is the latent heat of vaporization,
-\(k\) is the von Kármán constant,
+\(k\) is the von Karman constant,
 \(u_*\) is the friction velocity,
 \(\phi_q\) is the stability correction function for humidity,
 \(\Delta q\) is the moisture gradient, and
@@ -168,8 +168,9 @@ $$\phi_q = \begin{cases}
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Calculate latent heat flux using Monin-Obukhov length</span></span></span>
-<span class="r-in"><span><span class="fu">latent_monin</span><span class="op">(</span>hum1 <span class="op">=</span> <span class="fl">80</span>, hum2 <span class="op">=</span> <span class="fl">60</span>, t1 <span class="op">=</span> <span class="fl">20</span>, t2 <span class="op">=</span> <span class="fl">15</span>, v1 <span class="op">=</span> <span class="fl">3</span>, v2 <span class="op">=</span> <span class="fl">5</span>, z1 <span class="op">=</span> <span class="fl">2</span>, z2 <span class="op">=</span> <span class="fl">10</span>, elev <span class="op">=</span> <span class="fl">100</span>, surface_type <span class="op">=</span> <span class="st">"forest"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in turb_roughness_length.default(surface_type = surface_type):</span> Invalid surface type.</span>
+<span class="r-in"><span><span class="fu">latent_monin</span><span class="op">(</span>hum1 <span class="op">=</span> <span class="fl">80</span>, hum2 <span class="op">=</span> <span class="fl">60</span>, t1 <span class="op">=</span> <span class="fl">20</span>, t2 <span class="op">=</span> <span class="fl">15</span>, v1 <span class="op">=</span> <span class="fl">3</span>, v2 <span class="op">=</span> <span class="fl">5</span>, z1 <span class="op">=</span> <span class="fl">2</span>, z2 <span class="op">=</span> <span class="fl">10</span>, elev <span class="op">=</span> <span class="fl">100</span>, surface_type <span class="op">=</span> <span class="st">"coniferous forest"</span><span class="op">)</span></span></span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>There are values above 600 W m-2!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3221.652</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

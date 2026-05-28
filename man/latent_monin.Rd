@@ -33,9 +33,9 @@ latent_monin(...)
 
 \item{hum2}{Relative humidity at upper height in \%.}
 
-\item{t1}{Air temperature at lower height in °C.}
+\item{t1}{Air temperature at lower height in degrees C.}
 
-\item{t2}{Air temperature at upper height in °C.}
+\item{t2}{Air temperature at upper height in degrees C.}
 
 \item{v1}{Windspeed at lower height (e.g. height of anemometer) in m/s.}
 
@@ -56,7 +56,7 @@ latent_monin(...)
 \item{weather_station}{Object of class weather_station}
 }
 \value{
-Latent heat flux in W/m².
+Latent heat flux in W m-2.
 }
 \description{
 Calculates the latent heat flux using the Monin-Obukhov length. Positive
@@ -69,7 +69,7 @@ The latent heat flux (\eqn{Q_e}) using the Monin-Obukhov method is calculated as
 where:
 \eqn{\rho} is the air density,
 \eqn{L_v} is the latent heat of vaporization,
-\eqn{k} is the von Kármán constant,
+\eqn{k} is the von Karman constant,
 \eqn{u_*} is the friction velocity,
 \eqn{\phi_q} is the stability correction function for humidity,
 \eqn{\Delta q} is the moisture gradient, and
@@ -87,7 +87,7 @@ The default cap is set to NULL.
 }
 \examples{
 # Calculate latent heat flux using Monin-Obukhov length
-latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "forest")
+latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "coniferous forest")
 }
 \references{
 Bendix 2004, p. 77, eq.4.6

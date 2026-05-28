@@ -13,11 +13,11 @@ pres_p(...)
 \method{pres_p}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
 \item{elev}{Elevation above sea level in m.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
 \item{p0}{Standard pressure in hPa, default 1013.25.}
 
@@ -25,7 +25,7 @@ pres_p(...)
 
 \item{rl}{Specific gas constant for air in \eqn{m^2 \cdot s^{-2} \cdot K^{-1}}, default 287.05.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Air pressure in hPa.

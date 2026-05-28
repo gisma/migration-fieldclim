@@ -20,7 +20,9 @@ turb_flux_stability(...)
 \item{weather_station}{Object of class weather_station}
 }
 \value{
-Gradient-Richardson-Number.
+A stability class string: "unstable", "neutral",
+"stable", or \code{NA}, according to the current
+Gradient-Richardson-Number thresholds.
 }
 \description{
 Conversion of Gradient-Richardson-Number to stability string.

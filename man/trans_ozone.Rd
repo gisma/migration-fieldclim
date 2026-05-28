@@ -22,6 +22,8 @@ trans_ozone(...)
 \item{lat}{Latitude in decimal degrees.}
 
 \item{ozone_column}{Atmospheric ozone as column in cm, default \code{ozone_column_default}.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Transmittance ratio from 0 to 1, unitless.

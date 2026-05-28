@@ -41,7 +41,7 @@ sensible_priestley_taylor(weather_station, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -64,6 +64,6 @@ Foken 2016, p. 220, eq. 5.6
 
 ``` r
 # Calculate sensible heat flux using the Priestley-Taylor method
-sensible_priestley_taylor(temp = 20, rad_bal = 200, soil_flux = 50, surface_type = "lawn")
-#> Error in sensible_priestley_taylor.default(temp = 20, rad_bal = 200, soil_flux = 50,     surface_type = "lawn"): 'surface_type' must be one of the following: field , bare soil , coniferous forest , water , wetland , spruce forest
+sensible_priestley_taylor(temp = 20, rad_bal = 200, soil_flux = 50, surface_type = "field")
+#> [1] 32.35636
 ```

@@ -7,6 +7,9 @@
 #'
 #' @rdname pres_p
 #' @inheritParams build_weather_station
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Air pressure in hPa.
 #' @details
 #' The air pressure (\eqn{p}) is calculated using the barometric formula:
@@ -55,6 +58,9 @@ pres_p.weather_station <- function(weather_station, ...) {
 #' Calculates vapor pressure from relative humidity and saturation vapor pressure.
 #'
 #' @inheritParams build_weather_station
+#' @param temp Air temperature in degrees C.
+#' @param rh Relative humidity in percent.
+#' @param weather_station A weather_station object.
 #' @return Vapor pressure in hPa.
 #' @details
 #' The vapor pressure (\eqn{e}) is calculated as:
@@ -95,6 +101,8 @@ pres_vapor_p.weather_station <- function(weather_station, ...) {
 #' Calculates the saturation vapor pressure for a given temperature.
 #'
 #' @inheritParams build_weather_station
+#' @param temp Air temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Saturation vapor pressure in hPa.
 #' @details
 #' The saturation vapor pressure (\eqn{e_s}) is calculated using the formula:
@@ -140,6 +148,9 @@ pres_sat_vapor_p.weather_station <- function(weather_station, ...) {
 #'
 #' @rdname pres_air_density
 #' @param ... Additional arguments.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Air density in kg/m³.
 #' @details
 #' The air density (\eqn{\rho}) is calculated using the formula:

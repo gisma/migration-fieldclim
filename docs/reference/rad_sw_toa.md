@@ -19,21 +19,19 @@ rad_sw_toa(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - datetime:
 
-  Datetime of class `POSIXlt`. See
-  [`base::as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html). Make
-  sure to provide the correct timezone information!
+  POSIXlt or POSIXct date-time vector.
 
 - lon:
 
-  Longitude in degree.
+  Longitude in degrees.
 
 - lat:
 
-  Latitude in degree.
+  Latitude in degrees.
 
 - sol_const:
 
@@ -41,7 +39,7 @@ rad_sw_toa(weather_station, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -63,6 +61,7 @@ Bendix 2004, p. 244.
 
 ``` r
 # Calculate shortwave radiation at top of atmosphere
-rad_sw_toa(datetime = Sys.time(), lon = 10, lat = 50)
-#> Error in datetime$hour: $ operator is invalid for atomic vectors
+example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+rad_sw_toa(datetime = example_time, lon = 10, lat = 50)
+#> [1] 1107.353
 ```

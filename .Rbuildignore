@@ -1,0 +1,16 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.positai$
+^\.claude$
+
+^docs$
+^dev$
+^pkgdown$
+^_pkgdown\.yml$
+
+^AGENTS\.md$
+^\.github$
+^\.gitlab-ci\.yml$
+
+^fieldClim_.*\.tar\.gz$
+^.*\.Rcheck$

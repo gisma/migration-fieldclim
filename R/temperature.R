@@ -3,6 +3,7 @@
 #' Calculates the potential air temperature, which is the temperature that a parcel of air would have if it were expanded or compressed adiabatically to a standard pressure (usually 1000 hPa).
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Potential temperature in °C.
 #' @details
 #' The potential temperature (\eqn{\theta}) is calculated using the formula:
@@ -13,6 +14,11 @@
 #' \eqn{p} is the actual pressure,
 #' \eqn{R} is the specific gas constant for dry air (287 J/(kg·K)),
 #' \eqn{c_p} is the specific heat at constant pressure (1004 J/(kg·K)).
+#'
+#' The argument \code{elev} is elevation above sea level in m. It is
+#' converted internally to pressure using \code{pres_p()}. The 1013.25 hPa
+#' default in \code{pres_p()} is used for pressure estimation, while
+#' potential temperature uses 1000 hPa as the reference pressure.
 #'
 #' @references Bendix 2004, p. 261.
 #' @examples
@@ -36,7 +42,6 @@ temp_pot_temp.default <- function(t, elev, ...) {
 }
 
 #' @rdname temp_pot_temp
-#' @inheritParams build_weather_station
 #' @param height Height of measurement, either "upper" or "lower".
 #' @export
 temp_pot_temp.weather_station <- function(weather_station, height = "lower", ...) {

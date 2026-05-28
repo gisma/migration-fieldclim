@@ -32,6 +32,10 @@ trans_air_mass_rel(weather_station, ...)
 
   Latitude in decimal degrees.
 
+- weather_station:
+
+  A weather_station object.
+
 ## Value
 
 Relative optical air mass, unitless.

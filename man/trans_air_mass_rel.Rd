@@ -20,6 +20,8 @@ trans_air_mass_rel(...)
 \item{lon}{Longitude in decimal degrees.}
 
 \item{lat}{Latitude in decimal degrees.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Relative optical air mass, unitless.

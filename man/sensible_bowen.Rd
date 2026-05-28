@@ -45,9 +45,9 @@ sensible_bowen(...)
 
 \item{soil_flux}{Soil flux in W/m².}
 
-\item{cap}{The cap value to prevent division by zero. Default is NULL.}
+\item{cap}{A positive denominator guard for near-zero \eqn{1 + B}. Default is NULL.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Sensible heat flux in W/m².
@@ -65,17 +65,25 @@ where:
 \eqn{G} is the soil heat flux, and
 \eqn{B} is the Bowen ratio.
 
-The Bowen ratio (\eqn{B}) is calculated as:
-\deqn{B = \frac{\gamma}{L_v} \cdot \frac{\Delta T}{\Delta q}}
+The implemented Bowen ratio (\eqn{B}) is calculated from a
+potential-temperature gradient and an absolute-humidity gradient:
+\deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 where:
-\eqn{\gamma} is the psychrometric constant,
-\eqn{L_v} is the latent heat of vaporization,
-\eqn{\Delta T} is the temperature gradient, and
-\eqn{\Delta q} is the moisture gradient.
+\eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
+is an empirical coefficient,
+\eqn{\theta} is potential temperature, and
+\eqn{AH} is absolute humidity.
+The inputs \code{t1} and \code{t2} are converted to potential temperature
+before the temperature gradient is formed. The inputs \code{hum1} and
+\code{hum2} are relative humidity values that are converted internally to
+absolute humidity before the humidity gradient is formed.
 
-When \eqn{1 + B} results in values close to zero, the sensible heat flux can become unrealistically high.
-To prevent this, a cap parameter can be set.
-The cap parameter ensures that \eqn{1 + B} does not get too close to zero by setting a minimum allowable value.
+When \eqn{1 + B} is close to zero, the sensible heat flux can become
+unrealistically high. The \code{cap} parameter is a numerical safeguard that
+replaces near-zero denominators with \code{+/- cap}. Exact closure with
+\code{latent_bowen()} is guaranteed only for finite uncapped denominators;
+capped cases are guarded diagnostic outputs and may not close
+\code{rad_bal - soil_flux} exactly.
 }
 \examples{
 # Calculate sensible heat flux using the Bowen method

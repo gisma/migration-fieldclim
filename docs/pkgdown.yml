@@ -2,12 +2,12 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  01_fieldclim-usecase-workflows: 01_fieldclim-usecase-workflows.html
-  02-fieldclim-additional-usecases-fixed2: 02-fieldclim-additional-usecases-fixed2.html
-  03-fieldclim-package-update-documentation: 03-fieldclim-package-update-documentation.html
-  04-Check-rad-and-soil: 04-Check-rad-and-soil.html
+  fieldclim_additional: fieldclim_additional.html
+  fieldclim_check_rad_soil: fieldclim_check_rad_soil.html
+  fieldclim_update2024: fieldclim_update2024.html
+  fieldclim_usecase: fieldclim_usecase.html
   fieldClim: fieldClim.html
-last_built: 2026-05-28T07:05Z
+last_built: 2026-05-28T17:23Z
 urls:
   reference: https://gisma.github.io/migration-fieldclim/reference
   article: https://gisma.github.io/migration-fieldclim/articles

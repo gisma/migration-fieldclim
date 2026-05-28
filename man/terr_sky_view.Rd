@@ -19,7 +19,7 @@ terr_sky_view(...)
 
 \item{valley}{Logical value indicating if the location is in a valley (TRUE) or not (FALSE).}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Ratio from 0 to 1, unitless, representing the sky view factor.

@@ -19,7 +19,7 @@ soil_heat_cap(...)
 
 \item{texture}{Soil texture. Either "sand", "peat" or "clay".}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Soil volumetric heat capacity in MJ/(m³ * K).

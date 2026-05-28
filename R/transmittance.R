@@ -8,6 +8,7 @@
 #' @param elev Elevation above sea level in meters.
 #' @param temp Air temperature in °C.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Transmittance ratio from 0 to 1, unitless.
 #' @details
 #' The transmittance due to gases is calculated using the formula:
@@ -52,6 +53,7 @@ trans_gas.weather_station <- function(weather_station, ...) {
 #' @param elev Elevation above sea level in meters.
 #' @param temp Air temperature in °C.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Absolute optical air mass, unitless.
 #' @details
 #' The absolute optical air mass is calculated using the formula:
@@ -94,6 +96,7 @@ trans_air_mass_abs.weather_station <- function(weather_station, ...) {
 #' @param lon Longitude in decimal degrees.
 #' @param lat Latitude in decimal degrees.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Relative optical air mass, unitless.
 #' @details
 #' The relative optical air mass is calculated using the formula:
@@ -135,6 +138,7 @@ trans_air_mass_rel.weather_station <- function(weather_station, ...) {
 #' @param lat Latitude in decimal degrees.
 #' @param ozone_column Atmospheric ozone as column in cm, default `ozone_column_default`.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Transmittance ratio from 0 to 1, unitless.
 #' @details
 #' The transmittance due to ozone is calculated using the formula:
@@ -182,6 +186,7 @@ trans_ozone.weather_station <- function(weather_station, ...) {
 #' @param elev Elevation above sea level in meters.
 #' @param temp Air temperature in °C.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Transmittance ratio from 0 to 1, unitless.
 #' @details
 #' The transmittance due to Rayleigh scattering is calculated using the formula:
@@ -224,6 +229,7 @@ trans_rayleigh.weather_station <- function(weather_station, ...) {
 #' @param elev Elevation above sea level in meters.
 #' @param temp Air temperature in °C.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Transmittance ratio from 0 to 1, unitless.
 #' @details
 #' The transmittance due to water vapor is calculated using the formula:
@@ -269,6 +275,7 @@ trans_vapor.weather_station <- function(weather_station, ...) {
 #' @param temp Air temperature in °C.
 #' @param vis Visibility in km, default `vis_default`.
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Transmittance ratio from 0 to 1, unitless.
 #' @details
 #' The transmittance due to aerosols is calculated using the formula:

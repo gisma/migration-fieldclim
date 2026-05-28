@@ -13,17 +13,19 @@ rad_lw_in(...)
 \method{rad_lw_in}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{rh}{Relative humidity in \%.}
+\item{rh}{Relative humidity in percent.}
 
-\item{slope}{Slope in degree.}
+\item{slope}{Slope in degrees.}
 
-\item{valley}{Is the position in a valley (\code{TRUE}) or on a slope (\code{FALSE})?}
+\item{valley}{Logical value indicating whether the station is in a valley.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{sigma}{Stefan-Boltzmann constant in W m-2 K-4.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Longwave incoming radiation in W/m².

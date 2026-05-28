@@ -26,6 +26,8 @@ trans_aerosol(...)
 \item{temp}{Air temperature in °C.}
 
 \item{vis}{Visibility in km, default \code{vis_default}.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Transmittance ratio from 0 to 1, unitless.

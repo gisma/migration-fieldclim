@@ -43,7 +43,7 @@ terr_terrain_angle(weather_station, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

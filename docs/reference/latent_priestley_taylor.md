@@ -24,15 +24,15 @@ latent_priestley_taylor(weather_station, ...)
 
 - temp:
 
-  Air temperature in °C.
+  Air temperature in degrees C.
 
 - rad_bal:
 
-  Radiation balance in W/m².
+  Radiation balance in W m-2.
 
 - soil_flux:
 
-  Soil flux in W/m².
+  Soil flux in W m-2.
 
 - surface_type:
 
@@ -46,7 +46,7 @@ latent_priestley_taylor(weather_station, ...)
 
 ## Value
 
-Latent heat flux in W/m².
+Latent heat flux in W m-2.
 
 ## Details
 

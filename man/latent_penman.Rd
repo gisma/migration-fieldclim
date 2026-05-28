@@ -33,13 +33,13 @@ latent_penman(...)
 
 \item{v}{Wind velocity in m/s.}
 
-\item{temp}{Air temperature in °C.}
+\item{temp}{Air temperature in degrees C.}
 
 \item{rh}{Relative humidity in \%.}
 
 \item{z}{Height of measurement for temperature and wind speed in m.}
 
-\item{rad_bal}{Net radiation balance in W/m².}
+\item{rad_bal}{Net radiation balance in W m-2.}
 
 \item{elev}{Elevation above sea level in m.}
 
@@ -47,21 +47,22 @@ latent_penman(...)
 
 \item{lon}{Longitude in decimal degrees.}
 
-\item{soil_flux}{Soil heat flux in W/m².}
+\item{soil_flux}{Soil heat flux in W m-2.}
 
 \item{obs_height}{Observation height in m. Used for calculating aerodynamic resistance.}
 
 \item{surface_type}{Surface type for determining surface resistance. Options: `r surface_resistance$surface_type``.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
-Latent heat flux in W/m².
+Latent heat flux in W m-2.
 }
 \description{
-Calculates the latent heat flux using the Penman-Monteith equation. Negative
-heat flux signifies flux away from the surface, while positive values signify flux
-towards the surface.
+Calculates the latent heat flux using the Penman-Monteith equation. Positive
+latent heat flux signifies flux away from the surface. Negative latent heat
+flux indicates flux toward the surface or a condensation-like direction,
+depending on context.
 }
 \details{
 The latent heat flux (\eqn{Q_e}) using the Penman-Monteith method is calculated as:
@@ -77,6 +78,11 @@ where:
 \eqn{r_s} is the surface resistance,
 \eqn{e_s} is the saturation vapor pressure, and
 \eqn{e_a} is the actual vapor pressure.
+
+\code{pres_sat_vapor_p()} and \code{pres_vapor_p()} return pressure in hPa.
+\code{latent_penman()} converts \eqn{e_s} and \eqn{e_a} internally to kPa
+before computing the aerodynamic vapour-pressure-deficit term. \eqn{\Delta}
+and \eqn{\gamma} are handled on the same kPa scale.
 
 The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed, observation height, and surface roughness. The surface resistance (\eqn{r_s}) is selected based on the specified surface type.
 

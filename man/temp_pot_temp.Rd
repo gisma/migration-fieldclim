@@ -19,7 +19,7 @@ temp_pot_temp(...)
 
 \item{elev}{Elevation above sea level in m.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 
 \item{height}{Height of measurement, either "upper" or "lower".}
 }
@@ -38,6 +38,11 @@ where:
 \eqn{p} is the actual pressure,
 \eqn{R} is the specific gas constant for dry air (287 J/(kg·K)),
 \eqn{c_p} is the specific heat at constant pressure (1004 J/(kg·K)).
+
+The argument \code{elev} is elevation above sea level in m. It is
+converted internally to pressure using \code{pres_p()}. The 1013.25 hPa
+default in \code{pres_p()} is used for pressure estimation, while
+potential temperature uses 1000 hPa as the reference pressure.
 }
 \examples{
 # Calculate potential temperature at a given temperature and elevation

@@ -13,16 +13,15 @@ sol_azimuth(...)
 \method{sol_azimuth}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
+\item{datetime}{POSIXlt or POSIXct date-time vector.}
 
-\item{lon}{Longitude in degree.}
+\item{lon}{Longitude in degrees.}
 
-\item{lat}{Latitude in degree.}
+\item{lat}{Latitude in degrees.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Degree.

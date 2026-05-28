@@ -14,6 +14,12 @@ pres_air_density(...)
 }
 \arguments{
 \item{...}{Additional arguments.}
+
+\item{weather_station}{A weather_station object.}
+
+\item{elev}{Elevation above sea level in m.}
+
+\item{temp}{Air temperature in degrees C.}
 }
 \value{
 Air density in kg/m³.

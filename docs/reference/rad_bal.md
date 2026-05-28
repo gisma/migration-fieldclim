@@ -32,21 +32,19 @@ rad_bal(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - datetime:
 
-  Datetime of class `POSIXlt`. See
-  [`base::as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html). Make
-  sure to provide the correct timezone information!
+  POSIXlt or POSIXct date-time vector.
 
 - lon:
 
-  Longitude in degree.
+  Longitude in degrees.
 
 - lat:
 
-  Latitude in degree.
+  Latitude in degrees.
 
 - elev:
 
@@ -54,39 +52,35 @@ rad_bal(weather_station, ...)
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - rh:
 
-  Relative humidity in %.
+  Relative humidity in percent.
 
 - slope:
 
-  Slope in degree.
+  Slope in degrees.
 
 - exposition:
 
-  Exposition in degree.
+  Exposition or aspect in degrees.
 
 - valley:
 
-  Is the position in a valley (`TRUE`) or on a slope (`FALSE`)?
+  Logical value indicating whether the station is in a valley.
 
 - surface_type:
 
-  Surface type. Allowed values are: field, acre, lawn, street,
-  agriculture, settlement, coniferous forest, deciduous forest, mixed
-  forest, city, water, shrub. EXCEPTION: for functions related to
-  Priestley-Taylor methods, allowed values are: field, bare soil,
-  coniferous forest, water, wetland, spruce forest.
+  Surface-type label.
 
 - surface_temp:
 
-  Surface temperature in degree Celcius.
+  Surface temperature in degrees C.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -107,7 +101,23 @@ Bendix 2004, p. 45 eq. 3.1.
 
 ``` r
 # Calculate total radiation balance
-rad_bal(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15, rh = 60,
-        slope = 5, exposition = 180, valley = FALSE, surface_type = "lawn", surface_temp = 15)
-#> Error in datetime$hour: $ operator is invalid for atomic vectors
+example_time <- as.POSIXlt(
+ "2023-08-06 12:00:00",
+ tz = "UTC"
+)
+
+rad_bal(
+ datetime = example_time,
+ lon = 10,
+ lat = 50,
+ elev = 100,
+ temp = 15,
+ rh = 60,
+ slope = 5,
+ exposition = 180,
+ valley = FALSE,
+ surface_type = "lawn",
+ surface_temp = 15
+)
+#> [1] 477.4196
 ```

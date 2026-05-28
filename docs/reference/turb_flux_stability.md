@@ -30,7 +30,8 @@ turb_flux_stability(weather_station, ...)
 
 ## Value
 
-Gradient-Richardson-Number.
+A stability class string: "unstable", "neutral", "stable", or `NA`,
+according to the current Gradient-Richardson-Number thresholds.
 
 ## References
 

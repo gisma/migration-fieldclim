@@ -26,35 +26,31 @@ rad_bal(...)
 \method{rad_bal}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
+\item{datetime}{POSIXlt or POSIXct date-time vector.}
 
-\item{lon}{Longitude in degree.}
+\item{lon}{Longitude in degrees.}
 
-\item{lat}{Latitude in degree.}
+\item{lat}{Latitude in degrees.}
 
 \item{elev}{Elevation above sea level in m.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{rh}{Relative humidity in \%.}
+\item{rh}{Relative humidity in percent.}
 
-\item{slope}{Slope in degree.}
+\item{slope}{Slope in degrees.}
 
-\item{exposition}{Exposition in degree.}
+\item{exposition}{Exposition or aspect in degrees.}
 
-\item{valley}{Is the position in a valley (\code{TRUE}) or on a slope (\code{FALSE})?}
+\item{valley}{Logical value indicating whether the station is in a valley.}
 
-\item{surface_type}{Surface type.
-Allowed values are: field, acre, lawn, street, agriculture, settlement, coniferous forest, deciduous forest, mixed forest, city, water, shrub.
-EXCEPTION: for functions related to Priestley-Taylor methods,
-allowed values are: field, bare soil, coniferous forest, water, wetland, spruce forest.}
+\item{surface_type}{Surface-type label.}
 
-\item{surface_temp}{Surface temperature in degree Celcius.}
+\item{surface_temp}{Surface temperature in degrees C.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Total radiation balance in W/m².
@@ -71,8 +67,24 @@ where:
 }
 \examples{
 # Calculate total radiation balance
-rad_bal(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15, rh = 60,
-        slope = 5, exposition = 180, valley = FALSE, surface_type = "lawn", surface_temp = 15)
+example_time <- as.POSIXlt(
+ "2023-08-06 12:00:00",
+ tz = "UTC"
+)
+
+rad_bal(
+ datetime = example_time,
+ lon = 10,
+ lat = 50,
+ elev = 100,
+ temp = 15,
+ rh = 60,
+ slope = 5,
+ exposition = 180,
+ valley = FALSE,
+ surface_type = "lawn",
+ surface_temp = 15
+)
 }
 \references{
 Bendix 2004, p. 45 eq. 3.1.

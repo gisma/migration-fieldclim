@@ -19,7 +19,7 @@ hum_absolute(...)
 
 \item{temp}{Temperature in °C.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Numeric. Absolute humidity in kg/m³.

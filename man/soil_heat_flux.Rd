@@ -35,7 +35,7 @@ soil_heat_flux(...)
 
 \item{soil_depth2}{Depth of the second measurement in m.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Soil heat flux in W/m².
@@ -46,7 +46,7 @@ Negative values signify flux towards the atmosphere, while positive values signi
 }
 \details{
 The soil heat flux (\eqn{G}) is calculated using the formula:
-\deqn{G = \lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}}
+\deqn{G = -\lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}}
 where:
 \eqn{\lambda} is the thermal conductivity of the soil (W/m/K),
 \eqn{T_1} and \eqn{T_2} are the temperatures at two different depths (°C),

@@ -3,6 +3,18 @@
 #' Calculates the total radiation balance by summing the shortwave and longwave radiation balances.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param rh Relative humidity in percent.
+#' @param slope Slope in degrees.
+#' @param exposition Exposition or aspect in degrees.
+#' @param valley Logical value indicating whether the station is in a valley.
+#' @param surface_type Surface-type label.
+#' @param surface_temp Surface temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Total radiation balance in W/m².
 #' @details
 #' The total radiation balance (\eqn{R_{total}}) is calculated as:
@@ -13,8 +25,24 @@
 #'
 #' @examples
 #' # Calculate total radiation balance
-#' rad_bal(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15, rh = 60,
-#'         slope = 5, exposition = 180, valley = FALSE, surface_type = "lawn", surface_temp = 15)
+#' example_time <- as.POSIXlt(
+#'  "2023-08-06 12:00:00",
+#'  tz = "UTC"
+#')
+#'
+#'rad_bal(
+#'  datetime = example_time,
+#'  lon = 10,
+#'  lat = 50,
+#'  elev = 100,
+#'  temp = 15,
+#'  rh = 60,
+#'  slope = 5,
+#'  exposition = 180,
+#'  valley = FALSE,
+#'  surface_type = "lawn",
+#'  surface_temp = 15
+#' )
 #' @references Bendix 2004, p. 45 eq. 3.1.
 #' @export
 rad_bal <- function(...) {
@@ -45,6 +73,16 @@ rad_bal.weather_station <- function(weather_station, ...) {
 #' Calculates the shortwave radiation balance by summing the shortwave incoming and outgoing radiation as well as diffused incoming and outgoing radiation.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param slope Slope in degrees.
+#' @param exposition Exposition or aspect in degrees.
+#' @param valley Logical value indicating whether the station is in a valley.
+#' @param surface_type Surface-type label.
+#' @param weather_station A weather_station object.
 #' @return Shortwave radiation balance in W/m².
 #' @details
 #' The shortwave radiation balance (\eqn{R_{sw}}) is calculated as:
@@ -57,7 +95,8 @@ rad_bal.weather_station <- function(weather_station, ...) {
 #'
 #' @examples
 #' # Calculate shortwave radiation balance
-#' rad_sw_bal(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+#' example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+#' rad_sw_bal(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
 #'            slope = 5, exposition = 180, valley = FALSE, surface_type = "lawn")
 #' @references Bendix 2004, p. 45 eq. 3.1.
 #' @export
@@ -96,6 +135,14 @@ rad_sw_bal.weather_station <- function(weather_station, ...) {
 #' Calculates the direct shortwave incoming radiation.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param slope Slope in degrees.
+#' @param exposition Exposition or aspect in degrees.
+#' @param weather_station A weather_station object.
 #' @return Shortwave incoming radiation in W/m².
 #' @details
 #' The shortwave incoming radiation (\eqn{SW_{in}}) is calculated using the formula:
@@ -108,7 +155,8 @@ rad_sw_bal.weather_station <- function(weather_station, ...) {
 #'
 #' @examples
 #' # Calculate shortwave incoming radiation
-#' rad_sw_in(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+#' example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+#' rad_sw_in(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
 #'           slope = 5, exposition = 180)
 #' @references Bendix 2004, p. 46 eq. 3.3, p. 52 eq. 3.8.
 #' @export
@@ -150,6 +198,10 @@ rad_sw_in.weather_station <- function(weather_station, ...) {
 #' Calculates the shortwave radiation at the top of the atmosphere without the influence of the atmosphere.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param weather_station A weather_station object.
 #' @return Shortwave radiation at top of atmosphere in W/m².
 #' @details
 #' The shortwave radiation at the top of the atmosphere (\eqn{SW_{toa}}) is calculated using the formula:
@@ -162,7 +214,8 @@ rad_sw_in.weather_station <- function(weather_station, ...) {
 #' @param sol_const Solar radiation constant in W/m², default is 1361.
 #' @examples
 #' # Calculate shortwave radiation at top of atmosphere
-#' rad_sw_toa(datetime = Sys.time(), lon = 10, lat = 50)
+#' example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+#' rad_sw_toa(datetime = example_time, lon = 10, lat = 50)
 #' @references Bendix 2004, p. 244.
 #' @export
 rad_sw_toa <- function(...) {
@@ -195,6 +248,15 @@ rad_sw_toa.weather_station <- function(weather_station, ...) {
 #' Calculates the diffused shortwave incoming radiation.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param slope Slope in degrees.
+#' @param exposition Exposition or aspect in degrees.
+#' @param valley Logical value indicating whether the station is in a valley.
+#' @param weather_station A weather_station object.
 #' @return Diffused shortwave incoming radiation in W/m².
 #' @details
 #' The diffused shortwave incoming radiation (\eqn{D_{in}}) is calculated using the formula:
@@ -210,7 +272,8 @@ rad_sw_toa.weather_station <- function(weather_station, ...) {
 #'
 #' @examples
 #' # Calculate diffused shortwave incoming radiation
-#' rad_diffuse_in(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+#' example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+#' rad_diffuse_in(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
 #'                slope = 5, exposition = 180, valley = FALSE)
 #' @references Bendix 2004, p. 58 eq. 3.14, p. 55 eq. 3.9.
 #' @export
@@ -255,6 +318,15 @@ rad_diffuse_in.weather_station <- function(weather_station, ...) {
 #' Calculates the reflected shortwave incoming radiation.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param slope Slope in degrees.
+#' @param exposition Exposition or aspect in degrees.
+#' @param surface_type Surface-type label.
+#' @param weather_station A weather_station object.
 #' @return Reflected shortwave incoming radiation in W/m².
 #' @details
 #' The reflected shortwave incoming radiation (\eqn{SW_{out}}) is calculated using the formula:
@@ -265,7 +337,8 @@ rad_diffuse_in.weather_station <- function(weather_station, ...) {
 #'
 #' @examples
 #' # Calculate reflected shortwave incoming radiation
-#' rad_sw_out(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+#' example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+#' rad_sw_out(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
 #'            slope = 5, exposition = 180, surface_type = "lawn")
 #' @references Bendix 2004, p. 45 eq. 3.1.
 #' @export
@@ -297,6 +370,16 @@ rad_sw_out.weather_station <- function(weather_station, ...) {
 #' Calculates the reflected diffused incoming radiation.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param slope Slope in degrees.
+#' @param exposition Exposition or aspect in degrees.
+#' @param valley Logical value indicating whether the station is in a valley.
+#' @param surface_type Surface-type label.
+#' @param weather_station A weather_station object.
 #' @return Reflected diffused incoming radiation in W/m².
 #' @details
 #' The reflected diffused incoming radiation (\eqn{D_{out}}) is calculated using the formula:
@@ -307,7 +390,8 @@ rad_sw_out.weather_station <- function(weather_station, ...) {
 #'
 #' @examples
 #' # Calculate reflected diffused incoming radiation
-#' rad_diffuse_out(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+#' example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+#' rad_diffuse_out(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
 #'                 slope = 5, exposition = 180, valley = FALSE, surface_type = "lawn")
 #' @references Bendix 2004, p. 45 eq. 3.1.
 #' @export
@@ -339,6 +423,13 @@ rad_diffuse_out.weather_station <- function(weather_station, ...) {
 #' Calculates the sum of longwave incoming and outgoing radiation.
 #'
 #' @inheritParams build_weather_station
+#' @param temp Air temperature in degrees C.
+#' @param rh Relative humidity in percent.
+#' @param slope Slope in degrees.
+#' @param valley Logical value indicating whether the station is in a valley.
+#' @param surface_type Surface-type label.
+#' @param surface_temp Surface temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Longwave radiation balance in W/m².
 #' @details
 #' The longwave radiation balance (\eqn{R_{lw}}) is calculated as:
@@ -380,6 +471,11 @@ rad_lw_bal.weather_station <- function(weather_station, ...) {
 #' Calculates the longwave radiation of the atmosphere.
 #'
 #' @inheritParams build_weather_station
+#' @param temp Air temperature in degrees C.
+#' @param rh Relative humidity in percent.
+#' @param slope Slope in degrees.
+#' @param valley Logical value indicating whether the station is in a valley.
+#' @param weather_station A weather_station object.
 #' @return Longwave incoming radiation in W/m².
 #' @details
 #' The longwave incoming radiation (\eqn{LW_{in}}) is calculated as:
@@ -393,6 +489,7 @@ rad_lw_bal.weather_station <- function(weather_station, ...) {
 #' @examples
 #' # Calculate longwave incoming radiation
 #' rad_lw_in(temp = 15, rh = 60, slope = 5, valley = FALSE)
+#' @param sigma Stefan-Boltzmann constant in W m-2 K-4.
 #' @references Bendix 2004, p. 68 eq. 3.24.
 #' @export
 rad_lw_in <- function(...) {
@@ -424,6 +521,9 @@ rad_lw_in.weather_station <- function(weather_station, ...) {
 #' Calculates the emissivity of the atmosphere.
 #'
 #' @inheritParams build_weather_station
+#' @param temp Air temperature in degrees C.
+#' @param rh Relative humidity in percent.
+#' @param weather_station A weather_station object.
 #' @return Emissivity ratio from 0 to 1.
 #' @details
 #' The emissivity of the atmosphere (\eqn{\epsilon_{air}}) is calculated as:
@@ -465,6 +565,9 @@ rad_emissivity_air.weather_station <- function(weather_station, ...) {
 #' Calculates the longwave radiation of the surface.
 #'
 #' @inheritParams build_weather_station
+#' @param surface_type Surface-type label.
+#' @param surface_temp Surface temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Longwave outgoing radiation in W/m².
 #' @details
 #' The longwave outgoing radiation (\eqn{LW_{out}}) is calculated as:
@@ -473,7 +576,7 @@ rad_emissivity_air.weather_station <- function(weather_station, ...) {
 #' \eqn{\epsilon} is the emissivity of the surface,
 #' \eqn{\sigma} is the Stefan-Boltzmann constant, and
 #' \eqn{T_{surface}} is the surface temperature in Kelvin.
-#'
+#' @param sigma Stefan-Boltzmann constant in W m-2 K-4.
 #' @examples
 #' # Calculate longwave outgoing radiation
 #' rad_lw_out(surface_type = "lawn", surface_temp = 15)

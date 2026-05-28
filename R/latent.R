@@ -5,7 +5,7 @@
 #' towards the surface.
 #'
 #' @param ... Additional arguments.
-#' @return Latent heat flux in W/m².
+#' @return Latent heat flux in W m-2.
 #' @details
 #' The latent heat flux (\eqn{Q_e}) using the Priestley-Taylor method is calculated as:
 #' \deqn{Q_e = \alpha_{PT} \cdot \frac{\Delta}{\Delta + \gamma} \cdot (R_n - G)}
@@ -17,9 +17,9 @@
 #' \eqn{G} is the soil heat flux.
 #'
 #' The Priestley-Taylor coefficient depends on the surface type and can be selected from predefined values.
-#' @param temp Air temperature in °C.
-#' @param rad_bal Radiation balance in W/m².
-#' @param soil_flux Soil flux in W/m².
+#' @param temp Air temperature in degrees C.
+#' @param rad_bal Radiation balance in W m-2.
+#' @param soil_flux Soil flux in W m-2.
 #' @param surface_type Surface type, for which a Priestley-Taylor coefficient will be selected. Options: `r priestley_taylor_coefficient$surface_type`
 #' @examples
 #' # Calculate latent heat flux using Priestley-Taylor method
@@ -118,24 +118,26 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 
 #' Latent Heat Penman-Monteith Method
 #'
-#' Calculates the latent heat flux using the Penman-Monteith equation. Negative
-#' heat flux signifies flux away from the surface, while positive values signify flux
-#' towards the surface.
+#' Calculates the latent heat flux using the Penman-Monteith equation. Positive
+#' latent heat flux signifies flux away from the surface. Negative latent heat
+#' flux indicates flux toward the surface or a condensation-like direction,
+#' depending on context.
 #'
 #' @param datetime POSIXt object (POSIXct, POSIXlt). See [base::as.POSIXlt] and [base::strptime] for conversion.
 #' @param v Wind velocity in m/s.
-#' @param temp Air temperature in °C.
+#' @param temp Air temperature in degrees C.
 #' @param rh Relative humidity in %.
 #' @param z Height of measurement for temperature and wind speed in m.
-#' @param rad_bal Net radiation balance in W/m².
+#' @param rad_bal Net radiation balance in W m-2.
 #' @param elev Elevation above sea level in m.
 #' @param lat Latitude in decimal degrees.
 #' @param lon Longitude in decimal degrees.
-#' @param soil_flux Soil heat flux in W/m².
+#' @param soil_flux Soil heat flux in W m-2.
 #' @param obs_height Observation height in m. Used for calculating aerodynamic resistance.
 #' @param surface_type Surface type for determining surface resistance. Options: `r surface_resistance$surface_type``.
 #' @param ... Additional arguments.
-#' @return Latent heat flux in W/m².
+#' @param weather_station A weather_station object.
+#' @return Latent heat flux in W m-2.
 #' @details
 #' The latent heat flux (\eqn{Q_e}) using the Penman-Monteith method is calculated as:
 #' \deqn{Q_e = \frac{\Delta (R_n - G) + \gamma \frac{c_p \rho}{r_a} (e_s - e_a)}{\Delta + \gamma (1 + \frac{r_s}{r_a})}}
@@ -150,6 +152,11 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 #' \eqn{r_s} is the surface resistance,
 #' \eqn{e_s} is the saturation vapor pressure, and
 #' \eqn{e_a} is the actual vapor pressure.
+#'
+#' \code{pres_sat_vapor_p()} and \code{pres_vapor_p()} return pressure in hPa.
+#' \code{latent_penman()} converts \eqn{e_s} and \eqn{e_a} internally to kPa
+#' before computing the aerodynamic vapour-pressure-deficit term. \eqn{\Delta}
+#' and \eqn{\gamma} are handled on the same kPa scale.
 #'
 #' The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed, observation height, and surface roughness. The surface resistance (\eqn{r_s}) is selected based on the specified surface type.
 #'
@@ -213,16 +220,19 @@ latent_penman.default <- function(datetime,
   ut <- lt$hour + lt$min / 60 + lt$sec / 3600
 
   # Constants
-  cp <- 1004  # specific heat of air (J/(kg·K))
-  rho <- 1.2  # density of air (kg/m³)
-  gamma <- 0.665 * 10^(-3) * pres_p(elev, temp)  # psychrometric constant (kPa/°C)
+  cp <- 1004  # specific heat of air (J/(kg K))
+  rho <- 1.2  # density of air (kg m-3)
+  gamma <- 0.665 * 10^(-3) * pres_p(elev, temp)  # psychrometric constant (kPa/degrees C)
 
   # Saturation vapor pressure (es) and actual vapor pressure (ea)
-  es <- pres_sat_vapor_p(temp)
-  ea <- pres_vapor_p(temp, rh)
+  es_hPa <- pres_sat_vapor_p(temp)
+  ea_hPa <- pres_vapor_p(temp, rh)
+  es_kPa <- es_hPa / 10
+  ea_kPa <- ea_hPa / 10
+  vpd_kPa <- es_kPa - ea_kPa
 
   # Slope of the saturation vapor pressure curve (Delta)
-  delta <- 4098 * (es/10) / ((temp + 237.3)^2)
+  delta <- 4098 * es_kPa / ((temp + 237.3)^2)
 
   # Calculate aerodynamic resistance (ra)
   d <- turb_displacement(obs_height, surroundings = "vegetation")
@@ -231,32 +241,45 @@ latent_penman.default <- function(datetime,
   k <- 0.41      # von Karman's constant
   cap_value <- 1e-6
 
-  # Calculate the terms with a cap to ensure they are positive
-  log_arg1 <- max((z - d) / zom, cap_value)
-  log_arg2 <- max((z - d) / zoh, cap_value)
+  # Calculate the terms and keep invalid aerodynamic cases local to their element.
+  log_arg1 <- (z - d) / zom
+  log_arg2 <- (z - d) / zoh
 
   # Calculate ra
-  ra <- (log(log_arg1) * log(log_arg2)) / (k^2 * v)
+  v_ra <- rep(v, length.out = length(log_arg1))
+  invalid_ra <- !is.finite(log_arg1) | !is.finite(log_arg2) |
+    log_arg1 <= 0 | log_arg2 <= 0 |
+    !is.finite(v_ra) | v_ra <= 0
+  valid_ra <- !invalid_ra
+  ra <- rep(NA_real_, length(valid_ra))
+  ra[valid_ra] <- (log(log_arg1[valid_ra]) * log(log_arg2[valid_ra])) / (k^2 * v_ra[valid_ra])
+
+  if (any(invalid_ra, na.rm = TRUE)) {
+    warning(
+      "latent_penman: invalid aerodynamic resistance for some values; returning NA there.",
+      call. = FALSE
+    )
+  }
 
   # Net radiation (Rn) and soil heat flux (G)
-  Rn <- rad_bal  # W/m²
-  G <- soil_flux  # W/m²
+  Rn <- rad_bal  # W m-2
+  G <- soil_flux  # W m-2
 
   # Penman-Monteith equation
-  Qe <- (delta * (Rn - G) + gamma * (cp * rho / ra) * (es - ea)) / (delta + gamma * (1 + rs / ra))
+  Qe <- (delta * (Rn - G) + gamma * (cp * rho / ra) * vpd_kPa) / (delta + gamma * (1 + rs / ra))
 
   # Convert from energy flux to mass flux (latent heat of vaporization)
   lv <- hum_evap_heat(temp)  # J/kg
-  out <- Qe / lv  # kg/m²/s
+  out <- Qe / lv  # kg m-2 s-1
 
-  # Convert to W/m² by multiplying with latent heat of vaporization and time conversion if needed
+  # Convert to W m-2 by multiplying with latent heat of vaporization and time conversion if needed
   out <- out * lv
 
   # Check if values exceed the valid data range and issue warnings
-  if (any((!is.na(out)) > 600)) {
+  if (any(out > 600, na.rm = TRUE)) {
     warning("There are values above 600 W/m^2!")
   }
-  if (any((!is.na(out)) < -600)) {
+  if (any(out < -600, na.rm = TRUE)) {
     warning("There are values below -600 W/m^2!")
   }
 
@@ -264,7 +287,6 @@ latent_penman.default <- function(datetime,
 }
 
 #' @rdname latent_penman
-#' @inheritParams build_weather_station
 #' @export
 latent_penman.weather_station <- function(weather_station, ...) {
   check_availability(
@@ -336,14 +358,14 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #' towards the surface.
 #'
 #' @param ... Additional arguments.
-#' @return Latent heat flux in W/m².
+#' @return Latent heat flux in W m-2.
 #' @details
 #' The latent heat flux (\eqn{Q_e}) using the Monin-Obukhov method is calculated as:
 #' \deqn{Q_e = -\rho \cdot L_v \cdot \frac{k \cdot u_*}{\phi_q} \cdot \frac{\Delta q}{\Delta z}}
 #' where:
 #' \eqn{\rho} is the air density,
 #' \eqn{L_v} is the latent heat of vaporization,
-#' \eqn{k} is the von Kármán constant,
+#' \eqn{k} is the von Karman constant,
 #' \eqn{u_*} is the friction velocity,
 #' \eqn{\phi_q} is the stability correction function for humidity,
 #' \eqn{\Delta q} is the moisture gradient, and
@@ -360,8 +382,8 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #' \end{cases}}
 #' @param hum1 Relative humidity at lower height in %.
 #' @param hum2 Relative humidity at upper height in %.
-#' @param t1 Air temperature at lower height in °C.
-#' @param t2 Air temperature at upper height in °C.
+#' @param t1 Air temperature at lower height in degrees C.
+#' @param t2 Air temperature at upper height in degrees C.
 #' @param v1 Windspeed at lower height (e.g. height of anemometer) in m/s.
 #' @param v2 Windspeed at upper height in m/s.
 #' @param z1 Lower height of measurement in m.
@@ -373,7 +395,7 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #' @inheritParams turb_roughness_length
 #' @examples
 #' # Calculate latent heat flux using Monin-Obukhov length
-#' latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "forest")
+#' latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "coniferous forest")
 #' @references Bendix 2004, p. 77, eq.4.6
 #' @references Foken 2016, p. 61, Tab. 2.10
 #' @export
@@ -429,17 +451,16 @@ latent_monin.default <- function(hum1, hum2, t1, t2, v1, v2, z1 = 2, z2 = 10, el
 
   # Check if values exceed the valid data range.
   if (any(out > 600, na.rm = TRUE)) {
-    warning("There are values above 600 W/m²!")
+    warning("There are values above 600 W m-2!")
   }
   if (any(out < -600, na.rm = TRUE)) {
-    warning("There are values below -600 W/m²!")
+    warning("There are values below -600 W m-2!")
   }
 
   return(out)
 }
 
 #' @rdname latent_monin
-#' @inheritParams build_weather_station
 #' @export
 latent_monin.weather_station <- function(weather_station, cap = NULL, ...) {
   check_availability(weather_station, "z1", "z2", "t1", "t2", "hum1", "hum2", "v1", "v2", "elev")
@@ -469,21 +490,23 @@ latent_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' Calculates the latent heat flux using the Bowen Method. Positive
 #' flux signifies flux away from the surface, negative values signify flux
 #' towards the surface.
-#' Values above 600 W/m² and below -600 W/m² will be recognized
-#' as measurement mistakes and smoothed respectively.
+#' Values above 600 W m-2 and below -600 W m-2 trigger warnings.
+#' Output flux values are not smoothed; only the optional denominator cap
+#' guards near-zero partition denominators.
 #'
 #' @param ... Additional arguments.
-#' @param t1 Temperature at lower height in °C.
-#' @param t2 Temperature at upper height in °C.
+#' @param t1 Temperature at lower height in degrees C.
+#' @param t2 Temperature at upper height in degrees C.
 #' @param hum1 Relative humidity at lower height in %.
 #' @param hum2 Relative humidity at upper height in %.
 #' @param z1 Lower height of measurement in m.
 #' @param z2 Upper height of measurement in m.
 #' @param elev Elevation above sea level in m.
-#' @param rad_bal Radiation balance in W/m².
-#' @param soil_flux Soil flux in W/m².
-#' @param cap A small value to prevent division by zero or near-zero values when calculating the Bowen ratio. Default is NULL.
-#' @return Latent heat flux in W/m².
+#' @param rad_bal Radiation balance in W m-2.
+#' @param soil_flux Soil flux in W m-2.
+#' @param cap A positive denominator guard for near-zero \eqn{1 + B}. Default is NULL.
+#' @param weather_station A weather_station object.
+#' @return Latent heat flux in W m-2.
 #' @details
 #' The latent heat flux (\eqn{Q_e}) using the Bowen method is calculated as:
 #' \deqn{Q_e = \frac{R_n - G}{1 + B}}
@@ -492,17 +515,25 @@ latent_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' \eqn{G} is the soil heat flux, and
 #' \eqn{B} is the Bowen ratio.
 #'
-#' The Bowen ratio (\eqn{B}) is calculated as:
-#' \deqn{B = \frac{\gamma}{L_v} \cdot \frac{\Delta T}{\Delta q}}
+#' The implemented Bowen ratio (\eqn{B}) is calculated from a
+#' potential-temperature gradient and an absolute-humidity gradient:
+#' \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 #' where:
-#' \eqn{\gamma} is the psychrometric constant,
-#' \eqn{L_v} is the latent heat of vaporization,
-#' \eqn{\Delta T} is the temperature gradient, and
-#' \eqn{\Delta q} is the moisture gradient.
+#' \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
+#' is an empirical coefficient,
+#' \eqn{\theta} is potential temperature, and
+#' \eqn{AH} is absolute humidity.
+#' The inputs \code{t1} and \code{t2} are converted to potential temperature
+#' before the temperature gradient is formed. The inputs \code{hum1} and
+#' \code{hum2} are relative humidity values that are converted internally to
+#' absolute humidity before the humidity gradient is formed.
 #'
-#' When \eqn{1 + B} results in values close to zero, the latent heat flux can become unrealistically high.
-#' To prevent this, a cap parameter can be set.
-#' The cap parameter ensures that \eqn{1 + B} does not get too close to zero by setting a minimum allowable value.
+#' When \eqn{1 + B} is close to zero, the latent heat flux can become
+#' unrealistically high. The \code{cap} parameter is a numerical safeguard that
+#' replaces near-zero denominators with \code{+/- cap}. Exact closure with
+#' \code{sensible_bowen()} is guaranteed only for finite uncapped denominators;
+#' capped cases are guarded diagnostic outputs and may not close
+#' \code{rad_bal - soil_flux} exactly.
 #' @examples
 #' # Calculate latent heat flux using Bowen method
 #' latent_bowen(t1 = 20, t2 = 15, hum1 = 80, hum2 = 60, z1 = 2, z2 = 10, elev = 100, rad_bal = 200, soil_flux = 50)
@@ -541,17 +572,16 @@ latent_bowen.default <- function(t1, t2, hum1, hum2, z1 = 2, z2 = 10, elev,
 
   # Check if values exceed the valid data range and issue warnings
   if (any(out > 600, na.rm = TRUE)) {
-    warning("There are values above 600 W/m²!")
+    warning("There are values above 600 W m-2!")
   }
   if (any(out < -600, na.rm = TRUE)) {
-    warning("There are values below -600 W/m²!")
+    warning("There are values below -600 W m-2!")
   }
 
   return(out)
 }
 
 #' @rdname latent_bowen
-#' @inheritParams build_weather_station
 #' @export
 latent_bowen.weather_station <- function(weather_station, cap = NULL, ...) {
   check_availability(weather_station, "z1", "z2", "t1", "t2", "hum1", "hum2", "elev", "rad_bal", "soil_flux")

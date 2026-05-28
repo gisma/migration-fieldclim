@@ -29,21 +29,19 @@ rad_diffuse_out(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - datetime:
 
-  Datetime of class `POSIXlt`. See
-  [`base::as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html). Make
-  sure to provide the correct timezone information!
+  POSIXlt or POSIXct date-time vector.
 
 - lon:
 
-  Longitude in degree.
+  Longitude in degrees.
 
 - lat:
 
-  Latitude in degree.
+  Latitude in degrees.
 
 - elev:
 
@@ -51,31 +49,27 @@ rad_diffuse_out(weather_station, ...)
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - slope:
 
-  Slope in degree.
+  Slope in degrees.
 
 - exposition:
 
-  Exposition in degree.
+  Exposition or aspect in degrees.
 
 - valley:
 
-  Is the position in a valley (`TRUE`) or on a slope (`FALSE`)?
+  Logical value indicating whether the station is in a valley.
 
 - surface_type:
 
-  Surface type. Allowed values are: field, acre, lawn, street,
-  agriculture, settlement, coniferous forest, deciduous forest, mixed
-  forest, city, water, shrub. EXCEPTION: for functions related to
-  Priestley-Taylor methods, allowed values are: field, bare soil,
-  coniferous forest, water, wetland, spruce forest.
+  Surface-type label.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -96,7 +90,8 @@ Bendix 2004, p. 45 eq. 3.1.
 
 ``` r
 # Calculate reflected diffused incoming radiation
-rad_diffuse_out(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+rad_diffuse_out(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
                 slope = 5, exposition = 180, valley = FALSE, surface_type = "lawn")
-#> Error in datetime[i]$mon: $ operator is invalid for atomic vectors
+#> [1] 31.5791
 ```

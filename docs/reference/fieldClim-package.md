@@ -7,6 +7,16 @@ estimation of radiation properties, the calculations of latent,
 sensible, and turbulent heat fluxes, the calculation of soil heat fluxes
 as well as the estimation of thermal and mechanical boundary layers.
 
+## See also
+
+Useful links:
+
+- <https://gisma.github.io/migration-fieldclim>
+
+- <https://github.com/gisma/migration-fieldclim>
+
+- Report bugs at <https://github.com/gisma/migration-fieldclim/issues>
+
 ## Author
 
 **Maintainer**: Fabian Mitze <Mitze@students.uni-marburg.de>
@@ -26,3 +36,5 @@ Authors:
 - Kai Richter <richter5@students.uni-marburg.de>
 
 - You-De Chen <you-de.chen@students.uni-marburg.de>
+
+- Christoph Reudenbach <reudenbach@uni-marburg.de>

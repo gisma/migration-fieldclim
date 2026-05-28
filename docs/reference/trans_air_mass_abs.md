@@ -40,6 +40,10 @@ trans_air_mass_abs(weather_station, ...)
 
   Air temperature in °C.
 
+- weather_station:
+
+  A weather_station object.
+
 ## Value
 
 Absolute optical air mass, unitless.

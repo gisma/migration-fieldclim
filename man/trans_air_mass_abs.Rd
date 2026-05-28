@@ -24,6 +24,8 @@ trans_air_mass_abs(...)
 \item{elev}{Elevation above sea level in meters.}
 
 \item{temp}{Air temperature in °C.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Absolute optical air mass, unitless.

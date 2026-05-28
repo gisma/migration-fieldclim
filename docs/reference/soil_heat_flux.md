@@ -56,7 +56,7 @@ soil_heat_flux(weather_station, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -65,7 +65,7 @@ Soil heat flux in W/m².
 ## Details
 
 The soil heat flux (\\G\\) is calculated using the formula: \$\$G =
-\lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}\$\$ where: \\\lambda\\ is the
+-\lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}\$\$ where: \\\lambda\\ is the
 thermal conductivity of the soil (W/m/K), \\T_1\\ and \\T_2\\ are the
 temperatures at two different depths (°C), \\z_1\\ and \\z_2\\ are the
 depths at which the temperatures are measured (m).

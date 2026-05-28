@@ -19,7 +19,7 @@ soil_thermal_cond(...)
 
 \item{moisture}{Soil moisture content in cubic meters per cubic meter.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Soil thermal conductivity in W/m/K.

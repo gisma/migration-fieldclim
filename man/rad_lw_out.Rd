@@ -13,16 +13,15 @@ rad_lw_out(...)
 \method{rad_lw_out}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{surface_type}{Surface type.
-Allowed values are: field, acre, lawn, street, agriculture, settlement, coniferous forest, deciduous forest, mixed forest, city, water, shrub.
-EXCEPTION: for functions related to Priestley-Taylor methods,
-allowed values are: field, bare soil, coniferous forest, water, wetland, spruce forest.}
+\item{surface_type}{Surface-type label.}
 
-\item{surface_temp}{Surface temperature in degree Celcius.}
+\item{surface_temp}{Surface temperature in degrees C.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{sigma}{Stefan-Boltzmann constant in W m-2 K-4.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Longwave outgoing radiation in W/m².

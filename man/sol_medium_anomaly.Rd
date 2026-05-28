@@ -13,12 +13,11 @@ sol_medium_anomaly(...)
 \method{sol_medium_anomaly}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
+\item{datetime}{POSIXlt or POSIXct date-time vector.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Degree.

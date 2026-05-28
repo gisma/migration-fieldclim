@@ -2,8 +2,9 @@
 
 Calculates the latent heat flux using the Bowen Method. Positive flux
 signifies flux away from the surface, negative values signify flux
-towards the surface. Values above 600 W/m² and below -600 W/m² will be
-recognized as measurement mistakes and smoothed respectively.
+towards the surface. Values above 600 W m-2 and below -600 W m-2 trigger
+warnings. Output flux values are not smoothed; only the optional
+denominator cap guards near-zero partition denominators.
 
 ## Usage
 
@@ -37,11 +38,11 @@ latent_bowen(weather_station, cap = NULL, ...)
 
 - t1:
 
-  Temperature at lower height in °C.
+  Temperature at lower height in degrees C.
 
 - t2:
 
-  Temperature at upper height in °C.
+  Temperature at upper height in degrees C.
 
 - hum1:
 
@@ -65,24 +66,23 @@ latent_bowen(weather_station, cap = NULL, ...)
 
 - rad_bal:
 
-  Radiation balance in W/m².
+  Radiation balance in W m-2.
 
 - soil_flux:
 
-  Soil flux in W/m².
+  Soil flux in W m-2.
 
 - cap:
 
-  A small value to prevent division by zero or near-zero values when
-  calculating the Bowen ratio. Default is NULL.
+  A positive denominator guard for near-zero \\1 + B\\. Default is NULL.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
-Latent heat flux in W/m².
+Latent heat flux in W m-2.
 
 ## Details
 
@@ -90,16 +90,24 @@ The latent heat flux (\\Q_e\\) using the Bowen method is calculated as:
 \$\$Q_e = \frac{R_n - G}{1 + B}\$\$ where: \\R_n\\ is the net radiation,
 \\G\\ is the soil heat flux, and \\B\\ is the Bowen ratio.
 
-The Bowen ratio (\\B\\) is calculated as: \$\$B = \frac{\gamma}{L_v}
-\cdot \frac{\Delta T}{\Delta q}\$\$ where: \\\gamma\\ is the
-psychrometric constant, \\L_v\\ is the latent heat of vaporization,
-\\\Delta T\\ is the temperature gradient, and \\\Delta q\\ is the
-moisture gradient.
+The implemented Bowen ratio (\\B\\) is calculated from a
+potential-temperature gradient and an absolute-humidity gradient: \$\$B
+= \gamma\_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH /
+\Delta z}\$\$ where: \\\gamma\_{code} = 0.00066 \cdot (1 + 0.000946
+\cdot t_1)\\ is an empirical coefficient, \\\theta\\ is potential
+temperature, and \\AH\\ is absolute humidity. The inputs `t1` and `t2`
+are converted to potential temperature before the temperature gradient
+is formed. The inputs `hum1` and `hum2` are relative humidity values
+that are converted internally to absolute humidity before the humidity
+gradient is formed.
 
-When \\1 + B\\ results in values close to zero, the latent heat flux can
-become unrealistically high. To prevent this, a cap parameter can be
-set. The cap parameter ensures that \\1 + B\\ does not get too close to
-zero by setting a minimum allowable value.
+When \\1 + B\\ is close to zero, the latent heat flux can become
+unrealistically high. The `cap` parameter is a numerical safeguard that
+replaces near-zero denominators with `+/- cap`. Exact closure with
+[`sensible_bowen()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bowen.md)
+is guaranteed only for finite uncapped denominators; capped cases are
+guarded diagnostic outputs and may not close `rad_bal - soil_flux`
+exactly.
 
 ## References
 

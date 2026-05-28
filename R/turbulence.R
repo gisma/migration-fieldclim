@@ -129,6 +129,7 @@ turb_displacement.weather_station <- function(weather_station, surroundings = "v
 #'
 #' @rdname turb_ustar
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Numeric. Friction velocity in meters per second (m/s).
 #' @references Bendix 2004, p. 239
 #' @export
@@ -180,7 +181,6 @@ turb_ustar.default <- function(v, z, surface_type = NULL, obs_height = NULL, ...
 }
 
 #' @rdname turb_ustar
-#' @inheritParams build_weather_station
 #' @export
 turb_ustar.weather_station <- function(weather_station, obs_height = NULL, ...) {
   check_availability(weather_station, "v2", "z2")

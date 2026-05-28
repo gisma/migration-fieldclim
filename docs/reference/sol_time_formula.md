@@ -19,21 +19,19 @@ sol_time_formula(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - datetime:
 
-  Datetime of class `POSIXlt`. See
-  [`base::as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html). Make
-  sure to provide the correct timezone information!
+  POSIXlt or POSIXct date-time vector.
 
 - lon:
 
-  Longitude in degree.
+  Longitude in degrees.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

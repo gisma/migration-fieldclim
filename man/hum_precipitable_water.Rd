@@ -20,16 +20,15 @@ hum_precipitable_water(...)
     \item{\code{rl}}{Specific gas constant for air in \eqn{m^2 \cdot s^{-2} \cdot K^{-1}}, default 287.05.}
   }}
 
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
+\item{datetime}{POSIXlt or POSIXct date-time vector.}
 
-\item{lat}{Latitude in degree.}
+\item{lat}{Latitude in degrees.}
 
 \item{elev}{Elevation above sea level in m.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Numeric. Precipitable water in cm·grams.

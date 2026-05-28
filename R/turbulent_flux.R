@@ -96,7 +96,9 @@ turb_flux_monin.weather_station <- function(weather_station, ...) {
 #'
 #' @rdname turb_flux_grad_rich_no
 #' @param ... Additional arguments.
-#' @returns Gradient-Richardson-Number.
+#' @returns A stability class string: "unstable", "neutral",
+#'   "stable", or \code{NA}, according to the current
+#'   Gradient-Richardson-Number thresholds.
 #' @export
 #' @references Bendix 2004, p. 43, eq. 2.5
 turb_flux_grad_rich_no <- function(...) {
@@ -143,7 +145,9 @@ turb_flux_grad_rich_no.weather_station <- function(weather_station, ...) {
 #'
 #' @rdname turb_flux_stability
 #' @param ... Additional arguments.
-#' @returns Gradient-Richardson-Number.
+#' @returns A stability class string: "unstable", "neutral",
+#'   "stable", or \code{NA}, according to the current
+#'   Gradient-Richardson-Number thresholds.
 #' @export
 #' @references Based on Bendix 2004, p.43, picture 2.10
 turb_flux_stability <- function(...) {
@@ -423,7 +427,8 @@ turb_flux_calc <- function(weather_station, pt_only = FALSE) {
     weather_station$latent_priestley_taylor <- latent_priestley_taylor(weather_station)
     return(weather_station)
   }
-
+  sensible_blk <- sensible_bulk(weather_station)
+  latent_blk_res <- latent_bulk_residual(weather_station, sensible = sensible_blk)
   stability <- turb_flux_stability(weather_station)
   sensible_pt <- sensible_priestley_taylor(weather_station)
   latent_pt <- latent_priestley_taylor(weather_station)
@@ -447,6 +452,7 @@ turb_flux_calc <- function(weather_station, pt_only = FALSE) {
   weather_station$sensible_monin <- sensible_mon
   weather_station$latent_monin <- latent_mon
   weather_station$latent_penman <- latent_pen
-
+  weather_station$sensible_bulk <- sensible_blk
+  weather_station$latent_bulk_residual <- latent_blk_res
   return(weather_station)
 }

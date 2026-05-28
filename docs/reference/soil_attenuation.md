@@ -30,7 +30,7 @@ soil_attenuation(weather_station, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -39,9 +39,10 @@ Soil attenuation length in m.
 ## Details
 
 The soil attenuation length (\\L\\) is calculated using the formula:
-\$\$L = \sqrt{\frac{\lambda}{C_v \cdot \pi} \cdot 86400}\$\$ where:
-\\\lambda\\ is the thermal conductivity of the soil (W/m/K), \\C_v\\ is
-the volumetric heat capacity of the soil (MJ/(m³ \* K)), \\86400\\ is
+\$\$L = \sqrt{\frac{\lambda}{C_v \cdot 10^6 \cdot \pi} \cdot 86400}\$\$
+where: \\\lambda\\ is the thermal conductivity of the soil (W/m/K),
+\\C_v\\ is the volumetric heat capacity of the soil (MJ/(m³ \* K));
+\\10^6\\ converts it to J/(m³ \* K) for the calculation, \\86400\\ is
 the number of seconds in a day.
 
 ## References

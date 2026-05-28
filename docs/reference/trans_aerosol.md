@@ -44,6 +44,10 @@ trans_aerosol(weather_station, ...)
 
   Visibility in km, default `vis_default`.
 
+- weather_station:
+
+  A weather_station object.
+
 ## Value
 
 Transmittance ratio from 0 to 1, unitless.

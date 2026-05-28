@@ -1,0 +1,8 @@
+Fix später:
+soil_heat_flux()-Doku:
+G = -lambda * (T1 - T2) / (z1 - z2)
+
+nicht:
+G = lambda * (T1 - T2) / (z1 - z2)
+
+Und bei soil_attenuation() später die Einheit sauber formulieren: Wenn C_v in MJ m-3 K-1 dokumentiert ist, muss die Gleichung entweder explizit C_v * 10^6 enthalten oder C_v in J m-3 K-1 definieren. Der Audit markiert das korrekt als offene Doku-/Einheitenfrage.

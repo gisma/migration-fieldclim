@@ -18,39 +18,35 @@ rad_lw_bal(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - rh:
 
-  Relative humidity in %.
+  Relative humidity in percent.
 
 - slope:
 
-  Slope in degree.
+  Slope in degrees.
 
 - valley:
 
-  Is the position in a valley (`TRUE`) or on a slope (`FALSE`)?
+  Logical value indicating whether the station is in a valley.
 
 - surface_type:
 
-  Surface type. Allowed values are: field, acre, lawn, street,
-  agriculture, settlement, coniferous forest, deciduous forest, mixed
-  forest, city, water, shrub. EXCEPTION: for functions related to
-  Priestley-Taylor methods, allowed values are: field, bare soil,
-  coniferous forest, water, wetland, spruce forest.
+  Surface-type label.
 
 - surface_temp:
 
-  Surface temperature in degree Celcius.
+  Surface temperature in degrees C.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

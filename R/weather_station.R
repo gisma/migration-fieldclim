@@ -1,48 +1,56 @@
 #' Build a weather station object
 #'
-#' Creates a list of class `weather_station` that contains all input arguments.
+#' Creates a list of class `weather_station` from named input arguments.
 #'
-#' Provided input arguments will only be used if they are listed in the section
-#' "Arguments". No warning message is generated for unused arguments.
+#' The function stores all named arguments exactly as provided. It does not
+#' calculate physical quantities and it does not validate whether all fields are
+#' sufficient for later methods. Downstream functions such as radiation,
+#' soil-heat or turbulent-flux functions check whether the fields they need are
+#' available.
 #'
-#' @param ... Additional arguments.
-#' @param weather_station Object of class `weather_station`.
-#' @param datetime Datetime of class `POSIXlt`. See [base::as.POSIXlt()].
-#'    Make sure to provide the correct timezone information!
-#' @param lon Longitude in degree.
-#' @param lat Latitude in degree.
-#' @param elev Elevation above sea level in m.
-#' @param temp Air temperature in degree Celcius.
-#' @param t1 Air temperature at lower height in degree Celcius.
-#' @param t2 Air temperature at upper height in degree Celcius.
-#' @param v1 Windspeed at lower height (e.g. height of anemometer) in m/s.
-#' @param v2 Windspeed at upper height in m/s.
-#' @param slope Slope in degree.
-#' @param exposition Exposition in degree.
-#' @param surface_type Surface type.
-#'   Allowed values are: `r surface_properties$surface_type`.
-#'   EXCEPTION: for functions related to Priestley-Taylor methods,
-#'   allowed values are: `r priestley_taylor_coefficient$surface_type`.
-#' @param obs_height Height of obstacle in m.
-#' @param valley Is the position in a valley (`TRUE`) or on a slope (`FALSE`)?
-#' @param surface_temp Surface temperature in degree Celcius.
-#' @param rh Relative humidity in %.
-#' @param hum1 Relative humidity at lower height in %.
-#' @param hum2 Relative humidity at upper height in %.
-#' @param rad_bal Radiation balance in W/m\eqn{^2}.
-#' @param texture Soil texture. Either "sand", "clay", or "peat".
-#' @param moisture Soil moisture in cubic meter/cubic meter.
-#' @param soil_flux Soil flux in W/m\eqn{^2}.
-#' @param soil_temp1 Soil temperature in degree Celcius of measurement 1.
-#' @param soil_temp2 Soil temperature in degree Celcius of measurement 2.
-#' @param soil_depth1 Depth of the soil temperature measurement 1 in m.
-#' @param soil_depth2 Depth of the soil temperature measurement 2 in m.
-#' @inheritDotParams rad_sw_toa.default sol_const
-#' @inheritDotParams pres_p.default p0 g rl
-#' @inheritDotParams trans_ozone.default ozone_column
-#' @inheritDotParams trans_aerosol.default vis
-#' @inheritDotParams pres_sat_vapor_p.default a b
-#' @inheritDotParams rad_lw_in.default sigma
+#' The object is therefore a structured container for station data, site
+#' metadata, measurement heights and model assumptions.
+#'
+#' Common field names used by `fieldClim` methods include:
+#'
+#' \itemize{
+#'   \item `datetime`: datetime vector, preferably with explicit timezone information.
+#'   \item `lon`: longitude in degrees.
+#'   \item `lat`: latitude in degrees.
+#'   \item `elev`: elevation above sea level in m.
+#'   \item `temp`: air temperature in degrees C.
+#'   \item `rh`: relative humidity in percent.
+#'   \item `t1`: air temperature at lower measurement height in degrees C.
+#'   \item `t2`: air temperature at upper measurement height in degrees C.
+#'   \item `hum1`: relative humidity at lower measurement height in percent.
+#'   \item `hum2`: relative humidity at upper measurement height in percent.
+#'   \item `v1`: wind speed at lower measurement height in m s-1.
+#'   \item `v2`: wind speed at upper measurement height in m s-1.
+#'   \item `z1`: lower measurement height in m.
+#'   \item `z2`: upper measurement height in m.
+#'   \item `rad_bal`: net radiation / radiation balance in W m-2.
+#'   \item `soil_flux`: soil heat flux in W m-2.
+#'   \item `surface_type`: surface-type label used by surface-dependent methods.
+#'   \item `surface_temp`: surface temperature in degrees C.
+#'   \item `moisture`: soil moisture in m3 m-3.
+#'   \item `texture`: soil texture label.
+#'   \item `soil_temp1`: soil temperature at first soil depth in degrees C.
+#'   \item `soil_temp2`: soil temperature at second soil depth in degrees C.
+#'   \item `soil_depth1`: first soil measurement depth in m.
+#'   \item `soil_depth2`: second soil measurement depth in m.
+#'   \item `slope`: slope in degrees.
+#'   \item `exposition`: exposition / aspect in degrees.
+#'   \item `valley`: logical value indicating valley position.
+#'   \item `obs_height`: observation or obstacle height in m, depending on method.
+#' }
+#'
+#' These names are conventions used by other `fieldClim` methods. Unknown names
+#' are still stored in the object, but they are ignored by methods that do not
+#' request them.
+#'
+#' @param ... Named station fields, site parameters or model assumptions.
+#'
+#' @return A list of class `weather_station`.
 #'
 #' @export
 build_weather_station <- function(...) {
@@ -50,7 +58,6 @@ build_weather_station <- function(...) {
 
   args <- list(...)
   for (i in seq_along(args)) {
-    # Add additional parameters to the right spot in the list
     name <- names(args)[i]
     value <- args[[i]]
     out[[name]] <- value
@@ -96,22 +103,22 @@ build_weather_station <- function(...) {
 plot_weather_station <- function(weather_station, variable_name = NULL) {
   # Mapping of variable names to labels and units
   variable_labels <- list(
-    temp = "Air Temperature (°C)",
-    t1 = "Air Temperature at Lower Height (°C)",
-    t2 = "Air Temperature at Upper Height (°C)",
+    temp = "Air Temperature (degrees C)",
+    t1 = "Air Temperature at Lower Height (degrees C)",
+    t2 = "Air Temperature at Upper Height (degrees C)",
     v1 = "Windspeed at Lower Height (m/s)",
     v2 = "Windspeed at Upper Height (m/s)",
-    slope = "Slope (°)",
-    exposition = "Exposition (°)",
-    surface_temp = "Surface Temperature (°C)",
+    slope = "Slope (degrees)",
+    exposition = "Exposition (degrees)",
+    surface_temp = "Surface Temperature (degrees C)",
     rh = "Relative Humidity (%)",
     hum1 = "Relative Humidity at Lower Height (%)",
     hum2 = "Relative Humidity at Upper Height (%)",
-    rad_bal = "Radiation Balance (W/m²)",
-    moisture = "Soil Moisture (m³/m³)",
-    soil_flux = "Soil Flux (W/m²)",
-    soil_temp1 = "Soil Temperature Measurement 1 (°C)",
-    soil_temp2 = "Soil Temperature Measurement 2 (°C)",
+    rad_bal = "Radiation Balance (W m-2)",
+    moisture = "Soil Moisture (m3 m-3)",
+    soil_flux = "Soil Flux (W m-2)",
+    soil_temp1 = "Soil Temperature Measurement 1 (degrees C)",
+    soil_temp2 = "Soil Temperature Measurement 2 (degrees C)",
     soil_depth1 = "Soil Depth Measurement 1 (m)",
     soil_depth2 = "Soil Depth Measurement 2 (m)"
   )
@@ -132,7 +139,7 @@ plot_weather_station <- function(weather_station, variable_name = NULL) {
     }
 
     # Set up grid layout for plots
-    par(mfrow = c(ceiling(sqrt(num_vars)), ceiling(sqrt(num_vars))), mar = c(4, 4, 2, 1))
+    graphics::par(mfrow = c(ceiling(sqrt(num_vars)), ceiling(sqrt(num_vars))), mar = c(4, 4, 2, 1))
 
     for (var in time_series_vars) {
       # Get the label and unit for the variable
@@ -150,7 +157,7 @@ plot_weather_station <- function(weather_station, variable_name = NULL) {
     }
 
     # Reset layout to single plot
-    par(mfrow = c(1, 1))
+    graphics::par(mfrow = c(1, 1))
   } else {
     # Check if the variable exists in the list of time series variables
     if (!variable_name %in% time_series_vars) {

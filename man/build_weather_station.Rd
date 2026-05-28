@@ -7,81 +7,58 @@
 build_weather_station(...)
 }
 \arguments{
-\item{...}{
-  Arguments passed on to \code{\link{rad_sw_toa.default}}, \code{\link{pres_p.default}}, \code{\link{trans_ozone.default}}, \code{\link{trans_aerosol.default}}, \code{\link{pres_sat_vapor_p.default}}, \code{\link{rad_lw_in.default}}
-  \describe{
-    \item{\code{sol_const}}{Solar radiation constant in W/m², default is 1361.}
-    \item{\code{p0}}{Standard pressure in hPa, default 1013.25.}
-    \item{\code{g}}{Gravitational acceleration in \eqn{m \cdot s^{-2}}, default 9.81.}
-    \item{\code{rl}}{Specific gas constant for air in \eqn{m^2 \cdot s^{-2} \cdot K^{-1}}, default 287.05.}
-    \item{\code{ozone_column}}{Atmospheric ozone as column in cm, default \code{ozone_column_default}.}
-    \item{\code{vis}}{Visibility in km, default \code{vis_default}.}
-    \item{\code{a}}{Constant a, default is 7.5 over water.}
-    \item{\code{b}}{Constant b, default is 235 over water.}
-  }}
-
-\item{weather_station}{Object of class \code{weather_station}.}
-
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
-
-\item{lon}{Longitude in degree.}
-
-\item{lat}{Latitude in degree.}
-
-\item{elev}{Elevation above sea level in m.}
-
-\item{temp}{Air temperature in degree Celcius.}
-
-\item{t1}{Air temperature at lower height in degree Celcius.}
-
-\item{t2}{Air temperature at upper height in degree Celcius.}
-
-\item{v1}{Windspeed at lower height (e.g. height of anemometer) in m/s.}
-
-\item{v2}{Windspeed at upper height in m/s.}
-
-\item{slope}{Slope in degree.}
-
-\item{exposition}{Exposition in degree.}
-
-\item{surface_type}{Surface type.
-Allowed values are: field, acre, lawn, street, agriculture, settlement, coniferous forest, deciduous forest, mixed forest, city, water, shrub.
-EXCEPTION: for functions related to Priestley-Taylor methods,
-allowed values are: field, bare soil, coniferous forest, water, wetland, spruce forest.}
-
-\item{obs_height}{Height of obstacle in m.}
-
-\item{valley}{Is the position in a valley (\code{TRUE}) or on a slope (\code{FALSE})?}
-
-\item{surface_temp}{Surface temperature in degree Celcius.}
-
-\item{rh}{Relative humidity in \%.}
-
-\item{hum1}{Relative humidity at lower height in \%.}
-
-\item{hum2}{Relative humidity at upper height in \%.}
-
-\item{rad_bal}{Radiation balance in W/m\eqn{^2}.}
-
-\item{texture}{Soil texture. Either "sand", "clay", or "peat".}
-
-\item{moisture}{Soil moisture in cubic meter/cubic meter.}
-
-\item{soil_flux}{Soil flux in W/m\eqn{^2}.}
-
-\item{soil_temp1}{Soil temperature in degree Celcius of measurement 1.}
-
-\item{soil_temp2}{Soil temperature in degree Celcius of measurement 2.}
-
-\item{soil_depth1}{Depth of the soil temperature measurement 1 in m.}
-
-\item{soil_depth2}{Depth of the soil temperature measurement 2 in m.}
+\item{...}{Named station fields, site parameters or model assumptions.}
+}
+\value{
+A list of class \code{weather_station}.
 }
 \description{
-Creates a list of class \code{weather_station} that contains all input arguments.
+Creates a list of class \code{weather_station} from named input arguments.
 }
 \details{
-Provided input arguments will only be used if they are listed in the section
-"Arguments". No warning message is generated for unused arguments.
+The function stores all named arguments exactly as provided. It does not
+calculate physical quantities and it does not validate whether all fields are
+sufficient for later methods. Downstream functions such as radiation,
+soil-heat or turbulent-flux functions check whether the fields they need are
+available.
+
+The object is therefore a structured container for station data, site
+metadata, measurement heights and model assumptions.
+
+Common field names used by \code{fieldClim} methods include:
+
+\itemize{
+\item \code{datetime}: datetime vector, preferably with explicit timezone information.
+\item \code{lon}: longitude in degrees.
+\item \code{lat}: latitude in degrees.
+\item \code{elev}: elevation above sea level in m.
+\item \code{temp}: air temperature in degrees C.
+\item \code{rh}: relative humidity in percent.
+\item \code{t1}: air temperature at lower measurement height in degrees C.
+\item \code{t2}: air temperature at upper measurement height in degrees C.
+\item \code{hum1}: relative humidity at lower measurement height in percent.
+\item \code{hum2}: relative humidity at upper measurement height in percent.
+\item \code{v1}: wind speed at lower measurement height in m s-1.
+\item \code{v2}: wind speed at upper measurement height in m s-1.
+\item \code{z1}: lower measurement height in m.
+\item \code{z2}: upper measurement height in m.
+\item \code{rad_bal}: net radiation / radiation balance in W m-2.
+\item \code{soil_flux}: soil heat flux in W m-2.
+\item \code{surface_type}: surface-type label used by surface-dependent methods.
+\item \code{surface_temp}: surface temperature in degrees C.
+\item \code{moisture}: soil moisture in m3 m-3.
+\item \code{texture}: soil texture label.
+\item \code{soil_temp1}: soil temperature at first soil depth in degrees C.
+\item \code{soil_temp2}: soil temperature at second soil depth in degrees C.
+\item \code{soil_depth1}: first soil measurement depth in m.
+\item \code{soil_depth2}: second soil measurement depth in m.
+\item \code{slope}: slope in degrees.
+\item \code{exposition}: exposition / aspect in degrees.
+\item \code{valley}: logical value indicating valley position.
+\item \code{obs_height}: observation or obstacle height in m, depending on method.
+}
+
+These names are conventions used by other \code{fieldClim} methods. Unknown names
+are still stored in the object, but they are ignored by methods that do not
+request them.
 }

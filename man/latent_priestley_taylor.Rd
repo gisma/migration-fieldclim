@@ -15,18 +15,18 @@ latent_priestley_taylor(...)
 \arguments{
 \item{...}{Additional arguments.}
 
-\item{temp}{Air temperature in °C.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{rad_bal}{Radiation balance in W/m².}
+\item{rad_bal}{Radiation balance in W m-2.}
 
-\item{soil_flux}{Soil flux in W/m².}
+\item{soil_flux}{Soil flux in W m-2.}
 
 \item{surface_type}{Surface type, for which a Priestley-Taylor coefficient will be selected. Options: field, bare soil, coniferous forest, water, wetland, spruce forest}
 
 \item{weather_station}{Object of class weather_station}
 }
 \value{
-Latent heat flux in W/m².
+Latent heat flux in W m-2.
 }
 \description{
 Calculates the latent heat flux using the Priestley-Taylor method. Positive

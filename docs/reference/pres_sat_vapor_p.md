@@ -18,11 +18,11 @@ pres_sat_vapor_p(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - a:
 
@@ -34,7 +34,7 @@ pres_sat_vapor_p(weather_station, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

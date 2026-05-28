@@ -23,7 +23,7 @@ sensible_priestley_taylor(...)
 
 \item{surface_type}{Surface type, for which a Priestley-Taylor coefficient will be selected. Options: \code{surface_type options}}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Sensible heat flux in W/m².
@@ -45,7 +45,7 @@ where:
 }
 \examples{
 # Calculate sensible heat flux using the Priestley-Taylor method
-sensible_priestley_taylor(temp = 20, rad_bal = 200, soil_flux = 50, surface_type = "lawn")
+sensible_priestley_taylor(temp = 20, rad_bal = 200, soil_flux = 50, surface_type = "field")
 }
 \references{
 Foken 2016, p. 220, eq. 5.6

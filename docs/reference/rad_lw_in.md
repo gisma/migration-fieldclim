@@ -18,27 +18,31 @@ rad_lw_in(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - rh:
 
-  Relative humidity in %.
+  Relative humidity in percent.
 
 - slope:
 
-  Slope in degree.
+  Slope in degrees.
 
 - valley:
 
-  Is the position in a valley (`TRUE`) or on a slope (`FALSE`)?
+  Logical value indicating whether the station is in a valley.
+
+- sigma:
+
+  Stefan-Boltzmann constant in W m-2 K-4.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

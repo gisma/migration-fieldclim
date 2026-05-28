@@ -14,13 +14,13 @@ test_that("pos_min_dist", {
 test_that("pos_max_dist", {
   expect_equal(
     pos_max_dist(dist, obs_width, obs_height, ring = F),
-    "The climate station is postioned well."
+    "The climate station is positioned well."
   )
 })
 
 test_that("pos_anemometer_height", {
   expect_equal(
     pos_anemometer_height(dist, min_dist, obs_height),
-    "The climate station is positioned too close to the obstacle. It needs to repositioned 11.66 m higher."
+    "The climate station is positioned too close to the obstacle. The anemometer needs to be repositioned 11.66 m higher."
   )
 })

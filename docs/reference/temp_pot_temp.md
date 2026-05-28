@@ -32,7 +32,7 @@ temp_pot_temp(weather_station, height = "lower", ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 - height:
 
@@ -50,6 +50,14 @@ the temperature in Kelvin, \\p_0\\ is the standard pressure (1000 hPa),
 \\p\\ is the actual pressure, \\R\\ is the specific gas constant for dry
 air (287 J/(kg·K)), \\c_p\\ is the specific heat at constant pressure
 (1004 J/(kg·K)).
+
+The argument `elev` is elevation above sea level in m. It is converted
+internally to pressure using
+[`pres_p()`](https://gisma.github.io/migration-fieldclim/reference/pres_p.md).
+The 1013.25 hPa default in
+[`pres_p()`](https://gisma.github.io/migration-fieldclim/reference/pres_p.md)
+is used for pressure estimation, while potential temperature uses 1000
+hPa as the reference pressure.
 
 ## References
 

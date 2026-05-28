@@ -40,6 +40,10 @@ trans_gas(weather_station, ...)
 
   Air temperature in °C.
 
+- weather_station:
+
+  A weather_station object.
+
 ## Value
 
 Transmittance ratio from 0 to 1, unitless.

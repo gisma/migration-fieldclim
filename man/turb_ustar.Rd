@@ -23,7 +23,7 @@ turb_ustar(...)
 
 \item{obs_height}{Numeric. Height of obstacle in meters (m).}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Numeric. Friction velocity in meters per second (m/s).

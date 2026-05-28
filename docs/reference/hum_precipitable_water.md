@@ -33,13 +33,11 @@ hum_precipitable_water(weather_station, ...)
 
 - datetime:
 
-  Datetime of class `POSIXlt`. See
-  [`base::as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html). Make
-  sure to provide the correct timezone information!
+  POSIXlt or POSIXct date-time vector.
 
 - lat:
 
-  Latitude in degree.
+  Latitude in degrees.
 
 - elev:
 
@@ -47,11 +45,11 @@ hum_precipitable_water(weather_station, ...)
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

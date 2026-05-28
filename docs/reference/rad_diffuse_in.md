@@ -18,21 +18,19 @@ rad_diffuse_in(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - datetime:
 
-  Datetime of class `POSIXlt`. See
-  [`base::as.POSIXlt()`](https://rdrr.io/r/base/as.POSIXlt.html). Make
-  sure to provide the correct timezone information!
+  POSIXlt or POSIXct date-time vector.
 
 - lon:
 
-  Longitude in degree.
+  Longitude in degrees.
 
 - lat:
 
-  Latitude in degree.
+  Latitude in degrees.
 
 - elev:
 
@@ -40,23 +38,23 @@ rad_diffuse_in(weather_station, ...)
 
 - temp:
 
-  Air temperature in degree Celcius.
+  Air temperature in degrees C.
 
 - slope:
 
-  Slope in degree.
+  Slope in degrees.
 
 - exposition:
 
-  Exposition in degree.
+  Exposition or aspect in degrees.
 
 - valley:
 
-  Is the position in a valley (`TRUE`) or on a slope (`FALSE`)?
+  Logical value indicating whether the station is in a valley.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 
@@ -82,7 +80,8 @@ Bendix 2004, p. 58 eq. 3.14, p. 55 eq. 3.9.
 
 ``` r
 # Calculate diffused shortwave incoming radiation
-rad_diffuse_in(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+rad_diffuse_in(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
                slope = 5, exposition = 180, valley = FALSE)
-#> Error in datetime[i]$mon: $ operator is invalid for atomic vectors
+#> [1] 121.4581
 ```

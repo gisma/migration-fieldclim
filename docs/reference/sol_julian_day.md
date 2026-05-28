@@ -12,7 +12,7 @@ sol_julian_day(...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 ## Value
 

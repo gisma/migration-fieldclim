@@ -13,13 +13,13 @@ pres_vapor_p(...)
 \method{pres_vapor_p}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{rh}{Relative humidity in \%.}
+\item{rh}{Relative humidity in percent.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Vapor pressure in hPa.

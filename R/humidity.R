@@ -3,6 +3,7 @@
 #' Calculates specific humidity from vapor pressure and air pressure.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Numeric. Specific humidity in kg/kg.
 #' @details
 #' Specific humidity (\eqn{q}) is the ratio of the mass of water vapor to the total mass of the air parcel. It is calculated from the vapor pressure and air pressure using the formula:
@@ -29,7 +30,6 @@ hum_specific.default <- function(rh, temp, elev, ...) {
 }
 
 #' @rdname hum_specific
-#' @inheritParams build_weather_station
 #' @export
 hum_specific.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "temp", "rh", "elev")
@@ -44,6 +44,7 @@ hum_specific.weather_station <- function(weather_station, ...) {
 #' Calculates absolute humidity from vapor pressure and air temperature.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Numeric. Absolute humidity in kg/m³.
 #' @details
 #' Absolute humidity (\eqn{AH}) is the mass of water vapor per unit volume of air. It is calculated from the vapor pressure and temperature using the formula:
@@ -69,7 +70,6 @@ hum_absolute.default <- function(rh, temp, ...) {
 }
 
 #' @rdname hum_absolute
-#' @inheritParams build_weather_station
 #' @export
 hum_absolute.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "temp", "rh")
@@ -83,6 +83,7 @@ hum_absolute.weather_station <- function(weather_station, ...) {
 #' Calculates heat of evaporation for water from air temperature.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Numeric. Enthalpy of vaporization in J/kg.
 #' @details
 #' The enthalpy of vaporization (\eqn{L}) is the amount of heat required to convert a unit mass of a liquid into vapor without a temperature change. It is calculated using the formula:
@@ -105,7 +106,6 @@ hum_evap_heat.default <- function(temp, ...) {
 }
 
 #' @rdname hum_evap_heat
-#' @inheritParams build_weather_station
 #' @export
 hum_evap_heat.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "temp")
@@ -121,7 +121,11 @@ hum_evap_heat.weather_station <- function(weather_station, ...) {
 #' Latitude <= 30 degrees is defined as tropic; <= 60 is temperate; others is subarctic.
 #' Summer is defined as April to September in the northern hemisphere.
 #'
-#' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lat Latitude in degrees.
+#' @param elev Elevation above sea level in m.
+#' @param temp Air temperature in degrees C.
+#' @param weather_station A weather_station object.
 #' @return Numeric. Precipitable water in cm·grams.
 #' @details
 #' Precipitable water (\eqn{PW}) is the total amount of water vapor in a column of air from the surface to the top of the atmosphere. It is calculated using reference temperature and pressure values based on location and season.
@@ -135,7 +139,6 @@ hum_precipitable_water <- function(...) {
 }
 
 #' @rdname hum_precipitable_water
-#' @inheritParams build_weather_station
 #' @inheritDotParams pres_p.default g rl
 #' @export
 hum_precipitable_water.default <- function(datetime, lat, elev, temp, ...) {
@@ -194,7 +197,6 @@ hum_precipitable_water.default <- function(datetime, lat, elev, temp, ...) {
 }
 
 #' @rdname hum_precipitable_water
-#' @inheritParams build_weather_station
 #' @export
 hum_precipitable_water.weather_station <- function(weather_station, ...) {
   a <- methods::formalArgs(hum_precipitable_water.default)
@@ -211,6 +213,7 @@ hum_precipitable_water.weather_station <- function(weather_station, ...) {
 #' Calculates moisture gradient.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Numeric. Moisture gradient.
 #' @details
 #' The moisture gradient is calculated as the difference in specific humidity at two heights divided by the difference in heights:
@@ -240,7 +243,6 @@ hum_moisture_gradient.default <- function(hum1, hum2, t1, t2, z1 = 2, z2 = 10, e
 }
 
 #' @rdname hum_moisture_gradient
-#' @inheritParams build_weather_station
 #' @export
 hum_moisture_gradient.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "z1", "z2", "t1", "t2", "hum1", "hum2", "elev")

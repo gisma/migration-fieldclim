@@ -24,6 +24,8 @@
   : Specific humidity
 - [`latent_bowen()`](https://gisma.github.io/migration-fieldclim/reference/latent_bowen.md)
   : Latent Heat using Bowen Method
+- [`latent_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.md)
+  : Latent heat flux as residual of the surface energy balance
 - [`latent_monin()`](https://gisma.github.io/migration-fieldclim/reference/latent_monin.md)
   : Latent Heat using Monin-Obukhov length
 - [`latent_penman()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
@@ -70,6 +72,8 @@
   : Shortwave Radiation at Top of Atmosphere
 - [`sensible_bowen()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bowen.md)
   : Sensible Heat using Bowen Method
+- [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md)
+  : Sensible heat flux by a simple bulk-transfer approach
 - [`sensible_monin()`](https://gisma.github.io/migration-fieldclim/reference/sensible_monin.md)
   : Sensible Heat using Monin-Obukhov length
 - [`sensible_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/sensible_priestley_taylor.md)
@@ -126,6 +130,8 @@
   : Transmittance due to water vapor
 - [`turb_displacement()`](https://gisma.github.io/migration-fieldclim/reference/turb_displacement.md)
   : Displacement height
+- [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
+  : Bulk-residual turbulent heat flux workflow
 - [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
   : Sensible and latent heat fluxes
 - [`turb_flux_ex_quotient_imp()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_ex_quotient_imp.md)

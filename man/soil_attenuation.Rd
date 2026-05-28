@@ -19,7 +19,7 @@ soil_attenuation(...)
 
 \item{texture}{Soil texture. Either "sand", "peat" or "clay".}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Soil attenuation length in m.
@@ -29,10 +29,11 @@ Calculates soil attenuation length.
 }
 \details{
 The soil attenuation length (\eqn{L}) is calculated using the formula:
-\deqn{L = \sqrt{\frac{\lambda}{C_v \cdot \pi} \cdot 86400}}
+\deqn{L = \sqrt{\frac{\lambda}{C_v \cdot 10^6 \cdot \pi} \cdot 86400}}
 where:
 \eqn{\lambda} is the thermal conductivity of the soil (W/m/K),
-\eqn{C_v} is the volumetric heat capacity of the soil (MJ/(m³ * K)),
+\eqn{C_v} is the volumetric heat capacity of the soil (MJ/(m³ * K));
+\eqn{10^6} converts it to J/(m³ * K) for the calculation,
 \eqn{86400} is the number of seconds in a day.
 }
 \examples{

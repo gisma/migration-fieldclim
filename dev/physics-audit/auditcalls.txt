@@ -1,0 +1,1079 @@
+Perform the physics formula audit. Do not edit source code.
+
+Use docs/physics-formula-audit.md as the control document.
+
+Read:
+- R/*.R
+- man/*.Rd
+- tests/testthat/*.R
+- vignettes/*.Rmd
+
+Do not fix anything.
+Do not refactor.
+Do not update tests.
+Do not normalize methods to one result.
+
+For each formula family, fill the audit matrix:
+- implemented formula
+- documented formula
+- source formula category: Bendix / Foken / Oke
+- input variables
+- output variable
+- unit assumptions
+- sign convention
+- closure invariant if applicable
+- warning/cap logic
+- wrapper behaviour
+- status: code-ok / code-mismatch / sign-mismatch / unit-mismatch / wrapper-mismatch / diagnostic-only / implementation-specific / open
+
+Audit order:
+1. Master sign convention
+2. Radiation
+3. Soil heat flux
+4. Available energy
+5. Priestley-Taylor
+6. Bulk-Residual
+7. Bowen
+8. Penman
+9. Monin-Obukhov
+10. weather_station wrappers
+
+Important:
+- Caldern is not a truth dataset.
+- Historical HTML outputs are not numerical references.
+- Monin-Obukhov is diagnostic-only unless the implementation explicitly enforces energy closure.
+- Priestley-Taylor, Bowen and Bulk-Residual must be checked against Rn - G closure.
+- temp_pot_temp() remains the explicit Gate 0 issue until resolved.
+
+Perform Physics Audit 1: master sign convention and radiation only.
+
+Audit file:
+dev/physics-audit/physics-formula-audit.md
+
+Read:
+- R/radiation.R
+- R/solar.R
+- R/terrain.R if used by radiation functions
+- R/transmission.R if used by radiation functions
+- man/rad_*.Rd
+- man/sol_*.Rd
+- tests/testthat/test-solar.R
+- tests/testthat/test-consolidation.R
+- vignettes/*.Rmd only where radiation variables are used
+
+Do not edit package source.
+Do not edit tests.
+Do not update Rd files.
+Only update dev/physics-audit/physics-formula-audit.md.
+
+Tasks:
+1. Fill the audit rows for:
+   - rad_sw_bal()
+   - rad_lw_bal()
+   - rad_bal()
+   - albedo handling if implemented
+   - rad_sw_in()
+   - rad_sw_out()
+   - rad_lw_in()
+   - rad_lw_out()
+   - sol_hour_angle()
+   - sol_elevation()
+   - relevant trans_* functions if directly used by radiation.
+2. For each function record:
+   - source formula category: Bendix / Foken / Oke / implementation-specific
+   - implemented formula
+   - documented formula
+   - file and line references
+   - input variables
+   - output variable
+   - unit assumptions
+   - sign convention
+   - expected invariant
+   - edge cases
+   - status.
+3. Explicitly check whether net radiation follows:
+   Q* = K* + L*
+   K* = K_down - K_up
+   L* = L_down - L_up
+4. Mark uncertain items as open, not code-ok.
+5. Do not fix anything.
+
+Perform Physics Audit 2: soil heat flux and available energy only.
+
+Audit file:
+dev/physics-audit/physics-formula-audit.md
+
+Read:
+- R/soil.R
+- R/sensible.R only where rad_bal and soil_flux are used
+- R/latent.R only where rad_bal and soil_flux are used
+- R/turbulent_flux.R only where rad_bal and soil_flux enter workflow logic
+- man/soil_*.Rd
+- man/sensible_priestley_taylor.Rd
+- man/latent_priestley_taylor.Rd
+- tests/testthat/test-consolidation.R
+- vignettes/*.Rmd only where Q_star, B, rad_bal, soil_flux, Q_minus_B or available energy are used
+
+Do not edit package source.
+Do not edit tests.
+Do not update Rd files.
+Only update dev/physics-audit/physics-formula-audit.md.
+
+Tasks:
+1. Fill the audit rows for:
+   - soil_heat_flux()
+   - soil_thermal_cond()
+   - soil_heat_cap()
+   - soil_attenuation()
+   - soil_flux as workflow variable
+   - available energy: rad_bal - soil_flux
+2. For each item record:
+   - source formula category: Bendix / Foken / Oke / implementation-specific
+   - implemented formula
+   - documented formula
+   - file and line references
+   - input variables
+   - output variable
+   - unit assumptions
+   - sign convention
+   - expected invariant
+   - edge cases
+   - status.
+3. Explicitly check whether package logic follows:
+   Rn > 0: net radiative input at the surface
+   G > 0: heat flux into the soil
+   Rn - G: available turbulent energy
+4. Check whether the vignette variables Q_star and B map consistently to rad_bal and soil_flux.
+5. Check whether Priestley-Taylor, Bulk-Residual and Bowen consume soil_flux with the same sign convention.
+6. Mark uncertain items as open, not code-ok.
+7. Do not fix anything.
+
+Perform Physics Audit 3: Priestley-Taylor, Bulk-Residual and Bowen.
+
+Audit file:
+dev/physics-audit/physics-formula-audit.md
+
+Read:
+- R/sensible.R
+- R/latent.R
+- R/bulk.R
+- R/turbulent_flux.R
+- man/sensible_priestley_taylor.Rd
+- man/latent_priestley_taylor.Rd
+- man/sensible_bowen.Rd
+- man/latent_bowen.Rd
+- man/sensible_bulk.Rd
+- man/latent_bulk_residual.Rd
+- tests/testthat/test-bulk.R
+- tests/testthat/test-consolidation.R
+- vignettes/*.Rmd only where Priestley-Taylor, Bulk-Residual, Bowen, L, V, H, LE, Q_star, B, rad_bal or soil_flux are used
+
+Do not edit package source.
+Do not edit tests.
+Do not update Rd files.
+Only update dev/physics-audit/physics-formula-audit.md.
+
+Tasks:
+1. Fill the audit rows for:
+   - latent_priestley_taylor()
+   - sensible_priestley_taylor()
+   - sensible_bulk()
+   - latent_bulk_residual()
+   - turb_flux_bulk_residual()
+   - sensible_bowen()
+   - latent_bowen()
+
+2. For each function record:
+   - source formula category: Bendix / Foken / Oke / implementation-specific
+   - implemented formula
+   - documented formula
+   - file and line references
+   - input variables
+   - output variable
+   - unit assumptions
+   - sign convention
+   - closure invariant
+   - edge cases
+   - warning/cap logic
+   - status
+
+3. Explicitly check closure:
+   - Priestley-Taylor: H_PT + LE_PT = Rn - G
+   - Bulk-Residual: H_bulk + LE_res = Rn - G
+   - Bowen: H_bowen + LE_bowen = Rn - G outside singular/capped denominator cases
+
+4. For Priestley-Taylor check:
+   - alpha / surface_type mapping
+   - Delta and gamma units
+   - whether sensible_priestley_taylor() is residual by construction
+   - whether pt_only = TRUE isolates the beginner-safe PT path
+
+5. For Bulk-Residual check:
+   - sign of Delta T
+   - whether t1/t2 are lower/upper consistently
+   - whether mean wind is used as documented
+   - whether low wind returns NA/warning, not infinite flux
+   - whether values are warned but not capped
+   - whether latent_bulk_residual() exactly computes LE = Rn - G - H
+
+6. For Bowen check:
+   - beta definition
+   - temperature-gradient sign
+   - humidity-gradient or vapour-pressure-gradient sign
+   - denominator definition
+   - handling of near-zero or singular denominator
+   - cap/warning policy
+   - whether closure is exact only outside singular/capped cases
+
+7. Do not treat formal energy closure alone as physical validation.
+   Formal closure is necessary for PT/Bulk/Bowen but not sufficient.
+
+8. Mark uncertain items as open, not code-ok.
+9. Do not fix anything.
+
+Perform Physics Audit 4: Penman, Monin-Obukhov and wrapper logic.
+
+Audit file:
+dev/physics-audit/physics-formula-audit.md
+
+Read:
+- R/latent.R
+- R/sensible.R
+- R/turbulent_flux.R
+- R/utility_turbulent_flux.R
+- R/weather_station.R
+- R/pressure.R
+- R/humidity.R
+- relevant man/*.Rd
+- tests/testthat/*.R
+- vignettes/*.Rmd only where Penman, Monin-Obukhov, stability, weather_station or turb_flux_calc are used
+
+Do not edit package source.
+Do not edit tests.
+Do not update Rd files.
+Only update dev/physics-audit/physics-formula-audit.md.
+
+Tasks:
+1. Fill the audit rows for:
+   - latent_penman()
+   - latent_penman.weather_station()
+   - sensible_monin()
+   - latent_monin()
+   - turb_flux_stability()
+   - turb_flux_grad_rich_no()
+   - turb_flux_calc()
+   - build_weather_station()
+   - as.data.frame.weather_station()
+   - check_availability()
+
+2. For Penman check:
+   - whether it is LE-only
+   - whether the energy term uses Rn - G
+   - whether the aerodynamic term uses consistent pressure, humidity, wind and resistance units
+   - whether surface_type = "field" maps to a valid Penman resistance class
+   - whether rh / hum1 handling is internally consistent
+   - whether Penman failure inside turb_flux_calc() is non-fatal as intended
+
+3. For Monin-Obukhov check:
+   - sensible and latent formulas separately
+   - sign convention for H and LE
+   - use of t1/t2, hum1/hum2, v1/v2, z1/z2
+   - stability parameter and gradient Richardson logic
+   - zero-gradient cases
+   - low-wind cases
+   - caps and warning policy
+   - whether MO is diagnostic-only and not expected to close Rn - G
+
+4. For wrappers check:
+   - whether weather_station methods pass the correct fields to default methods
+   - whether build_weather_station() only stores fields and does not validate physics
+   - whether as.data.frame.weather_station() preserves values
+   - whether check_availability() requirements match actual formula needs
+   - whether turb_flux_calc() changes signs or only orchestrates methods
+
+5. Do not treat agreement with Caldern data as proof of correctness.
+6. Do not treat warnings as proof of failure.
+7. Mark uncertain items as open, not code-ok.
+8. Do not fix anything.
+
+Create a fix plan from the completed physics audit.
+
+Input:
+dev/physics-audit/physics-formula-audit.md
+
+Output:
+dev/physics-audit/physics-fix-plan.md
+
+Do not edit package source.
+Do not edit tests.
+Do not edit Rd files.
+Do not run devtools::document().
+
+Tasks:
+1. Extract all audit findings with status:
+   code-ok
+   test expectation wrong
+   sign-mismatch
+   unit/documentation mismatch
+   wrapper-mismatch
+   open
+   diagnostic-only
+
+2. Group them into:
+   A. Immediate documentation/test fixes with no formula change
+   B. Contract tests to add before formula changes
+   C. Open physics validation questions
+   D. Wrapper/check hygiene
+   E. Deferred or diagnostic-only methods
+
+3. For each item include:
+   - function or topic
+   - current audit status
+   - exact problem
+   - proposed action
+   - whether code, test, Rd, vignette, or audit document is affected
+   - risk level: low / medium / high
+   - whether a new test is required before fixing
+
+4. Correct stale path references inside the plan:
+   use dev/physics-audit/physics-formula-audit.md, not docs/physics-formula-audit.md.
+
+5. Do not propose broad refactoring.
+6. Do not normalize all methods to one result.
+7. Keep Monin-Obukhov diagnostic-only unless the code explicitly enforces closure.
+
+
+---
+
+Implement Phase 1 from dev/physics-audit/physics-fix-plan.md: contract tests for confirmed invariants only.
+
+Do not edit package source except test files.
+Do not edit Rd files.
+Do not edit vignettes.
+Do not change formulas.
+Do not run devtools::document().
+
+Add:
+tests/testthat/helper-physics-fixtures.R
+tests/testthat/test-physics-contract.R
+
+The tests should cover only confirmed or explicitly scoped behavior:
+
+1. temp_pot_temp()
+   - temp_pot_temp(25, 270) equals 26.520455365680 within tolerance.
+   - This replaces the skipped expectation, but do not change implementation.
+
+2. Available energy convention
+   - With fixed Rn, increasing positive G lowers Rn - G.
+   - This encodes G > 0 into soil.
+
+3. Priestley-Taylor closure
+   - latent_priestley_taylor(temp, rad_bal, soil_flux, surface_type)
+     plus sensible_priestley_taylor(temp, rad_bal, soil_flux, surface_type)
+     equals rad_bal - soil_flux.
+   - Include one positive available-energy case.
+   - Include one negative available-energy case if current functions handle it without error.
+
+4. pt_only isolation
+   - turb_flux_calc(weather_station, pt_only = TRUE) returns PT fields.
+   - It must not require Bowen, Bulk, Monin, or Penman fields.
+   - It must not add latent_penman, sensible_bowen, latent_bowen, sensible_monin, latent_monin, sensible_bulk, or latent_bulk_residual.
+
+5. Bulk-Residual closure
+   - sensible_bulk() sign: t1 > t2 with z1 lower than z2 gives positive H.
+   - latent_bulk_residual() closes exactly:
+     H_bulk + LE_res = rad_bal - soil_flux.
+   - low wind returns NA or warning according to current behavior, not Inf.
+
+6. Bowen non-singular closure only
+   - Choose a case where the denominator is not near zero and cap is not active.
+   - Check sensible_bowen() + latent_bowen() equals rad_bal - soil_flux.
+   - Do not assert closure for capped or singular cases.
+
+7. Penman field surface and LE-only
+   - latent_penman(weather_station) runs for surface_type = "field".
+   - Output length equals input length.
+   - At least one finite value exists.
+   - Do not invent or expect a sensible Penman output.
+
+8. Wrapper preservation
+   - build_weather_station() stores fields unchanged.
+   - as.data.frame.weather_station() preserves values for the flat object.
+   - Do not add physics validation to build_weather_station().
+
+9. Monin diagnostic-only
+   - Add only a minimal contract that Monin outputs are not used to enforce H + LE = Rn - G.
+   - Do not force Monin closure.
+   - Do not change Monin formulas.
+
+Run:
+devtools::test()
+
+Report:
+- files changed
+- tests added
+- tests passed/failed
+- any warnings
+
+Implement Phase 1 from dev/physics-audit/physics-fix-plan.md: contract tests for confirmed invariants only.
+
+Do not edit R package source files except test files.
+Do not edit Rd files.
+Do not edit vignettes.
+Do not edit roxygen comments.
+Do not run devtools::document().
+Do not change formulas.
+Do not refactor.
+
+Add or update only:
+
+tests/testthat/helper-physics-fixtures.R
+tests/testthat/test-physics-contract.R
+tests/testthat/test-temperature.R
+
+Use the current package behavior as audited, not historical expected values.
+
+Required test scope:
+
+1. temp_pot_temp()
+- Replace the skipped test.
+- Assert that temp_pot_temp(25, 270) equals 26.520455365680 with tolerance 1e-8.
+- Do not change temp_pot_temp().
+
+2. Available energy convention
+- Test that with fixed rad_bal, increasing positive soil_flux decreases rad_bal - soil_flux.
+- This encodes: Rn > 0 is net radiative input; G > 0 is heat flux into the soil.
+
+3. Priestley-Taylor closure
+- Test that latent_priestley_taylor() + sensible_priestley_taylor() equals rad_bal - soil_flux.
+- Use surface_type = "field".
+- Include a normal positive available-energy case.
+- Only include negative available-energy behavior if current functions handle it cleanly.
+
+4. pt_only isolation
+- Build a minimal weather_station object containing only fields needed for PT:
+  temp, rad_bal, soil_flux, surface_type.
+- Run turb_flux_calc(ws, pt_only = TRUE).
+- Expect sensible_priestley_taylor and latent_priestley_taylor.
+- Expect no latent_penman, sensible_bowen, latent_bowen, sensible_monin, latent_monin, sensible_bulk, latent_bulk_residual.
+- Do not require wind, humidity profile, obs_height, t1/t2, hum1/hum2, or z1/z2 in this test.
+
+5. Bulk-Residual closure
+- Test sensible_bulk() sign:
+  t1 > t2 with z1 lower than z2 gives positive sensible heat.
+- Test latent_bulk_residual():
+  sensible + latent_bulk_residual = rad_bal - soil_flux.
+- Test low wind current behavior:
+  low wind should warn and return NA for the affected element, not Inf.
+
+6. Bowen non-singular closure
+- Choose a non-singular case where denominator capping is not active.
+- Test sensible_bowen() + latent_bowen() equals rad_bal - soil_flux.
+- Do not assert closure for capped or singular denominator cases.
+
+7. Penman LE-only field-surface contract
+- Build a weather_station object with fields needed by latent_penman.weather_station().
+- Use surface_type = "field".
+- Test that latent_penman(ws) returns a vector with the same length as input.
+- Test that at least one finite value exists.
+- Do not expect or create a paired Penman sensible heat field.
+
+8. Wrapper preservation
+- build_weather_station() stores named fields unchanged.
+- as.data.frame.weather_station() preserves values for a flat weather_station object.
+- Do not add validation logic to build_weather_station().
+
+9. Monin diagnostic-only
+- Do not force Monin-Obukhov closure to rad_bal - soil_flux.
+- Add at most a minimal test that turb_flux_calc() stores Monin outputs separately when required fields are available.
+- Do not assert H_MO + LE_MO = Rn - G.
+
+Run:
+
+devtools::test()
+
+Report:
+- files changed
+- tests added
+- tests passed/failed
+- warnings
+- whether any current implementation behavior made a proposed contract impossible
+
+Implement Phase 2 from dev/physics-audit/physics-fix-plan.md: immediate documentation/test fixes with no formula changes.
+
+Allowed edits:
+- tests/testthat/test-temperature.R
+- roxygen comments in the corresponding R files
+- dev/physics-audit/*.md only for stale path references if needed
+
+Do not change formulas.
+Do not change function bodies except if required only to remove an obsolete skip in a test.
+Do not refactor.
+Do not touch Penman units, Bowen beta, Monin-Obukhov formulas, solar timebase, or check_availability semantics.
+
+Tasks:
+
+1. temp_pot_temp()
+- Remove the skip from tests/testthat/test-temperature.R.
+- Replace the old expected value 27.7 with the audited value:
+  temp_pot_temp(25, 270) == 26.520455365680
+  using tolerance = 1e-8.
+- In the roxygen documentation for temp_pot_temp(), add a short note:
+  the argument elev is elevation in m; it is converted internally to pressure using pres_p(); the 1013.25 hPa default in pres_p() is used for pressure estimation, while potential temperature uses 1000 hPa as reference pressure.
+- Do not change temp_pot_temp() implementation.
+
+2. soil_heat_flux()
+- Correct the documented equation only.
+- The equation must include the implemented sign convention:
+  G = -lambda * (T1 - T2) / (z1 - z2)
+- Keep the prose consistent:
+  positive G / soil_flux means heat flux into the soil.
+- Do not change soil_heat_flux() implementation.
+
+3. soil_attenuation()
+- Clarify the unit conversion in the documentation equation.
+- If C_v is documented as MJ m-3 K-1, the equation must explicitly show:
+  C_v * 10^6
+- Do not change soil_attenuation() implementation.
+
+4. turb_flux_stability()
+- Correct the return-value documentation.
+- It must not say that the function returns the gradient Richardson number if the implementation returns stability labels.
+- Document return values as stability classes such as "unstable", "neutral", "stable", or NA according to current behavior.
+- Do not change stability logic.
+
+5. Stale audit paths
+- Replace future-task references to docs/physics-formula-audit.md with:
+  dev/physics-audit/physics-formula-audit.md
+- Do not move files unless needed.
+
+Run:
+devtools::document()
+devtools::test()
+devtools::check()
+
+Report:
+- files changed
+- formulas unchanged: yes/no
+- tests passed/failed
+- check errors/warnings/notes
+Fix the remaining package-wide Rd usage warnings only.
+
+Goal:
+devtools::check() should no longer fail because of Rd \usage section warnings.
+
+Allowed edits:
+- roxygen comments only
+- helper roxygen parameter documentation if needed
+- generated man/*.Rd via devtools::document()
+
+Do not change formulas.
+Do not change function bodies.
+Do not change tests unless a documentation-only check requires it.
+Do not touch Penman units, Bowen beta, Monin-Obukhov formulas, solar timebase, or check_availability behavior.
+
+Tasks:
+
+1. Run devtools::check() and inspect the exact Rd \usage warning block.
+
+2. For every warning of the form:
+   "Undocumented arguments in Rd file ..."
+   add the missing @param entries to the correct roxygen topic.
+
+3. For every warning of the form:
+   "Documented arguments not in \usage ..."
+   remove those @param entries from that topic, or move them into Details text if the function only accepts ... .
+
+4. Pay special attention to S3 topics.
+   If a topic documents both default and weather_station methods, the topic must document:
+   - weather_station, if the weather_station method has that argument
+   - all arguments appearing in the usage section
+   - but no arguments that are not in any usage signature
+
+5. Do not use @inheritParams blindly if it pulls parameters into the wrong topic.
+   If needed, create a small internal roxygen helper such as:
+
+   #' Common weather-station parameter documentation
+   #'
+   #' @param weather_station A weather_station object.
+   #' @param datetime Datetime vector, preferably with explicit timezone information.
+   #' @param lon Longitude in degrees.
+   #' @param lat Latitude in degrees.
+   #' @param elev Elevation above sea level in m.
+   #' @param temp Air temperature in degrees C.
+   #' @param rh Relative humidity in percent.
+   #' @param slope Slope in degrees.
+   #' @param exposition Exposition or aspect in degrees.
+   #' @param valley Logical value indicating whether the station is in a valley.
+   #' @param surface_type Surface-type label.
+   #' @param surface_temp Surface temperature in degrees C.
+   #' @param texture Soil texture label.
+   #' @param moisture Soil moisture in m3 m-3.
+   #' @param soil_temp1 Soil temperature at first soil depth in degrees C.
+   #' @param soil_temp2 Soil temperature at second soil depth in degrees C.
+   #' @param soil_depth1 First soil measurement depth in m.
+   #' @param soil_depth2 Second soil measurement depth in m.
+   #'
+   #' @keywords internal
+   #' @noRd
+   fieldclim_params <- function(
+     weather_station = NULL,
+     datetime = NULL,
+     lon = NULL,
+     lat = NULL,
+     elev = NULL,
+     temp = NULL,
+     rh = NULL,
+     slope = NULL,
+     exposition = NULL,
+     valley = NULL,
+     surface_type = NULL,
+     surface_temp = NULL,
+     texture = NULL,
+     moisture = NULL,
+     soil_temp1 = NULL,
+     soil_temp2 = NULL,
+     soil_depth1 = NULL,
+     soil_depth2 = NULL
+   ) {
+     NULL
+   }
+
+6. Use this helper only where it matches the actual usage signatures.
+   Do not pull unused parameters into topics.
+
+7. Run:
+   devtools::document()
+   devtools::test()
+   devtools::check()
+
+Report:
+- files changed
+- exact Rd warning before
+- exact Rd warning after
+- tests passed/failed
+- check errors/warnings/notes
+- confirm formulas unchanged
+
+
+Perform Phase 3A: Penman unit and sign validation only.
+
+Input:
+dev/physics-audit/physics-formula-audit.md
+dev/physics-audit/physics-fix-plan.md
+
+Read:
+- R/latent.R
+- R/humidity.R
+- R/pressure.R
+- R/utility.R
+- man/latent_penman.Rd
+- tests/testthat/test-physics-contract.R
+- tests/testthat/test-consolidation.R
+- vignettes/*.Rmd only where Penman is used or interpreted
+
+Do not edit package source.
+Do not edit tests.
+Do not edit Rd files.
+Do not run devtools::document().
+Only create or update:
+dev/physics-audit/penman-unit-validation.md
+
+Tasks:
+1. Extract the implemented latent_penman() formula exactly.
+2. List every variable in the formula:
+   - Delta / slope of saturation vapour pressure curve
+   - gamma / psychrometric constant
+   - e_s
+   - e_a
+   - e_s - e_a
+   - Rn
+   - G
+   - rho
+   - cp
+   - ra
+   - rs
+3. For each variable record:
+   - function or source line producing it
+   - expected unit
+   - implemented unit
+   - whether it is Pa, hPa, kPa, W m-2, kg m-3, J kg-1 K-1, s m-1
+4. Check specifically whether:
+   - Delta and gamma are kPa-scale
+   - e_s - e_a is hPa-scale or kPa-scale
+   - the aerodynamic term mixes pressure units
+   - Rn - G is used with the package sign convention
+   - output is W m-2
+5. Check latent_penman.weather_station():
+   - does surface_type = "field" map to a valid Penman resistance class?
+   - does hum1/rh routing mean relative humidity in percent?
+   - does the wrapper pass z/obs_height consistently?
+6. Classify findings:
+   - code-ok
+   - unit-mismatch
+   - documentation-mismatch
+   - wrapper-mismatch
+   - open
+7. Do not propose a code fix yet unless the unit mismatch is unambiguous.
+8. End with a minimal decision table:
+   - safe to document only
+   - needs test before fix
+   - needs formula fix
+   - keep open
+   
+   Implement the minimal Penman unit fix.
+
+Target:
+latent_penman.default()
+latent_penman.weather_station()
+Penman-related tests only
+
+Do not touch:
+- Bowen
+- Monin-Obukhov
+- Priestley-Taylor
+- Bulk-Residual
+- radiation
+- soil
+- solar timebase
+- check_availability()
+
+Goal:
+Make pressure units internally consistent in latent_penman().
+Keep the implemented Penman structure otherwise unchanged.
+
+Required code change:
+
+1. In latent_penman.default(), keep saturation helpers as hPa-returning helpers:
+
+   es_hPa <- pres_sat_vapor_p(temp)
+   ea_hPa <- pres_vapor_p(temp, rh)
+
+2. Convert explicitly:
+
+   es_kPa <- es_hPa / 10
+   ea_kPa <- ea_hPa / 10
+   vpd_kPa <- es_kPa - ea_kPa
+
+3. Compute delta from kPa saturation pressure:
+
+   delta <- 4098 * es_kPa / ((temp + 237.3)^2)
+
+4. Keep gamma on the current kPa scale:
+
+   gamma <- 0.665 * 10^(-3) * pres_p(elev, temp)
+
+5. Replace the aerodynamic VPD term:
+
+   old:
+   (es - ea)
+
+   new:
+   vpd_kPa
+
+6. Do not remove or add the gamma factor in the aerodynamic term in this patch.
+   That is a separate formula-source question and stays open.
+
+7. Keep the energy term unchanged:
+
+   Rn - G
+
+8. Keep output LE-only.
+   Do not add a Penman sensible heat output.
+
+9. Fix vector guard behavior in the same function only if it is local and necessary:
+   - no scalar max() over a vector for log arguments
+   - invalid elements become NA
+   - warn once if invalid elements occur
+   - do not distort valid elements
+
+10. Fix Penman warning checks so they compare numeric LE values, not logical expressions.
+
+Tests to add/update:
+
+1. Penman VPD unit scale
+   - Construct a simple input where RH < 100.
+   - Check that changing RH changes latent_penman() through vpd_kPa.
+   - Do not compare to the old hPa-scaled value.
+
+2. Penman available energy sign
+   - With all else fixed, increasing soil_flux lowers latent_penman().
+   - This confirms Rn - G is still used.
+
+3. Penman field mapping
+   - surface_type = "field" still works.
+
+4. Penman vector length
+   - vector input returns vector output of same length.
+
+5. Penman invalid aerodynamic case
+   - invalid z/obs_height/log case affects only invalid elements.
+   - valid elements remain finite.
+
+6. turb_flux_calc non-fatal Penman
+   - If Penman fails, turb_flux_calc() still returns other methods and latent_penman as NA vector.
+
+Run:
+devtools::test()
+devtools::check()
+
+Report:
+- exact lines changed
+- whether formulas outside latent_penman were untouched
+- old Caldern Penman mean
+- new Caldern Penman mean
+- tests passed/failed
+- check result
+Close the Penman unit-fix documentation after the completed code patch.
+
+Allowed edits:
+- dev/physics-audit/penman-unit-validation.md
+- dev/physics-audit/physics-fix-plan.md
+- roxygen comments for latent_penman() only, if needed
+- generated man/latent_penman.Rd via devtools::document()
+
+Do not change function bodies.
+Do not change tests.
+Do not touch Bowen, Monin-Obukhov, PT, Bulk, radiation, soil, solar, or wrappers.
+
+Tasks:
+1. Update dev/physics-audit/penman-unit-validation.md:
+   - mark Delta/gamma versus VPD pressure-scale mismatch as fixed
+   - record old Caldern Penman mean: 62.81968
+   - record new Caldern Penman mean: 13.22542
+   - record changed file: R/latent.R
+   - record tests added: tests/testthat/test-penman.R
+   - keep remaining open items open:
+     hum1/rh routing
+     aerodynamic resistance edge/source convention
+     exact Penman source-form validation
+     final physical magnitude validation
+
+2. Update dev/physics-audit/physics-fix-plan.md:
+   - move Penman VPD pressure-scale issue from open/code-fix-needed to fixed
+   - keep Penman sign prose as documentation item if still present
+   - keep hum1/rh wrapper question open
+
+3. In roxygen for latent_penman(), update documentation if it still says:
+   negative heat flux is away from the surface.
+   It must follow package convention:
+   positive LE is latent heat flux away from the surface.
+   negative LE indicates flux toward the surface or condensation-like direction depending on context.
+
+4. In roxygen for latent_penman(), clarify pressure units:
+   pres_sat_vapor_p() and pres_vapor_p() return hPa;
+   latent_penman() converts e_s and e_a internally to kPa for the aerodynamic term;
+   Delta and gamma are kPa-scale.
+
+5. Run:
+   devtools::document()
+   devtools::test()
+   devtools::check()
+
+Report:
+- files changed
+- whether function bodies unchanged
+- tests result
+- check result
+
+Perform Phase 3B: Bowen beta validation and minimal fix proposal.
+
+Inputs:
+- dev/physics-audit/physics-formula-audit.md
+- dev/physics-audit/physics-fix-plan.md
+
+Read:
+- R/sensible.R
+- R/latent.R
+- R/humidity.R
+- R/pressure.R
+- man/sensible_bowen.Rd
+- man/latent_bowen.Rd
+- tests/testthat/test-physics-contract.R
+- tests/testthat/test-consolidation.R
+- vignettes/*.Rmd only where Bowen is discussed or plotted
+
+Do not edit code yet.
+Do not edit tests yet.
+Do not run devtools::document().
+Only create or update:
+dev/physics-audit/bowen-beta-validation.md
+
+Tasks:
+1. Extract the implemented Bowen beta formula exactly.
+2. Extract the documented Bowen beta formula exactly.
+3. List all variables:
+   - t1, t2
+   - hum1, hum2
+   - potential temperature if used
+   - absolute humidity if used
+   - gamma
+   - latent heat / Lv if documented
+   - beta
+   - denominator 1 + beta
+4. For every variable record:
+   - producing helper/function
+   - implemented unit
+   - documented unit
+   - expected source formula role
+5. Check whether the code beta is dimensionless.
+6. Check whether the implemented humidity gradient is physically equivalent to the documented Delta q term or only implementation-specific.
+7. Check whether sensible_bowen() and latent_bowen() use exactly the same beta and denominator logic.
+8. Check denominator capping:
+   - when cap is inactive, closure should hold
+   - when cap is active, closure may be broken
+   - document whether this is intended numerical safeguarding or a formula mismatch
+9. Classify findings:
+   - code-ok
+   - unit-mismatch
+   - documentation-mismatch
+   - implementation-specific
+   - open
+10. End with a decision table:
+   - safe documentation-only fixes
+   - tests needed before code fix
+   - actual formula fix needed
+   - keep open
+
+Do not change source code in this pass.
+Perform Phase 3C: Monin-Obukhov validation and minimal numerical hardening.
+
+Inputs:
+- dev/physics-audit/physics-formula-audit.md
+- dev/physics-audit/physics-fix-plan.md
+
+Read:
+- R/sensible.R
+- R/latent.R
+- R/turbulence.R
+- R/utility_turbulent_flux.R
+- R/temperature.R
+- R/humidity.R
+- man/sensible_monin.Rd
+- man/latent_monin.Rd
+- man/turb_flux_grad_rich_no.Rd
+- man/turb_flux_stability.Rd
+- tests/testthat/test-physics-contract.R
+- tests/testthat/test-turbulence.R
+- vignettes/*.Rmd only where Monin-Obukhov, stability, Richardson, or MO interpretation is discussed
+
+Allowed edits:
+- tests/testthat/test-monin-obukhov.R
+- tests/testthat/test-turbulence.R if existing stability tests belong there
+- R/sensible.R only for sensible_monin() local numerical guards if needed
+- R/latent.R only for latent_monin() local numerical guards if needed
+- R/turbulence.R or R/utility_turbulent_flux.R only for Richardson/stability guard behavior if needed
+- roxygen comments for MO/stability functions if the implemented diagnostic behavior needs clarification
+- generated man/*.Rd via devtools::document()
+- dev/physics-audit/monin-obukhov-validation.md
+
+Do not touch:
+- Penman
+- Bowen
+- Priestley-Taylor
+- Bulk-Residual
+- radiation
+- soil
+- solar timebase
+- build_weather_station()
+- check_availability()
+
+Core rules:
+1. Monin-Obukhov remains diagnostic-only.
+2. Do not force:
+   H_MO + LE_MO = Rn - G
+3. Do not normalize MO output to available energy.
+4. Do not silently cap fluxes to make plots look plausible.
+5. Numerical safeguards may return NA with a warning for invalid profile cases.
+6. Valid elements in vector input must remain valid if other elements are invalid.
+
+Tasks:
+
+A. Create dev/physics-audit/monin-obukhov-validation.md
+
+Document:
+- implemented sensible_monin() formula
+- implemented latent_monin() formula
+- implemented turb_flux_grad_rich_no() formula
+- implemented turb_flux_stability() classification logic
+- sign convention of H_MO and LE_MO
+- use of t1/t2, hum1/hum2, v1/v2, z1/z2
+- whether each gradient is lower-minus-upper or upper-minus-lower
+- whether heights are used as delta z, log(z2 / z1), or log(z2 - z1)
+- where zero-gradient, low-wind, equal-height, or invalid-log cases can occur
+
+Classify each finding:
+- code-ok
+- code-mismatch
+- sign-mismatch
+- unit-mismatch
+- implementation-specific
+- diagnostic-only
+- open
+
+B. Add focused MO tests before changing behavior
+
+Add tests for:
+
+1. Diagnostic-only status
+- sensible_monin() and latent_monin() must not be tested against Rn - G closure.
+- turb_flux_calc() may store MO outputs, but no test may assert MO closure.
+
+2. Low wind
+- v1 <= 0 or v2 <= 0 should not produce uncontrolled Inf or absurd finite values.
+- Expected behavior: NA for affected element plus warning.
+
+3. Equal or invalid heights
+- z1 <= 0, z2 <= 0, z2 <= z1, or z2 == z1 should not produce uncontrolled output.
+- Expected behavior: NA for affected element plus warning.
+
+4. Zero temperature gradient
+- t1 == t2 should produce neutral/stable logic without Inf/NaN leaking uncontrolled.
+- For sensible_monin(), zero thermal gradient should produce zero or NA according to current intended formula, but not extreme values.
+
+5. Zero humidity gradient
+- hum1 == hum2 should produce zero or NA for latent_monin(), but not extreme values.
+
+6. Vector-local invalid handling
+- one invalid row must not corrupt valid rows.
+- valid elements remain finite.
+
+7. Stability classification
+- negative Richardson case -> unstable
+- near-zero Richardson case -> neutral
+- positive Richardson case -> stable
+- Inf/NaN Richardson cases controlled as NA or explicit class, not silent Inf
+
+C. Minimal code hardening if tests expose uncontrolled values
+
+Allowed fixes only:
+- elementwise invalid masks
+- return NA for invalid elements
+- warning once per invalid condition
+- prevent Inf/NaN from escaping
+- replace scalar if()/max() guards with vectorized guards
+- clarify documentation of diagnostic-only behavior
+
+Do not change the physical formula unless the audit finds an unambiguous implementation typo.
+
+Important suspected issue to inspect carefully:
+- sensible_monin() reportedly uses log(z2 - z1) in one path while documentation suggests a vertical gradient / delta z form.
+- Do not “fix” this blindly.
+- Classify it in the validation document first.
+- If it is clearly a coding typo and tests demonstrate bad behavior, propose the exact formula change separately, but do not mix it with generic guard fixes unless the change is absolutely local and source-supported.
+
+D. Run
+
+devtools::document()
+devtools::test()
+devtools::check()
+
+Report:
+- files changed
+- whether formulas changed
+- if formulas changed, exactly which line and why
+- tests added
+- warnings introduced or removed
+- old/new behavior for zero-gradient and low-wind cases
+- check result
+- whether MO remains diagnostic-only

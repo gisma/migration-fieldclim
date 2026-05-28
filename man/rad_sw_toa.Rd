@@ -13,18 +13,17 @@ rad_sw_toa(...)
 \method{rad_sw_toa}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
+\item{datetime}{POSIXlt or POSIXct date-time vector.}
 
-\item{lon}{Longitude in degree.}
+\item{lon}{Longitude in degrees.}
 
-\item{lat}{Latitude in degree.}
+\item{lat}{Latitude in degrees.}
 
 \item{sol_const}{Solar radiation constant in W/m², default is 1361.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Shortwave radiation at top of atmosphere in W/m².
@@ -42,7 +41,8 @@ where:
 }
 \examples{
 # Calculate shortwave radiation at top of atmosphere
-rad_sw_toa(datetime = Sys.time(), lon = 10, lat = 50)
+example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+rad_sw_toa(datetime = example_time, lon = 10, lat = 50)
 }
 \references{
 Bendix 2004, p. 244.

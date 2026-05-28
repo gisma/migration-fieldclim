@@ -41,7 +41,7 @@ turb_ustar(weather_station, obs_height = NULL, ...)
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

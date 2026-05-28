@@ -20,6 +20,18 @@ pres_air_density(elev, temp, ...)
 
   Additional arguments.
 
+- weather_station:
+
+  A weather_station object.
+
+- elev:
+
+  Elevation above sea level in m.
+
+- temp:
+
+  Air temperature in degrees C.
+
 ## Value
 
 Air density in kg/m³.

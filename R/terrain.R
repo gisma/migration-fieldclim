@@ -5,6 +5,7 @@
 #' @param slope Slope of the terrain in degrees.
 #' @param valley Logical value indicating if the location is in a valley (TRUE) or not (FALSE).
 #' @param ... Additional arguments passed to other methods.
+#' @param weather_station A weather_station object.
 #' @return Ratio from 0 to 1, unitless, representing the sky view factor.
 #' @details The sky view factor (\eqn{SVF}) is calculated as:
 #' \deqn{SVF = \frac{1 + \cos(\theta)}{2}} for non-valley locations,
@@ -38,7 +39,6 @@ terr_sky_view.default <- function(slope, valley, ...) {
 }
 
 #' @rdname terr_sky_view
-#' @inheritParams build_weather_station
 #' @export
 terr_sky_view.weather_station <- function(weather_station, ...) {
   a <- methods::formalArgs(terr_sky_view.default)
@@ -61,6 +61,7 @@ terr_sky_view.weather_station <- function(weather_station, ...) {
 #' @param slope Slope of the terrain in degrees.
 #' @param exposition Exposition of the slope in degrees (direction the slope faces).
 #' @param ... Additional arguments passed to other methods.
+#' @param weather_station A weather_station object.
 #' @return Angle in degrees between the terrain slope and the incoming solar radiation.
 #' @details The terrain angle (\eqn{\theta_t}) is calculated as:
 #' \deqn{\theta_t = \arccos\left(\cos(\theta_s) \cdot \sin(\alpha) + \sin(\theta_s) \cdot \cos(\alpha) \cdot \cos(\phi - \beta)\right)}
@@ -99,7 +100,6 @@ terr_terrain_angle.default <- function(datetime, lon, lat, slope, exposition, ..
 }
 
 #' @rdname terr_terrain_angle
-#' @inheritParams build_weather_station
 #' @export
 terr_terrain_angle.weather_station <- function(weather_station, ...) {
   a <- methods::formalArgs(terr_terrain_angle.default)

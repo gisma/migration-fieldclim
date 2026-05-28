@@ -24,6 +24,8 @@ trans_rayleigh(...)
 \item{elev}{Elevation above sea level in meters.}
 
 \item{temp}{Air temperature in °C.}
+
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Transmittance ratio from 0 to 1, unitless.

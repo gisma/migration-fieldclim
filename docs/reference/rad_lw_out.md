@@ -18,23 +18,23 @@ rad_lw_out(weather_station, ...)
 
 - ...:
 
-  Additional arguments.
+  Named station fields, site parameters or model assumptions.
 
 - surface_type:
 
-  Surface type. Allowed values are: field, acre, lawn, street,
-  agriculture, settlement, coniferous forest, deciduous forest, mixed
-  forest, city, water, shrub. EXCEPTION: for functions related to
-  Priestley-Taylor methods, allowed values are: field, bare soil,
-  coniferous forest, water, wetland, spruce forest.
+  Surface-type label.
 
 - surface_temp:
 
-  Surface temperature in degree Celcius.
+  Surface temperature in degrees C.
+
+- sigma:
+
+  Stefan-Boltzmann constant in W m-2 K-4.
 
 - weather_station:
 
-  Object of class `weather_station`.
+  A weather_station object.
 
 ## Value
 

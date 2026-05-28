@@ -46,11 +46,11 @@ latent_monin(weather_station, cap = NULL, ...)
 
 - t1:
 
-  Air temperature at lower height in °C.
+  Air temperature at lower height in degrees C.
 
 - t2:
 
-  Air temperature at upper height in °C.
+  Air temperature at upper height in degrees C.
 
 - v1:
 
@@ -91,7 +91,7 @@ latent_monin(weather_station, cap = NULL, ...)
 
 ## Value
 
-Latent heat flux in W/m².
+Latent heat flux in W m-2.
 
 ## Details
 
@@ -99,7 +99,7 @@ The latent heat flux (\\Q_e\\) using the Monin-Obukhov method is
 calculated as: \$\$Q_e = -\rho \cdot L_v \cdot \frac{k \cdot
 u\_\*}{\phi_q} \cdot \frac{\Delta q}{\Delta z}\$\$ where: \\\rho\\ is
 the air density, \\L_v\\ is the latent heat of vaporization, \\k\\ is
-the von Kármán constant, \\u\_\*\\ is the friction velocity, \\\phi_q\\
+the von Karman constant, \\u\_\*\\ is the friction velocity, \\\phi_q\\
 is the stability correction function for humidity, \\\Delta q\\ is the
 moisture gradient, and \\\Delta z\\ is the height difference between
 measurements.
@@ -125,6 +125,7 @@ Foken 2016, p. 61, Tab. 2.10
 
 ``` r
 # Calculate latent heat flux using Monin-Obukhov length
-latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "forest")
-#> Error in turb_roughness_length.default(surface_type = surface_type): Invalid surface type.
+latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "coniferous forest")
+#> Warning: There are values above 600 W m-2!
+#> [1] 3221.652
 ```

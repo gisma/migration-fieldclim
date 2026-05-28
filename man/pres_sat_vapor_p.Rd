@@ -13,15 +13,15 @@ pres_sat_vapor_p(...)
 \method{pres_sat_vapor_p}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
 \item{a}{Constant a, default is 7.5 over water.}
 
 \item{b}{Constant b, default is 235 over water.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Saturation vapor pressure in hPa.

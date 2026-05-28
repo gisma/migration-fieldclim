@@ -7,7 +7,7 @@
 sol_julian_day(...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 }
 \value{
 Unitless.

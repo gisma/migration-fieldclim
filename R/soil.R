@@ -4,10 +4,11 @@
 #' Negative values signify flux towards the atmosphere, while positive values signify flux into the soil.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Soil heat flux in W/m².
 #' @details
 #' The soil heat flux (\eqn{G}) is calculated using the formula:
-#' \deqn{G = \lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}}
+#' \deqn{G = -\lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}}
 #' where:
 #' \eqn{\lambda} is the thermal conductivity of the soil (W/m/K),
 #' \eqn{T_1} and \eqn{T_2} are the temperatures at two different depths (°C),
@@ -36,7 +37,6 @@ soil_heat_flux.default <- function(texture, moisture, soil_temp1, soil_temp2, so
 }
 
 #' @rdname soil_heat_flux
-#' @inheritParams build_weather_station
 #' @export
 soil_heat_flux.weather_station <- function(weather_station, ...) {
   a <- methods::formalArgs(soil_heat_flux.default)
@@ -55,6 +55,7 @@ soil_heat_flux.weather_station <- function(weather_station, ...) {
 #' Works by linearly interpolating thermal conductivity based on measured data.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Soil thermal conductivity in W/m/K.
 #' @details
 #' The thermal conductivity (\eqn{\lambda}) of the soil is determined based on its texture and moisture content.
@@ -93,7 +94,6 @@ soil_thermal_cond.default <- function(texture, moisture, ...) {
 }
 
 #' @rdname soil_thermal_cond
-#' @inheritParams build_weather_station
 #' @export
 soil_thermal_cond.weather_station <- function(weather_station, ...) {
   a <- methods::formalArgs(soil_thermal_cond.default)
@@ -112,6 +112,7 @@ soil_thermal_cond.weather_station <- function(weather_station, ...) {
 #' Works by linearly interpolating volumetric heat capacity based on measured data.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Soil volumetric heat capacity in MJ/(m³ * K).
 #' @details
 #' The volumetric heat capacity (\eqn{C_v}) of the soil is determined based on its texture and moisture content.
@@ -152,7 +153,6 @@ soil_heat_cap.default <- function(moisture, texture = "sand", ...) {
 }
 
 #' @rdname soil_heat_cap
-#' @inheritParams build_weather_station
 #' @export
 soil_heat_cap.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "moisture", "texture")
@@ -167,13 +167,15 @@ soil_heat_cap.weather_station <- function(weather_station, ...) {
 #' Calculates soil attenuation length.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Soil attenuation length in m.
 #' @details
 #' The soil attenuation length (\eqn{L}) is calculated using the formula:
-#' \deqn{L = \sqrt{\frac{\lambda}{C_v \cdot \pi} \cdot 86400}}
+#' \deqn{L = \sqrt{\frac{\lambda}{C_v \cdot 10^6 \cdot \pi} \cdot 86400}}
 #' where:
 #' \eqn{\lambda} is the thermal conductivity of the soil (W/m/K),
-#' \eqn{C_v} is the volumetric heat capacity of the soil (MJ/(m³ * K)),
+#' \eqn{C_v} is the volumetric heat capacity of the soil (MJ/(m³ * K));
+#' \eqn{10^6} converts it to J/(m³ * K) for the calculation,
 #' \eqn{86400} is the number of seconds in a day.
 #'
 #' @references Bendix 2004, p. 253.
@@ -197,7 +199,6 @@ soil_attenuation.default <- function(moisture, texture = "sand", ...) {
 }
 
 #' @rdname soil_attenuation
-#' @inheritParams build_weather_station
 #' @export
 soil_attenuation.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "moisture", "texture")

@@ -17,7 +17,7 @@ hum_evap_heat(...)
 
 \item{temp}{Air temperature in °C.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Numeric. Enthalpy of vaporization in J/kg.

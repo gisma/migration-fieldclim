@@ -5,6 +5,7 @@
 #' towards the surface.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Sensible heat flux in W/m².
 #' @details
 #' The sensible heat flux (\eqn{Q_h}) using the Priestley-Taylor method is calculated as:
@@ -23,7 +24,7 @@
 #' @param surface_type Surface type, for which a Priestley-Taylor coefficient will be selected. Options: \code{surface_type options}
 #' @examples
 #' # Calculate sensible heat flux using the Priestley-Taylor method
-#' sensible_priestley_taylor(temp = 20, rad_bal = 200, soil_flux = 50, surface_type = "lawn")
+#' sensible_priestley_taylor(temp = 20, rad_bal = 200, soil_flux = 50, surface_type = "field")
 #' @export
 sensible_priestley_taylor <- function(...) {
   UseMethod("sensible_priestley_taylor")
@@ -56,7 +57,6 @@ sensible_priestley_taylor.default <- function(temp, rad_bal, soil_flux, surface_
 }
 
 #' @rdname sensible_priestley_taylor
-#' @inheritParams build_weather_station
 #' @export
 sensible_priestley_taylor.weather_station <- function(weather_station, ...) {
   check_availability(weather_station, "temp", "rad_bal", "soil_flux", "surface_type")
@@ -170,7 +170,6 @@ sensible_monin.default <- function(t1, t2, z1 = 2, z2 = 10, v1, v2, elev, cap = 
 }
 
 #' @rdname sensible_monin
-#' @inheritParams build_weather_station
 #' @export
 sensible_monin.weather_station <- function(weather_station, cap = NULL, ...) {
   check_availability(weather_station, "t1", "t2", "z1", "z2", "v1", "v2", "elev")
@@ -200,6 +199,7 @@ sensible_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' towards the surface.
 #'
 #' @param ... Additional arguments.
+#' @param weather_station A weather_station object.
 #' @return Sensible heat flux in W/m².
 #' @details
 #' The sensible heat flux (\eqn{Q_h}) using the Bowen method is calculated as:
@@ -209,17 +209,25 @@ sensible_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' \eqn{G} is the soil heat flux, and
 #' \eqn{B} is the Bowen ratio.
 #'
-#' The Bowen ratio (\eqn{B}) is calculated as:
-#' \deqn{B = \frac{\gamma}{L_v} \cdot \frac{\Delta T}{\Delta q}}
+#' The implemented Bowen ratio (\eqn{B}) is calculated from a
+#' potential-temperature gradient and an absolute-humidity gradient:
+#' \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 #' where:
-#' \eqn{\gamma} is the psychrometric constant,
-#' \eqn{L_v} is the latent heat of vaporization,
-#' \eqn{\Delta T} is the temperature gradient, and
-#' \eqn{\Delta q} is the moisture gradient.
+#' \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
+#' is an empirical coefficient,
+#' \eqn{\theta} is potential temperature, and
+#' \eqn{AH} is absolute humidity.
+#' The inputs \code{t1} and \code{t2} are converted to potential temperature
+#' before the temperature gradient is formed. The inputs \code{hum1} and
+#' \code{hum2} are relative humidity values that are converted internally to
+#' absolute humidity before the humidity gradient is formed.
 #'
-#' When \eqn{1 + B} results in values close to zero, the sensible heat flux can become unrealistically high.
-#' To prevent this, a cap parameter can be set.
-#' The cap parameter ensures that \eqn{1 + B} does not get too close to zero by setting a minimum allowable value.
+#' When \eqn{1 + B} is close to zero, the sensible heat flux can become
+#' unrealistically high. The \code{cap} parameter is a numerical safeguard that
+#' replaces near-zero denominators with \code{+/- cap}. Exact closure with
+#' \code{latent_bowen()} is guaranteed only for finite uncapped denominators;
+#' capped cases are guarded diagnostic outputs and may not close
+#' \code{rad_bal - soil_flux} exactly.
 #' @references Bendix 2004, p. 221, eq. 9.21
 #' @param t1 Temperature at lower height in °C.
 #' @param t2 Temperature at upper height in °C.
@@ -230,7 +238,7 @@ sensible_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' @param elev Elevation above sea level in m.
 #' @param rad_bal Radiation balance in W/m².
 #' @param soil_flux Soil flux in W/m².
-#' @param cap The cap value to prevent division by zero. Default is NULL.
+#' @param cap A positive denominator guard for near-zero \eqn{1 + B}. Default is NULL.
 #' @examples
 #' # Calculate sensible heat flux using the Bowen method
 #' sensible_bowen(t1 = 20, t2 = 15, hum1 = 80, hum2 = 60, z1 = 2, z2 = 10, elev = 100, rad_bal = 200, soil_flux = 50, cap = 1)
@@ -275,7 +283,6 @@ sensible_bowen.default <- function(t1, t2, hum1, hum2, z1 = 2, z2 = 10, elev, ra
 }
 
 #' @rdname sensible_bowen
-#' @inheritParams build_weather_station
 #' @export
 sensible_bowen.weather_station <- function(weather_station, cap = NULL, ...) {
   check_availability(weather_station, "z1", "z2", "t1", "t2", "hum1", "hum2", "elev", "rad_bal", "soil_flux")

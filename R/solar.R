@@ -3,6 +3,8 @@
 #' The track of Earth around the Sun is not a circle, but more like an ellipse.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param weather_station A weather_station object.
 #' @returns Unitless.
 #' @details
 #' The eccentricity factor (\eqn{E}) accounts for the elliptical shape of Earth's orbit around the Sun. It is calculated as:
@@ -48,6 +50,8 @@ sol_eccentricity.weather_station <- function(weather_station, ...) {
 #' and the last day 360 degrees.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The day angle (\eqn{D}) is calculated as:
@@ -123,6 +127,10 @@ sol_julian_day.weather_station <- function(weather_station, ...) {
 #' Solar elevation angle
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The solar elevation angle (\eqn{h}) is the apparent angle of the sun above the horizon. It is calculated as:
@@ -172,6 +180,8 @@ sol_elevation.weather_station <- function(weather_station, ...) {
 #' Solar declination
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The solar declination (\eqn{\delta}) is the angle between the rays of the sun and the plane of the Earth's equator. It is calculated as:
@@ -217,6 +227,8 @@ sol_declination.weather_station <- function(weather_station, ...) {
 #' Calculates the solar ecliptic length, which is the angle of the Earth's orbit around the sun relative to the vernal equinox.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The solar ecliptic length (\eqn{L}) is calculated as:
@@ -262,6 +274,8 @@ sol_ecliptic_length.weather_station <- function(weather_station, ...) {
 #' Calculates the solar medium anomaly, which is the angular distance of the Earth from its perihelion.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The solar medium anomaly (\eqn{M}) is calculated as:
@@ -304,6 +318,9 @@ sol_medium_anomaly.weather_station <- function(weather_station, ...) {
 #' Calculates the solar hour angle, which is the measure of time since solar noon in degrees.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The solar hour angle (\eqn{H}) is calculated as:
@@ -348,6 +365,9 @@ sol_hour_angle.weather_station <- function(weather_station, ...) {
 #' Calculates the solar medium suntime, which is the mean solar time adjusted for the observer's longitude.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param weather_station A weather_station object.
 #' @returns Hour.
 #' @details
 #' The solar medium suntime (\eqn{T_m}) is calculated as:
@@ -394,6 +414,9 @@ sol_medium_suntime.weather_station <- function(weather_station, ...) {
 #' Calculates the solar time formula, which corrects the solar medium suntime to account for the Earth's elliptical orbit and axial tilt.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param weather_station A weather_station object.
 #' @returns Hour.
 #' @details
 #' The solar time formula (\eqn{E_t}) is calculated as:
@@ -440,6 +463,10 @@ sol_time_formula.weather_station <- function(weather_station, ...) {
 #' Calculates the solar azimuth, which is the compass direction from which the sunlight is coming at any specific point on the earth's surface.
 #'
 #' @inheritParams build_weather_station
+#' @param datetime POSIXlt or POSIXct date-time vector.
+#' @param lon Longitude in degrees.
+#' @param lat Latitude in degrees.
+#' @param weather_station A weather_station object.
 #' @returns Degree.
 #' @details
 #' The solar azimuth (\eqn{A}) is calculated as:

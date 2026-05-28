@@ -13,24 +13,23 @@ rad_sw_in(...)
 \method{rad_sw_in}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{datetime}{Datetime of class \code{POSIXlt}. See \code{\link[base:as.POSIXlt]{base::as.POSIXlt()}}.
-Make sure to provide the correct timezone information!}
+\item{datetime}{POSIXlt or POSIXct date-time vector.}
 
-\item{lon}{Longitude in degree.}
+\item{lon}{Longitude in degrees.}
 
-\item{lat}{Latitude in degree.}
+\item{lat}{Latitude in degrees.}
 
 \item{elev}{Elevation above sea level in m.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{slope}{Slope in degree.}
+\item{slope}{Slope in degrees.}
 
-\item{exposition}{Exposition in degree.}
+\item{exposition}{Exposition or aspect in degrees.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Shortwave incoming radiation in W/m².
@@ -49,7 +48,8 @@ where:
 }
 \examples{
 # Calculate shortwave incoming radiation
-rad_sw_in(datetime = Sys.time(), lon = 10, lat = 50, elev = 100, temp = 15,
+example_time <- as.POSIXlt("2023-08-06 12:00:00", tz = "UTC")
+rad_sw_in(datetime = example_time, lon = 10, lat = 50, elev = 100, temp = 15,
           slope = 5, exposition = 180)
 }
 \references{

@@ -13,24 +13,21 @@ rad_lw_bal(...)
 \method{rad_lw_bal}{weather_station}(weather_station, ...)
 }
 \arguments{
-\item{...}{Additional arguments.}
+\item{...}{Named station fields, site parameters or model assumptions.}
 
-\item{temp}{Air temperature in degree Celcius.}
+\item{temp}{Air temperature in degrees C.}
 
-\item{rh}{Relative humidity in \%.}
+\item{rh}{Relative humidity in percent.}
 
-\item{slope}{Slope in degree.}
+\item{slope}{Slope in degrees.}
 
-\item{valley}{Is the position in a valley (\code{TRUE}) or on a slope (\code{FALSE})?}
+\item{valley}{Logical value indicating whether the station is in a valley.}
 
-\item{surface_type}{Surface type.
-Allowed values are: field, acre, lawn, street, agriculture, settlement, coniferous forest, deciduous forest, mixed forest, city, water, shrub.
-EXCEPTION: for functions related to Priestley-Taylor methods,
-allowed values are: field, bare soil, coniferous forest, water, wetland, spruce forest.}
+\item{surface_type}{Surface-type label.}
 
-\item{surface_temp}{Surface temperature in degree Celcius.}
+\item{surface_temp}{Surface temperature in degrees C.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Longwave radiation balance in W/m².

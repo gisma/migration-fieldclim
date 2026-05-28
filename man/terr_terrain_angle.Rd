@@ -25,7 +25,7 @@ terr_terrain_angle(...)
 
 \item{exposition}{Exposition of the slope in degrees (direction the slope faces).}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Angle in degrees between the terrain slope and the incoming solar radiation.

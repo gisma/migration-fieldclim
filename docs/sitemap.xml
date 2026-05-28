@@ -10,6 +10,10 @@
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldClim.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim-additional-usecases.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim-usecase-workflows.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_additional.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_check_rad_soil.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_update2024.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_usecase.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/index.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/authors.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/index.html</loc></url>
@@ -26,6 +30,7 @@
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/hum_specific.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/index.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_bowen.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_monin.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_penman.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.html</loc></url>
@@ -49,6 +54,7 @@
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/rad_sw_out.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/rad_sw_toa.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/sensible_bowen.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/sensible_monin.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/sensible_priestley_taylor.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/soil_attenuation.html</loc></url>
@@ -77,6 +83,7 @@
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/trans_rayleigh.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/trans_vapor.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/turb_displacement.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/turb_flux_ex_quotient_imp.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/turb_flux_ex_quotient_temp.html</loc></url>

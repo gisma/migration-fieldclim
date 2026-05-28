@@ -29,7 +29,7 @@ hum_moisture_gradient(...)
 
 \item{elev}{Elevation above sea level in m.}
 
-\item{weather_station}{Object of class \code{weather_station}.}
+\item{weather_station}{A weather_station object.}
 }
 \value{
 Numeric. Moisture gradient.
