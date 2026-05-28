@@ -840,264 +840,9 @@ anschließend in fühlbaren und latenten Wärmestrom aufgeteilt wird.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="use-case-5-manuelle-bulk-residual-referenz">Use Case 5: Manuelle Bulk-Residual-Referenz<a class="anchor" aria-label="anchor" href="#use-case-5-manuelle-bulk-residual-referenz"></a>
+<h2 id="use-case-5-methodenüberblick-und-manuelle-bulk-residual-als-referenz">Use Case 5: Methodenüberblick und manuelle Bulk-Residual als
+Referenz<a class="anchor" aria-label="anchor" href="#use-case-5-methoden%C3%BCberblick-und-manuelle-bulk-residual-als-referenz"></a>
 </h2>
-<p>Die manuelle Referenz ist bewusst gewählt, weil sie die
-Energieflusslogik sichtbar macht, bevor Paketmethoden benutzt werden.
-Sie ist kein vollständiges Monin-Obukhov-Verfahren. Sie verwendet nur
-eine vereinfachte Bulk-Transfer-Rechnung für <code>L</code> und
-berechnet <code>V</code> als Residuum.</p>
-<p>Der Bulk-Teil lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub><mo>=</mo><mi>ρ</mi><msub><mi>c</mi><mi>p</mi></msub><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><msub><mi>r</mi><mi>a</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
-L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
-</annotation></semantics></math></p>
-<p>mit:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi><mo>=</mo><msub><mi>T</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>−</mo><msub><mi>T</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
-\Delta T = T_{2m} - T_{10m}
-</annotation></semantics></math></p>
-<p>und einem einfachen aerodynamischen Widerstand:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>a</mi></msub><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mn>2</mn></msub><mi>/</mi><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>k</mi><mover><mi>u</mi><mo accent="true">‾</mo></mover></mrow></mfrac></mrow><annotation encoding="application/x-tex">
-r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
-</annotation></semantics></math></p>
-<p>Der Residualteil lautet:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>i</mi><mi>d</mi><mi>u</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
-V_{residual} = Q^{*} - B - L_{bulk}
-</annotation></semantics></math></p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Konstanten für die vereinfachte Bulk-Rechnung.</span></span>
-<span><span class="va">rho_air</span> <span class="op">&lt;-</span> <span class="fl">1.225</span></span>
-<span><span class="va">cp_air</span> <span class="op">&lt;-</span> <span class="fl">1005</span></span>
-<span><span class="va">z1</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
-<span><span class="va">z2</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
-<span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fl">0.41</span></span>
-<span></span>
-<span><span class="co"># Temperaturdifferenz entsprechend der positiven Flussrichtung.</span></span>
-<span><span class="co"># Wenn 2 m wärmer ist als 10 m, wird L positiv.</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">delta_T_2_10</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_10m</span></span>
-<span></span>
-<span><span class="co"># Mittlere Windgeschwindigkeit aus den beiden Messhöhen.</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">wind_mean</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_2m</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_10m</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span>
-<span></span>
-<span><span class="co"># Einfacher aerodynamischer Widerstand.</span></span>
-<span><span class="co"># Dies ist eine didaktische Vereinfachung und keine vollständige</span></span>
-<span><span class="co"># Stabilitäts- oder Rauigkeitskorrektur.</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">r_a_manual</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">z2</span> <span class="op">/</span> <span class="va">z1</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">k</span> <span class="op">*</span> <span class="va">caldern</span><span class="op">$</span><span class="va">wind_mean</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Manuelle Schätzung des fühlbaren Wärmestroms.</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span> <span class="op">&lt;-</span> <span class="va">rho_air</span> <span class="op">*</span> <span class="va">cp_air</span> <span class="op">*</span> <span class="va">caldern</span><span class="op">$</span><span class="va">delta_T_2_10</span> <span class="op">/</span> <span class="va">caldern</span><span class="op">$</span><span class="va">r_a_manual</span></span>
-<span></span>
-<span><span class="co"># Latenter Wärmestrom als Residuum der Energiebilanz.</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="einzelplots-3">Einzelplots<a class="anchor" aria-label="anchor" href="#einzelplots-3"></a>
-</h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L_bulk: fühlbarer Wärmestrom der manuellen Referenz"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V_residual: latenter Wärmestrom als Residuum"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="01_fieldclim-usecase-workflows_files/figure-html/manual-single-plots-1.png" class="r-plt" alt="" width="768"></p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> <code>L_bulk</code> reagiert direkt
-auf Temperaturgradient und Wind. <code>V_residual</code> ist kein
-unabhängig gemessener Fluss. Es enthält alle nicht durch
-<code>Q*</code>, <code>B</code> und <code>L_bulk</code> erklärten
-Anteile.</p>
-</div>
-<div class="section level3">
-<h3 id="zusammengesetzter-plot-der-manuellen-referenz">Zusammengesetzter Plot der manuellen Referenz<a class="anchor" aria-label="anchor" href="#zusammengesetzter-plot-der-manuellen-referenz"></a>
-</h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cols_manual</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#D55E00"</span>, <span class="st">"#009E73"</span>, <span class="st">"#CC79A7"</span>, <span class="st">"#56B4E9"</span><span class="op">)</span></span>
-<span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span>, xpd <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Manuelle Bulk-Residual-Referenz"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span>, col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span>, col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottom"</span>, inset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.35</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, bty <span class="op">=</span> <span class="st">"n"</span>,</span>
-<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"L_bulk"</span>, <span class="st">"V_residual"</span><span class="op">)</span>,</span>
-<span>       col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="01_fieldclim-usecase-workflows_files/figure-html/manual-combined-plot-1.png" class="r-plt" alt="" width="768"></p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="use-case-6-übergabe-an-das-fieldclim-objekt">Use Case 6: Übergabe an das fieldClim-Objekt<a class="anchor" aria-label="anchor" href="#use-case-6-%C3%BCbergabe-an-das-fieldclim-objekt"></a>
-</h2>
-<p>Das <code>weather_station</code>-Objekt ist die zentrale
-Paketstruktur. Es speichert nicht nur Messspalten, sondern auch Standort
-und Modellparameter. Dadurch können verschiedene Funktionen auf dieselbe
-strukturierte Datenbasis zugreifen.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_weather_station.html">build_weather_station</a></span><span class="op">(</span></span>
-<span>  <span class="co"># Zeitachse.</span></span>
-<span>  datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
-<span></span>
-<span>  <span class="co"># Standort der Station.</span></span>
-<span>  lon <span class="op">=</span> <span class="fl">8.6832</span>,</span>
-<span>  lat <span class="op">=</span> <span class="fl">50.8405</span>,</span>
-<span>  elev <span class="op">=</span> <span class="fl">261</span>,</span>
-<span></span>
-<span>  <span class="co"># Standardtemperatur und Standardfeuchte.</span></span>
-<span>  temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span>
-<span>  rh <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span>
-<span></span>
-<span>  <span class="co"># Profilgrößen für gradienten- und stabilitätsbezogene Methoden.</span></span>
-<span>  t1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span>
-<span>  t2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_10m</span>,</span>
-<span>  hum1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span>
-<span>  hum2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_10m</span>,</span>
-<span></span>
-<span>  <span class="co"># Windprofil und Messhöhen.</span></span>
-<span>  v1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_2m</span>,</span>
-<span>  v2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_10m</span>,</span>
-<span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span>
-<span></span>
-<span>  <span class="co"># Paketnamen für Theoriegrößen:</span></span>
-<span>  <span class="co"># rad_bal entspricht Q*, soil_flux entspricht B.</span></span>
-<span>  rad_bal <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span>,</span>
-<span>  soil_flux <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span>,</span>
-<span></span>
-<span>  <span class="co"># Weitere Oberflächen- und Bodeninformationen.</span></span>
-<span>  moisture <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">water_vol_soil</span>,</span>
-<span>  surface_temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ts</span>,</span>
-<span></span>
-<span>  <span class="co"># Oberflächentyp als Modellannahme.</span></span>
-<span>  surface_type <span class="op">=</span> <span class="st">"field"</span>,</span>
-<span></span>
-<span>  <span class="co"># Beobachtungshöhe für Verfahren, die eine Referenzhöhe brauchen.</span></span>
-<span>  obs_height <span class="op">=</span> <span class="fl">2</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Klasse und enthaltene Felder prüfen.</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "weather_station"</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  [1] "datetime"     "lon"          "lat"          "elev"         "temp"        </span></span>
-<span><span class="co">#&gt;  [6] "rh"           "t1"           "t2"           "hum1"         "hum2"        </span></span>
-<span><span class="co">#&gt; [11] "v1"           "v2"           "z1"           "z2"           "rad_bal"     </span></span>
-<span><span class="co">#&gt; [16] "soil_flux"    "moisture"     "surface_temp" "surface_type" "obs_height"</span></span>
-<span></span>
-<span><span class="co"># Als Tabelle ausgeben.</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;              datetime    lon     lat elev  temp    rh    t1    t2  hum1 hum2</span></span>
-<span><span class="co">#&gt; 1 2017-06-30 00:00:00 8.6832 50.8405  261 13.09 100.0 13.09 13.60 100.0 97.6</span></span>
-<span><span class="co">#&gt; 2 2017-06-30 00:05:00 8.6832 50.8405  261 13.01 100.0 13.01 13.51 100.0 97.7</span></span>
-<span><span class="co">#&gt; 3 2017-06-30 00:10:00 8.6832 50.8405  261 13.02 100.0 13.02 13.66 100.0 96.5</span></span>
-<span><span class="co">#&gt; 4 2017-06-30 00:15:00 8.6832 50.8405  261 13.16 100.0 13.16 13.76 100.0 96.1</span></span>
-<span><span class="co">#&gt; 5 2017-06-30 00:20:00 8.6832 50.8405  261 13.27 100.0 13.27 13.80 100.0 96.4</span></span>
-<span><span class="co">#&gt; 6 2017-06-30 00:25:00 8.6832 50.8405  261 13.69  98.1 13.69 14.25  98.1 92.4</span></span>
-<span><span class="co">#&gt;      v1    v2 z1 z2 rad_bal soil_flux moisture surface_temp surface_type</span></span>
-<span><span class="co">#&gt; 1 0.448 0.529  2 10 -15.200  1.551533    0.344        16.31        field</span></span>
-<span><span class="co">#&gt; 2 0.380 0.409  2 10  -8.920  1.492695    0.344        16.29        field</span></span>
-<span><span class="co">#&gt; 3 0.548 0.670  2 10  -1.965  1.448708    0.344        16.25        field</span></span>
-<span><span class="co">#&gt; 4 0.581 0.658  2 10  -1.790  1.390439    0.344        16.25        field</span></span>
-<span><span class="co">#&gt; 5 0.764 0.887  2 10  -2.469  1.325316    0.344        16.22        field</span></span>
-<span><span class="co">#&gt; 6 0.589 0.744  2 10  -3.857  1.268762    0.344        16.19        field</span></span>
-<span><span class="co">#&gt;   obs_height</span></span>
-<span><span class="co">#&gt; 1          2</span></span>
-<span><span class="co">#&gt; 2          2</span></span>
-<span><span class="co">#&gt; 3          2</span></span>
-<span><span class="co">#&gt; 4          2</span></span>
-<span><span class="co">#&gt; 5          2</span></span>
-<span><span class="co">#&gt; 6          2</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> Das Objekt ist die Übergabeform für
-das Paket. Es ist nicht nur eine Kopie der CSV-Datei, sondern eine
-strukturierte Verbindung aus Messdaten und Modellannahmen.</p>
-</div>
-<div class="section level2">
-<h2 id="use-case-7-paketmethoden-für-wärmeflüsse">Use Case 7: Paketmethoden für Wärmeflüsse<a class="anchor" aria-label="anchor" href="#use-case-7-paketmethoden-f%C3%BCr-w%C3%A4rmefl%C3%BCsse"></a>
-</h2>
-<div class="section level3">
-<h3 id="priestley-taylor-als-erster-paketpfad">Priestley-Taylor als erster Paketpfad<a class="anchor" aria-label="anchor" href="#priestley-taylor-als-erster-paketpfad"></a>
-</h3>
-<p>Priestley-Taylor nutzt die verfügbare Energie <code>Q* - B</code> und
-eine empirische Verdunstungsparametrisierung. Der Vorteil im Einstieg
-ist nicht, dass die Methode „wahrer“ wäre, sondern dass sie keine
-instabilen Gradientenquotienten benötigt.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Nur den Priestley-Taylor-Pfad berechnen.</span></span>
-<span><span class="co"># Dieser Pfad ist als erster Paketvergleich stabiler als der volle Methodenworkflow.</span></span>
-<span><span class="va">flux_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">ws</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Ergebnisse zurück in den Auswertungsdatensatz schreiben.</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">sensible_priestley_taylor</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">latent_priestley_taylor</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span></span></code></pre></div>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: L"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: V"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="01_fieldclim-usecase-workflows_files/figure-html/priestley-taylor-plots-1.png" class="r-plt" alt="" width="768"></p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cols_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#D55E00"</span>, <span class="st">"#000000"</span><span class="op">)</span></span>
-<span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span>, xpd <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: Energieabschluss"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottom"</span>, inset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.35</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, bty <span class="op">=</span> <span class="st">"n"</span>,</span>
-<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"L + V nach PT"</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">cols_pt</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="01_fieldclim-usecase-workflows_files/figure-html/priestley-closure-plot-1.png" class="r-plt" alt="" width="768"></p>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> Der Priestley-Taylor-Pfad schließt
-in dieser Paketfassung die verfügbare Energie
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>.
-Dabei ist
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-die Netto-Strahlung und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-der Bodenwärmestrom. Die Summe aus fühlbarem Wärmestrom
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
-und latentem Wärmestrom
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
-liegt deshalb auf derselben Energiebasis wie die manuelle
-Bilanzrechnung.</p>
-<p>Das ist der wichtigste didaktische Vorteil dieses Pfads: Die Methode
-bleibt direkt an die Energiebilanz gekoppelt. Sie erzeugt keine
-unabhängige Flussgröße aus einem instabilen Gradientenverhältnis,
-sondern partitioniert die verfügbare Energie. Priestley-Taylor ist damit
-nicht „wahrer“ als die anderen Methoden, aber als erster Paketpfad
-kontrollierbarer.</p>
-<p>Für die Interpretation heißt das: Wenn
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-oder
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-falsch definiert sind, wird auch Priestley-Taylor falsch skaliert. Der
-Fehler bleibt aber sichtbar, weil
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">L + V</annotation></semantics></math>
-weiterhin gegen
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
-geprüft werden kann. Genau deshalb steht die Kontrolle von
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
-und
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
-vor diesem Methodenvergleich.</p>
-</div>
 <div class="section level3">
 <h3 id="methodenüberblick">Methodenüberblick<a class="anchor" aria-label="anchor" href="#methoden%C3%BCberblick"></a>
 </h3>
@@ -1337,6 +1082,267 @@ Verdunstungsantrieb der Luft. Penman ist deshalb besonders nützlich als
 Vergleichs- und Prüfpfad für <code>V</code>, aber keine vollständige
 <code>L</code>/<code>V</code>-Partitionierung wie Priestley-Taylor oder
 Bowen.</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="die-bulk-residual-methode-als-einfache-referenz">Die Bulk-Residual Methode als einfache Referenz<a class="anchor" aria-label="anchor" href="#die-bulk-residual-methode-als-einfache-referenz"></a>
+</h3>
+<p>Die manuelle Referenz ist bewusst gewählt, weil sie die
+Energieflusslogik sichtbar macht, bevor Paketmethoden benutzt werden.
+Sie ist kein vollständiges Monin-Obukhov-Verfahren. Sie verwendet nur
+eine vereinfachte Bulk-Transfer-Rechnung für <code>L</code> und
+berechnet <code>V</code> als Residuum.</p>
+<p>Der Bulk-Teil lautet:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub><mo>=</mo><mi>ρ</mi><msub><mi>c</mi><mi>p</mi></msub><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi></mrow><msub><mi>r</mi><mi>a</mi></msub></mfrac></mrow><annotation encoding="application/x-tex">
+L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
+</annotation></semantics></math></p>
+<p>mit:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>T</mi><mo>=</mo><msub><mi>T</mi><mrow><mn>2</mn><mi>m</mi></mrow></msub><mo>−</mo><msub><mi>T</mi><mrow><mn>10</mn><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+\Delta T = T_{2m} - T_{10m}
+</annotation></semantics></math></p>
+<p>und einem einfachen aerodynamischen Widerstand:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>r</mi><mi>a</mi></msub><mo>=</mo><mfrac><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>z</mi><mn>2</mn></msub><mi>/</mi><msub><mi>z</mi><mn>1</mn></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>k</mi><mover><mi>u</mi><mo accent="true">‾</mo></mover></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
+</annotation></semantics></math></p>
+<p>Der Residualteil lautet:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>V</mi><mrow><mi>r</mi><mi>e</mi><mi>s</mi><mi>i</mi><mi>d</mi><mi>u</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi><mo>−</mo><msub><mi>L</mi><mrow><mi>b</mi><mi>u</mi><mi>l</mi><mi>k</mi></mrow></msub></mrow><annotation encoding="application/x-tex">
+V_{residual} = Q^{*} - B - L_{bulk}
+</annotation></semantics></math></p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Konstanten für die vereinfachte Bulk-Rechnung.</span></span>
+<span><span class="va">rho_air</span> <span class="op">&lt;-</span> <span class="fl">1.225</span></span>
+<span><span class="va">cp_air</span> <span class="op">&lt;-</span> <span class="fl">1005</span></span>
+<span><span class="va">z1</span> <span class="op">&lt;-</span> <span class="fl">2</span></span>
+<span><span class="va">z2</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
+<span><span class="va">k</span> <span class="op">&lt;-</span> <span class="fl">0.41</span></span>
+<span></span>
+<span><span class="co"># Temperaturdifferenz entsprechend der positiven Flussrichtung.</span></span>
+<span><span class="co"># Wenn 2 m wärmer ist als 10 m, wird L positiv.</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">delta_T_2_10</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_10m</span></span>
+<span></span>
+<span><span class="co"># Mittlere Windgeschwindigkeit aus den beiden Messhöhen.</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">wind_mean</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_2m</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_10m</span><span class="op">)</span> <span class="op">/</span> <span class="fl">2</span></span>
+<span></span>
+<span><span class="co"># Einfacher aerodynamischer Widerstand.</span></span>
+<span><span class="co"># Dies ist eine didaktische Vereinfachung und keine vollständige</span></span>
+<span><span class="co"># Stabilitäts- oder Rauigkeitskorrektur.</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">r_a_manual</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">z2</span> <span class="op">/</span> <span class="va">z1</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">k</span> <span class="op">*</span> <span class="va">caldern</span><span class="op">$</span><span class="va">wind_mean</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Manuelle Schätzung des fühlbaren Wärmestroms.</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span> <span class="op">&lt;-</span> <span class="va">rho_air</span> <span class="op">*</span> <span class="va">cp_air</span> <span class="op">*</span> <span class="va">caldern</span><span class="op">$</span><span class="va">delta_T_2_10</span> <span class="op">/</span> <span class="va">caldern</span><span class="op">$</span><span class="va">r_a_manual</span></span>
+<span></span>
+<span><span class="co"># Latenter Wärmestrom als Residuum der Energiebilanz.</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="einzelplots-3">Einzelplots<a class="anchor" aria-label="anchor" href="#einzelplots-3"></a>
+</h3>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L_bulk: fühlbarer Wärmestrom der manuellen Referenz"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V_residual: latenter Wärmestrom als Residuum"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="01_fieldclim-usecase-workflows_files/figure-html/manual-single-plots-1.png" class="r-plt" alt="" width="768"></p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Interpretation.</strong> <code>L_bulk</code> reagiert direkt
+auf Temperaturgradient und Wind. <code>V_residual</code> ist kein
+unabhängig gemessener Fluss. Es enthält alle nicht durch
+<code>Q*</code>, <code>B</code> und <code>L_bulk</code> erklärten
+Anteile.</p>
+</div>
+<div class="section level3">
+<h3 id="zusammengesetzter-plot-der-manuellen-referenz">Zusammengesetzter Plot der manuellen Referenz<a class="anchor" aria-label="anchor" href="#zusammengesetzter-plot-der-manuellen-referenz"></a>
+</h3>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cols_manual</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#D55E00"</span>, <span class="st">"#009E73"</span>, <span class="st">"#CC79A7"</span>, <span class="st">"#56B4E9"</span><span class="op">)</span></span>
+<span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span>, xpd <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Manuelle Bulk-Residual-Referenz"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk</span>, col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_residual</span>, col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fl">4</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottom"</span>, inset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.35</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, bty <span class="op">=</span> <span class="st">"n"</span>,</span>
+<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"L_bulk"</span>, <span class="st">"V_residual"</span><span class="op">)</span>,</span>
+<span>       col <span class="op">=</span> <span class="va">cols_manual</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span>, <span class="fl">4</span><span class="op">)</span><span class="op">]</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<p><img src="01_fieldclim-usecase-workflows_files/figure-html/manual-combined-plot-1.png" class="r-plt" alt="" width="768"></p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="use-case-6-übergabe-an-das-fieldclim-objekt">Use Case 6: Übergabe an das fieldClim-Objekt<a class="anchor" aria-label="anchor" href="#use-case-6-%C3%BCbergabe-an-das-fieldclim-objekt"></a>
+</h2>
+<p>Das <code>weather_station</code>-Objekt ist die zentrale
+Paketstruktur. Es speichert nicht nur Messspalten, sondern auch Standort
+und Modellparameter. Dadurch können verschiedene Funktionen auf dieselbe
+strukturierte Datenbasis zugreifen.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_weather_station.html">build_weather_station</a></span><span class="op">(</span></span>
+<span>  <span class="co"># Zeitachse.</span></span>
+<span>  datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
+<span></span>
+<span>  <span class="co"># Standort der Station.</span></span>
+<span>  lon <span class="op">=</span> <span class="fl">8.6832</span>,</span>
+<span>  lat <span class="op">=</span> <span class="fl">50.8405</span>,</span>
+<span>  elev <span class="op">=</span> <span class="fl">261</span>,</span>
+<span></span>
+<span>  <span class="co"># Standardtemperatur und Standardfeuchte.</span></span>
+<span>  temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span>
+<span>  rh <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span>
+<span></span>
+<span>  <span class="co"># Profilgrößen für gradienten- und stabilitätsbezogene Methoden.</span></span>
+<span>  t1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span>
+<span>  t2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_10m</span>,</span>
+<span>  hum1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span>
+<span>  hum2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_10m</span>,</span>
+<span></span>
+<span>  <span class="co"># Windprofil und Messhöhen.</span></span>
+<span>  v1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_2m</span>,</span>
+<span>  v2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_10m</span>,</span>
+<span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span>
+<span></span>
+<span>  <span class="co"># Paketnamen für Theoriegrößen:</span></span>
+<span>  <span class="co"># rad_bal entspricht Q*, soil_flux entspricht B.</span></span>
+<span>  rad_bal <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span>,</span>
+<span>  soil_flux <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span>,</span>
+<span></span>
+<span>  <span class="co"># Weitere Oberflächen- und Bodeninformationen.</span></span>
+<span>  moisture <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">water_vol_soil</span>,</span>
+<span>  surface_temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ts</span>,</span>
+<span></span>
+<span>  <span class="co"># Oberflächentyp als Modellannahme.</span></span>
+<span>  surface_type <span class="op">=</span> <span class="st">"field"</span>,</span>
+<span></span>
+<span>  <span class="co"># Beobachtungshöhe für Verfahren, die eine Referenzhöhe brauchen.</span></span>
+<span>  obs_height <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Klasse und enthaltene Felder prüfen.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "weather_station"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "datetime"     "lon"          "lat"          "elev"         "temp"        </span></span>
+<span><span class="co">#&gt;  [6] "rh"           "t1"           "t2"           "hum1"         "hum2"        </span></span>
+<span><span class="co">#&gt; [11] "v1"           "v2"           "z1"           "z2"           "rad_bal"     </span></span>
+<span><span class="co">#&gt; [16] "soil_flux"    "moisture"     "surface_temp" "surface_type" "obs_height"</span></span>
+<span></span>
+<span><span class="co"># Als Tabelle ausgeben.</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              datetime    lon     lat elev  temp    rh    t1    t2  hum1 hum2</span></span>
+<span><span class="co">#&gt; 1 2017-06-30 00:00:00 8.6832 50.8405  261 13.09 100.0 13.09 13.60 100.0 97.6</span></span>
+<span><span class="co">#&gt; 2 2017-06-30 00:05:00 8.6832 50.8405  261 13.01 100.0 13.01 13.51 100.0 97.7</span></span>
+<span><span class="co">#&gt; 3 2017-06-30 00:10:00 8.6832 50.8405  261 13.02 100.0 13.02 13.66 100.0 96.5</span></span>
+<span><span class="co">#&gt; 4 2017-06-30 00:15:00 8.6832 50.8405  261 13.16 100.0 13.16 13.76 100.0 96.1</span></span>
+<span><span class="co">#&gt; 5 2017-06-30 00:20:00 8.6832 50.8405  261 13.27 100.0 13.27 13.80 100.0 96.4</span></span>
+<span><span class="co">#&gt; 6 2017-06-30 00:25:00 8.6832 50.8405  261 13.69  98.1 13.69 14.25  98.1 92.4</span></span>
+<span><span class="co">#&gt;      v1    v2 z1 z2 rad_bal soil_flux moisture surface_temp surface_type</span></span>
+<span><span class="co">#&gt; 1 0.448 0.529  2 10 -15.200  1.551533    0.344        16.31        field</span></span>
+<span><span class="co">#&gt; 2 0.380 0.409  2 10  -8.920  1.492695    0.344        16.29        field</span></span>
+<span><span class="co">#&gt; 3 0.548 0.670  2 10  -1.965  1.448708    0.344        16.25        field</span></span>
+<span><span class="co">#&gt; 4 0.581 0.658  2 10  -1.790  1.390439    0.344        16.25        field</span></span>
+<span><span class="co">#&gt; 5 0.764 0.887  2 10  -2.469  1.325316    0.344        16.22        field</span></span>
+<span><span class="co">#&gt; 6 0.589 0.744  2 10  -3.857  1.268762    0.344        16.19        field</span></span>
+<span><span class="co">#&gt;   obs_height</span></span>
+<span><span class="co">#&gt; 1          2</span></span>
+<span><span class="co">#&gt; 2          2</span></span>
+<span><span class="co">#&gt; 3          2</span></span>
+<span><span class="co">#&gt; 4          2</span></span>
+<span><span class="co">#&gt; 5          2</span></span>
+<span><span class="co">#&gt; 6          2</span></span></code></pre></div>
+<p><strong>Interpretation.</strong> Das Objekt ist die Übergabeform für
+das Paket. Es ist nicht nur eine Kopie der CSV-Datei, sondern eine
+strukturierte Verbindung aus Messdaten und Modellannahmen.</p>
+</div>
+<div class="section level2">
+<h2 id="use-case-7-paketmethoden-für-wärmeflüsse">Use Case 7: Paketmethoden für Wärmeflüsse<a class="anchor" aria-label="anchor" href="#use-case-7-paketmethoden-f%C3%BCr-w%C3%A4rmefl%C3%BCsse"></a>
+</h2>
+<div class="section level3">
+<h3 id="priestley-taylor-als-erster-paketpfad">Priestley-Taylor als erster Paketpfad<a class="anchor" aria-label="anchor" href="#priestley-taylor-als-erster-paketpfad"></a>
+</h3>
+<p>Priestley-Taylor nutzt die verfügbare Energie <code>Q* - B</code> und
+eine empirische Verdunstungsparametrisierung. Der Vorteil im Einstieg
+ist nicht, dass die Methode „wahrer“ wäre, sondern dass sie keine
+instabilen Gradientenquotienten benötigt.</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Nur den Priestley-Taylor-Pfad berechnen.</span></span>
+<span><span class="co"># Dieser Pfad ist als erster Paketvergleich stabiler als der volle Methodenworkflow.</span></span>
+<span><span class="va">flux_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">ws</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Ergebnisse zurück in den Auswertungsdatensatz schreiben.</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">sensible_priestley_taylor</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">latent_priestley_taylor</span></span>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: L"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: V"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="01_fieldclim-usecase-workflows_files/figure-html/priestley-taylor-plots-1.png" class="r-plt" alt="" width="768"></p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">cols_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#D55E00"</span>, <span class="st">"#000000"</span><span class="op">)</span></span>
+<span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>, <span class="fl">4</span>, <span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span>, xpd <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: Energieabschluss"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottom"</span>, inset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.35</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, bty <span class="op">=</span> <span class="st">"n"</span>,</span>
+<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"L + V nach PT"</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">cols_pt</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<p><img src="01_fieldclim-usecase-workflows_files/figure-html/priestley-closure-plot-1.png" class="r-plt" alt="" width="768"></p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
+<p><strong>Interpretation.</strong> Der Priestley-Taylor-Pfad schließt
+in dieser Paketfassung die verfügbare Energie
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>.
+Dabei ist
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
+die Netto-Strahlung und
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
+der Bodenwärmestrom. Die Summe aus fühlbarem Wärmestrom
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>L</mi><annotation encoding="application/x-tex">L</annotation></semantics></math>
+und latentem Wärmestrom
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
+liegt deshalb auf derselben Energiebasis wie die manuelle
+Bilanzrechnung.</p>
+<p>Das ist der wichtigste didaktische Vorteil dieses Pfads: Die Methode
+bleibt direkt an die Energiebilanz gekoppelt. Sie erzeugt keine
+unabhängige Flussgröße aus einem instabilen Gradientenverhältnis,
+sondern partitioniert die verfügbare Energie. Priestley-Taylor ist damit
+nicht „wahrer“ als die anderen Methoden, aber als erster Paketpfad
+kontrollierbarer.</p>
+<p>Für die Interpretation heißt das: Wenn
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
+oder
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
+falsch definiert sind, wird auch Priestley-Taylor falsch skaliert. Der
+Fehler bleibt aber sichtbar, weil
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mo>+</mo><mi>V</mi></mrow><annotation encoding="application/x-tex">L + V</annotation></semantics></math>
+weiterhin gegen
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>Q</mi><mo>*</mo></msup><mo>−</mo><mi>B</mi></mrow><annotation encoding="application/x-tex">Q^{*} - B</annotation></semantics></math>
+geprüft werden kann. Genau deshalb steht die Kontrolle von
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>Q</mi><mo>*</mo></msup><annotation encoding="application/x-tex">Q^{*}</annotation></semantics></math>
+und
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>B</mi><annotation encoding="application/x-tex">B</annotation></semantics></math>
+vor diesem Methodenvergleich.</p>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Alle im Sammelworkflow verfügbaren Methoden berechnen.</span></span>
 <span><span class="co"># Bowen und Monin-Obukhov können Warnungen erzeugen, weil sie auf Gradienten</span></span>
@@ -1441,7 +1447,6 @@ Deshalb werden
 und
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>V</mi><annotation encoding="application/x-tex">V</annotation></semantics></math>
 getrennt tabelliert.</p>
-</div>
 </div>
 <div class="section level3">
 <h3 id="einzelplots-der-paketmethoden">Einzelplots der Paketmethoden<a class="anchor" aria-label="anchor" href="#einzelplots-der-paketmethoden"></a>
