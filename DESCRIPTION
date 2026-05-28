@@ -1,6 +1,6 @@
 Package: fieldClim
 Title: Calculates Fluxes for Weather Stations
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: 
     c(
     person("David", "Langenohl",
@@ -24,6 +24,9 @@ Authors@R:
     person("You-De", "Chen",
            role = c("aut"),
            email = "you-de.chen@students.uni-marburg.de")
+    person("Christoph", "Reudenbach",
+           role = c("ctb"),
+           email = "reudenbach@uni-marburg.de")           
     )
 Description: `fieldClim` is designed as a handy tool for calculations of various weather and micromicrometeorological parameters based on the measurements of a weather station.
 			 It includes functions adressing the estimation of radiation properties, the calculations of latent, sensible, and turbulent heat fluxes, the calculation of soil heat fluxes 
