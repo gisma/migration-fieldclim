@@ -1,10 +1,5 @@
 # FieldClim Package Update Documentation
 
-> This R Markdown file was generated from a rendered, self-contained
-> HTML document. Embedded base64 figures from the HTML were removed so
-> the source remains editable and package-friendly. Figure captions were
-> retained where they were present.
-
 ## Introduction
 
 This document provides detailed documentation of the recent updates and

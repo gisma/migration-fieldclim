@@ -51,24 +51,21 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><p>Ersetze den README-Inhalt durch diese Fassung:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu"># fieldClim</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="in">`fieldClim`</span> is an R package for calculations of weather-station based microclimate and micrometeorological parameters.</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>It provides functions for:</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="ss">- </span>estimating radiation properties,</span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="ss">- </span>calculating latent and sensible heat fluxes,</span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a><span class="ss">- </span>calculating turbulent heat flux diagnostics,</span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="ss">- </span>calculating soil heat fluxes,</span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a><span class="ss">- </span>estimating thermal and mechanical boundary-layer properties,</span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="ss">- </span>organizing station data in a structured <span class="in">`weather_station`</span> object.</span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>The package was originally cloned from:</span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a></span>
-<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="in">```text</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="in">https://gitlab.uni-marburg.de/fb19/ag-bendix/fieldClim.git</span></span></code></pre></div>
+  <main id="main" class="col-md-9"><div class="section level1">
+<div class="page-header"><h1 id="fieldclim">fieldClim<a class="anchor" aria-label="anchor" href="#fieldclim"></a>
+</h1></div>
+<p><code>fieldClim</code> is an R package for calculations of weather-station based microclimate and micrometeorological parameters.</p>
+<p>It provides functions for:</p>
+<ul>
+<li>estimating radiation properties,</li>
+<li>calculating latent and sensible heat fluxes,</li>
+<li>calculating turbulent heat flux diagnostics,</li>
+<li>calculating soil heat fluxes,</li>
+<li>estimating thermal and mechanical boundary-layer properties,</li>
+<li>organizing station data in a structured <code>weather_station</code> object.</li>
+</ul>
+<p>The package was originally cloned from:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a>https<span class="sc">:</span><span class="er">//</span>gitlab.uni<span class="sc">-</span>marburg.de<span class="sc">/</span>fb19<span class="sc">/</span>ag<span class="sc">-</span>bendix<span class="sc">/</span>fieldClim.git</span></code></pre></div>
 <p>This repository is a private development and migration repository. It is currently under construction and should not be treated as a stable public release.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -86,11 +83,7 @@
 </h2>
 <p>The package is under active consolidation. Some historical rendered HTML vignettes included in the repository are archived outputs and should not be treated as current numerical references.</p>
 <p>In the Caldern metadata, <code>EC</code> means electric conductivity. The package does not implement a complete Eddy Covariance processing chain.</p>
-</div>
-<div class="section level2">
-<h2 id="teaching-ready-energy-balance-workflow">Teaching-ready energy balance workflow<a class="anchor" aria-label="anchor" href="#teaching-ready-energy-balance-workflow"></a>
-</h2>
-<p>This development branch adds a stable teaching workflow for microclimate energy-balance calculations.</p>
+<p>This clone adds a stable workflow for microclimate energy-balance calculations.</p>
 <p>A small packaged teaching dataset is provided:</p>
 <pre class="text"><code>inst/extdata/caldern_wiese_2017-06-30.csv</code></pre>
 <p>It contains one complete 5-minute day with 288 observations. The full Caldern raw dataset is intentionally not included in the package.</p>
@@ -120,16 +113,52 @@
 <h2 id="consolidation-changes-in-this-branch">Consolidation changes in this branch<a class="anchor" aria-label="anchor" href="#consolidation-changes-in-this-branch"></a>
 </h2>
 <p>This branch includes small robustness fixes and documentation clarifications:</p>
+<p><code>turb_flux_calc(weather_station, pt_only = TRUE)</code> provides a beginner-safe teaching path. It computes only:</p>
 <ul>
+<li><code>sensible_priestley_taylor</code></li>
+<li><code>latent_priestley_taylor</code></li>
+</ul>
+<p>This avoids the optional Penman, Bowen and Monin-Obukhov paths in first teaching exercises.</p>
+<p><code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> keeps the full method workflow available, including:</p>
+<ul>
+<li>Priestley-Taylor</li>
+<li>Bowen</li>
+<li>Monin-Obukhov</li>
+<li>Penman</li>
+</ul>
+<p>Penman failures are now non-fatal inside <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code>.</p>
+<p><code><a href="reference/latent_penman.html">latent_penman.weather_station()</a></code> was consolidated so that common <code>fieldClim</code> surface types, such as <code>field</code>, can be mapped to Penman-compatible resistance classes.</p>
+<p>Relative humidity handling in the Penman weather-station method was made consistent:</p>
+<ul>
+<li>profile humidity is used when available,</li>
+<li>otherwise the standard <code>rh</code> field is used.</li>
+</ul>
+<p><code><a href="reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> now supports the current flat <code>weather_station</code> object structure.</p>
+<p>Numeric warning checks in heat-flux functions were repaired so warnings are based on calculated numeric values rather than broken logical checks.</p>
+<p><code><a href="reference/soil_attenuation.html">soil_attenuation()</a></code> argument forwarding was corrected.</p>
+<p>Bowen denominator handling was made more robust.</p>
+<p>The Caldern teaching vignette now uses the packaged one-day dataset. It:</p>
+<ul>
+<li>reads <code>"NULL"</code> as <code>NA</code>,</li>
+<li>parses timestamps explicitly with <code>Europe/Berlin</code>,</li>
+<li>avoids depending on the full raw CSV.</li>
+</ul>
+<p>New teaching and documentation material was added for:</p>
+<ul>
+<li>energy-balance workflows,</li>
+<li>radiation checks,</li>
+<li>soil heat flux checks,</li>
+<li>additional package use cases.</li>
+</ul>
+<p>Tests were added or updated for:</p>
+<ul>
+<li>the consolidated teaching dataset,</li>
 <li>
-<code><a href="reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> supports the current flat <code>weather_station</code> object structure.</li>
-<li>Numeric warning checks in heat-flux functions were repaired.</li>
-<li>
-<code><a href="reference/soil_attenuation.html">soil_attenuation()</a></code> argument forwarding was corrected.</li>
-<li>Bowen denominator handling was made more robust.</li>
-<li>Penman failures in <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> are non-fatal.</li>
-<li>Penman surface-type handling was consolidated so common <code>fieldClim</code> surface types such as <code>field</code> can be mapped to Penman-compatible resistance classes.</li>
-<li>The teaching dataset is kept small and package-compatible.</li>
+<code>weather_station</code> handling,</li>
+<li>warning logic,</li>
+<li>soil attenuation,</li>
+<li>Bowen denominator behavior,</li>
+<li>Penman availability.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -139,7 +168,7 @@
 <p>The current teaching workflow is therefore an energy-balance and heat-flux-methods workflow, not an Eddy Covariance workflow.</p>
 <pre><code></code></pre>
 </div>
-
+</div>
   </main><aside class="col-md-3"><div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
