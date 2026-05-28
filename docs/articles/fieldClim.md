@@ -18,6 +18,13 @@ Richter and You-De Chen in summer semester 2023
 of the Mitze & Wenzel version with profound structural changes and bug
 fixes. The revision was mainly focused on heat balance equations in
 chapter 1 to 4, but also several further functions used in the course.
+The current Revision 2026 is hosted on
+(<https://github.com/gisma/fieldClim>) This version consolidates
+fieldClim into a teaching-ready package for reproducible microclimate
+energy-balance workflows, with a small Caldern example dataset, explicit
+sign conventions, a stable Priestley-Taylor entry path, improved
+weather_station, Penman, Bowen and soil-heat routines, expanded tests
+and vignettes.
 
 `fieldClim` is designed as a handy tool for calculations of various
 weather and micro-climate conditions based on the measurements of a
