@@ -162,4 +162,21 @@
 - These open items do not mean that the affected functions are known to
   be wrong. They document the boundary between code-level fixes
   completed in this release and scientific source validation that
-  remains to be completed.
+  remains to be completed. \## Tests
+- Added method equation-contract tests for radiation balance, soil heat
+  flux, Priestley-Taylor, Bulk-Residual, Bowen, Penman and
+  Monin-Obukhov/Profile equations.
+- Added helper equation-contract tests for documented humidity,
+  pressure, temperature, boundary-layer and turbulent-flux helper
+  equations.
+- Added `weather_station` API parity tests for direct calls versus
+  `weather_station` methods.
+- Added workflow tests for
+  [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
+  including `pt_only`, full workflow output, Penman fallback and
+  Bulk-Residual Richardson-guard pass-through.
+- Current validation status:
+  [`devtools::test()`](https://devtools.r-lib.org/reference/test.html)
+  passes with 464 tests and one existing skip;
+  [`devtools::check()`](https://devtools.r-lib.org/reference/check.html)
+  passes with 0 errors, 0 warnings and 0 notes.

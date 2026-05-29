@@ -78,3 +78,9 @@
   - the soil thermal conductivity, heat-capacity and attenuation table values;
   - the precipitable-water seasonal reference table used by `hum_precipitable_water()`.
 - These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this release and scientific source validation that remains to be completed.
+## Tests
+- Added method equation-contract tests for radiation balance, soil heat flux, Priestley-Taylor, Bulk-Residual, Bowen, Penman and Monin-Obukhov/Profile equations.
+- Added helper equation-contract tests for documented humidity, pressure, temperature, boundary-layer and turbulent-flux helper equations.
+- Added `weather_station` API parity tests for direct calls versus `weather_station` methods.
+- Added workflow tests for `turb_flux_calc()` including `pt_only`, full workflow output, Penman fallback and Bulk-Residual Richardson-guard pass-through.
+- Current validation status: `devtools::test()` passes with 464 tests and one existing skip; `devtools::check()` passes with 0 errors, 0 warnings and 0 notes.

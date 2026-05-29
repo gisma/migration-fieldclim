@@ -1,15 +1,17 @@
-#' sc PT coefficient
+#' sc Priestley-Taylor slope coefficient
 #'
-#' Calculates sc for latent and sensible Priestley-Taylor-Method.
-#' sc is the gradient of Clausius-Clapeyron equation.
-#' This function is a polynomial fit for the table 6 in Foken (2013), p.48.
+#' Internal Priestley-Taylor helper for the package-scale slope coefficient
+#' used together with gam().
 #'
+#' The function represents the temperature-dependent sc values from the same
+#' Foken/Stull Table 6 scale used by gam(). The coefficients are based on
+#' specific humidity and have units kg kg-1 K-1. The helper is used in the
+#' Priestley-Taylor ratio sc / (sc + gam()) and should not be mixed with
+#' coefficients on another unit scale.
 #'
-#' @param t Air temperature in °C.
+#' @param t Air temperature in deg C.
 #'
-#' @returns Foken table-scale slope coefficient for Priestley-Taylor calculations.
-#'   The helper is used commensurably with \code{gam()} in PT ratios; it is not
-#'   documented as Pa/K, hPa/K, or kPa/K.
+#' @returns Foken/Stull table-scale slope coefficient in kg kg-1 K-1.
 #' @noRd
 sc <- function(t) {
   8.5 * 10^(-7) * (t + 273.15)^2 - 0.0004479 * (t + 273.15) + 0.05919
@@ -18,15 +20,19 @@ sc <- function(t) {
 
 #' gamma Priestley-Taylor coefficient
 #'
-#' Calculates gamma for latent and sensible Priestley-Taylor-Method.
-#' gamma is the temperature-sensitive psychrometer constant.
-#' This function is a polynomial fit for the table 6 in Foken (2013), p.48.
+#' Internal Priestley-Taylor helper for the package-scale psychrometric
+#' coefficient used together with sc().
 #'
-#' @param t Air temperature in °C.
+#' The function is documented in the package source as a polynomial fit to
+#' Table 6 in Foken (2013, p. 48). That table gives temperature-dependent
+#' gamma and sc values based on specific humidity after Stull (1988).
+#' Therefore, gam() returns a Foken/Stull table-scale coefficient in
+#' kg kg-1 K-1 for use in the Priestley-Taylor ratio. It is not the FAO-56
+#' psychrometric constant in kPa K-1.
 #'
-#' @returns Foken table-scale psychrometric coefficient for Priestley-Taylor
-#'   calculations. The helper is used commensurably with \code{sc()} in PT
-#'   ratios; it is not documented as Pa/K, hPa/K, or kPa/K.
+#' @param t Air temperature in deg C.
+#'
+#' @returns Foken/Stull table-scale psychrometric coefficient in kg kg-1 K-1.
 #' @noRd
 gam <- function(t) {
   0.0004 + (0.00041491 - 0.0004) / (1 + (299.44 / (t + 273.15))^383.4)

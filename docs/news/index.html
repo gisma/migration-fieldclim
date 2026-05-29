@@ -139,7 +139,12 @@
 <li>the soil thermal conductivity, heat-capacity and attenuation table values;</li>
 <li>the precipitable-water seasonal reference table used by <code><a href="../reference/hum_precipitable_water.html">hum_precipitable_water()</a></code>.</li>
 </ul></li>
-<li>These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this release and scientific source validation that remains to be completed.</li>
+<li>These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this release and scientific source validation that remains to be completed. ## Tests</li>
+<li>Added method equation-contract tests for radiation balance, soil heat flux, Priestley-Taylor, Bulk-Residual, Bowen, Penman and Monin-Obukhov/Profile equations.</li>
+<li>Added helper equation-contract tests for documented humidity, pressure, temperature, boundary-layer and turbulent-flux helper equations.</li>
+<li>Added <code>weather_station</code> API parity tests for direct calls versus <code>weather_station</code> methods.</li>
+<li>Added workflow tests for <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> including <code>pt_only</code>, full workflow output, Penman fallback and Bulk-Residual Richardson-guard pass-through.</li>
+<li>Current validation status: <code><a href="https://devtools.r-lib.org/reference/test.html" class="external-link">devtools::test()</a></code> passes with 464 tests and one existing skip; <code><a href="https://devtools.r-lib.org/reference/check.html" class="external-link">devtools::check()</a></code> passes with 0 errors, 0 warnings and 0 notes.</li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
