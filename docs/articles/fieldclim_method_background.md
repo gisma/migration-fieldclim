@@ -2,39 +2,188 @@
 
 ## Purpose of this vignette
 
-This vignette provides the scientific background for the heat-flux
-methods implemented in `fieldClim`. It is not a numerical benchmark and
-it is not a replacement for method-specific validation with independent
-flux measurements. Its purpose is narrower and more important for
-package use: it explains why several approximate micrometeorological
-methods are implemented side by side, what each method estimates, what
-data it needs, and which assumptions must be visible when the results
-are interpreted.
+This vignette explains the scientific background of the heat-flux
+methods implemented in `fieldClim`. It is not a numerical benchmark, and
+it does not claim that one method is the universal reference for all
+surfaces, time scales and stability regimes. Its purpose is to make the
+method logic explicit: which part of the surface energy balance is used,
+which station variables are required, which assumptions enter the
+calculation, and how the resulting fluxes should be interpreted. The
+methodological frame is the same one used in micrometeorology and
+environmental biophysics: turbulent fluxes can be measured directly with
+covariance systems, estimated with energy-balance and aerodynamic
+methods, or diagnosed from gradients and stability assumptions ([Oke
+1987](#ref-oke1987); [Monteith and Unsworth 2013](#ref-monteith2013);
+[Foken 2008a](#ref-foken2008book); [Campbell and Norman
+1998](#ref-campbell1998)).
 
-`fieldClim` is designed for stations that measure the key near-surface
-energy-balance drivers but do not include full eddy-covariance
-instrumentation. In such settings, radiation, soil heat flux, air
-temperature, humidity and wind profiles can still be used to estimate or
-diagnose turbulent heat-flux pathways. The package therefore focuses on
-physically interpretable approximation methods for station-based
-microclimate analysis, not on high-frequency eddy-covariance processing.
+`fieldClim` is designed for weather stations and microclimate stations
+that measure the near-surface drivers of the energy balance but do not
+include full eddy-covariance instrumentation. Typical inputs are net
+radiation or radiation components, soil heat flux or soil-temperature
+information, air temperature, humidity and wind at one or more heights.
+Such stations cannot produce direct covariance fluxes from
+high-frequency vertical wind and scalar fluctuations. They can, however,
+support established approximation families that diagnose or estimate
+sensible and latent heat fluxes from mean meteorological quantities
+([Allen et al. 1998](#ref-allen1998); [Brutsaert
+1982](#ref-brutsaert1982); [Prueger and Kustas 2005](#ref-prueger2005);
+[Campbell and Norman 1998](#ref-campbell1998)).
 
-Eddy covariance remains the direct turbulent-flux reference method in
-many comparison studies. The methods implemented in `fieldClim` should
-therefore be read as model-based or diagnostic estimates from standard
-station data. They are not interchangeable measurements of the same
-object. Some methods close the available energy by construction, some
-provide only latent heat flux, and some are diagnostic profile or
-gradient methods that are not expected to close the energy balance.
+The central point is therefore not to defend one particular method.
+Priestley-Taylor, Penman-type, Bowen-ratio, bulk-resistance/residual and
+Monin-Obukhov/profile approaches belong to different micrometeorological
+method families, and they answer different operational questions
+([Penman 1948](#ref-penman1948); [Priestley and Taylor
+1972](#ref-priestley1972); [Allen et al. 1998](#ref-allen1998); [Prueger
+and Kustas 2005](#ref-prueger2005); [Stull 1988](#ref-stull1988)). Some
+paths close the available energy by construction, one path provides only
+latent heat flux, and profile methods are diagnostic rather than
+energy-closing in this package. This difference is the reason why
+`fieldClim` implements several paths side by side.
+
+## Measuring the surface energy balance: from eddy covariance to station-based methods
+
+Eddy covariance estimates turbulent fluxes from the covariance between
+fluctuations in vertical wind velocity and fluctuations in scalar
+quantities such as temperature, water vapour or trace-gas concentration
+([Aubinet et al. 2012](#ref-aubinet2012); [Foken et al.
+2012](#ref-foken2012ec); [Lee et al. 2004](#ref-lee2004); [Kaimal and
+Finnigan 1994](#ref-kaimal1994)). In a full EC system, a
+three-dimensional sonic anemometer provides the turbulent wind
+components and often sonic temperature for sensible heat flux, while a
+fast-response gas analyser provides water-vapour or CO2 fluctuations for
+latent heat and trace-gas fluxes ([Aubinet et al.
+2012](#ref-aubinet2012); [Lee et al. 2004](#ref-lee2004)). This is a
+fundamentally different data type from ordinary weather-station data,
+which usually provide averaged radiation, temperature, humidity, wind
+and soil measurements rather than high-frequency turbulent covariances.
+
+This distinction matters for `fieldClim`. The package does not process
+high-frequency EC data. It does not rotate wind vectors, despike raw
+turbulence records, correct time lags, estimate spectral losses,
+calculate coordinate transformations or perform EC quality control.
+Those operations belong to the EC processing chain described in EC
+handbooks and method chapters, not to the mean-station data model used
+here ([Aubinet et al. 2012](#ref-aubinet2012); [Foken et al.
+2012](#ref-foken2012ec); [Lee et al. 2004](#ref-lee2004)).
+
+EC nevertheless remains essential background because many simpler
+energy-balance, gradient, aerodynamic and evaporation-model approaches
+are evaluated against EC or sonic-anemometer based flux observations. At
+the same time, EC is not an error-free truth source. The energy-balance
+closure problem is well documented, and closure depends on footprint,
+heterogeneity, averaging time, storage terms, advection, instrumentation
+and data filtering ([Foken 2008b](#ref-foken2008closure); [Aubinet et
+al. 2012](#ref-aubinet2012)). For `fieldClim`, EC comparison studies
+therefore provide empirical context, not an automatic target that every
+station-based method must reproduce exactly.
+
+### What intercomparison studies actually show
+
+The intercomparison literature does not support a simple hierarchy in
+which EC is always truth and all station methods are merely crude
+substitutes. It shows a more useful pattern: direct turbulent-flux
+systems, Bowen-ratio systems, residual-energy approaches, Penman-type
+models, Priestley-Taylor estimates, aerodynamic/profile methods and
+bulk-transfer models are repeatedly compared because each method becomes
+useful under different instrumentation, surface and stability conditions
+([Billesbach et al. 2024](#ref-billesbach2024); [Shi et al.
+2008](#ref-shi2008); [Sumner and Jacobs 2005](#ref-sumner2005);
+[Tomlinson 1996](#ref-tomlinson1996)).
+
+The studies below are included because they connect directly to the
+method families used in `fieldClim`. The table is not a complete
+literature review. It is a map of the evidence base that explains why
+the package contains several method families rather than one single flux
+estimator.
+
+| Evidence block | Key references | What it supports for `fieldClim` |
+|----|----|----|
+| EC, energy-balance, residual and Bowen-type comparison over grassland | Billesbach et al. ([2024](#ref-billesbach2024)) | Direct comparison of EC, energy-balance/Bowen-ratio, residual-energy and modified Bowen-ratio methods for sensible and latent heat flux over grassland. |
+| EC, Bowen-ratio energy balance and Penman-Monteith comparison | Shi et al. ([2008](#ref-shi2008)) | Shows that EC, BREB and Penman-Monteith are evaluated as different operational pathways, not as identical measurements. |
+| Bowen-ratio, eddy-correlation and lysimeter comparison | Tomlinson ([1996](#ref-tomlinson1996)) | Links Bowen-ratio and eddy-correlation estimates with an independent evapotranspiration reference, and documents practical field-method differences. |
+| Penman-Monteith and aerodynamic resistance from meteorological data | Allen et al. ([1998](#ref-allen1998)) | Provides the standard meteorological basis for Penman-Monteith, surface resistance, aerodynamic resistance and wind-dependent reference formulations. |
+| PT and PM evapotranspiration comparison | Sumner and Jacobs ([2005](#ref-sumner2005)); Priestley and Taylor ([1972](#ref-priestley1972)); Penman ([1948](#ref-penman1948)) | Places Priestley-Taylor and Penman-type estimates in the practical evapotranspiration-method family. |
+| Aerodynamic and flux-gradient methods | Prueger and Kustas ([2005](#ref-prueger2005)) | Supports profile-gradient and aerodynamic transfer methods as an established micrometeorological method family for turbulent flux estimation. |
+| Bulk-transfer estimates against sonic/scintillometer-type observations | Kim and Kwon ([2019](#ref-kim2019)) | Supports empirical comparison of bulk-transfer sensible heat estimates against direct or near-direct turbulent-flux observations. |
+| Bulk-transfer models against EC over several seasons | Ala-Könni et al. ([2022](#ref-alakonni2022)) | Shows that bulk-transfer models are evaluated against EC over multi-season field data, although surface type and transfer coefficients differ from the Caldern meadow case. |
+| EC closure limitation | Foken ([2008b](#ref-foken2008closure)) | Prevents treating EC as an error-free truth source in method interpretation. |
+| Boundary-layer and surface-exchange theory | Stull ([1988](#ref-stull1988)); Garratt ([1992](#ref-garratt1992)); Kaimal and Finnigan ([1994](#ref-kaimal1994)); Arya ([2001](#ref-arya2001)) | Provides the general theory context for gradients, turbulence, stability and surface-layer exchange. |
+
+The conclusion is not that one method is universally correct. The
+conclusion is that the implemented approaches belong to evaluated
+micrometeorological method families. Their differences are not a
+weakness of the package; they are the reason the methods must be shown
+separately. Each method exposes a different compromise between data
+demand, physical detail, numerical robustness and closure behaviour.
+
+### Method families and their assumptions
+
+The method families in `fieldClim` differ mainly in how they use the
+surface energy balance. Priestley-Taylor, Bowen and Bulk-Residual
+explicitly partition or close the available energy. Penman provides only
+a latent heat estimate. Monin-Obukhov/profile methods use profile and
+stability information and are therefore diagnostic rather than
+energy-closing in this package. The Bulk-Residual path now also has an
+optional Richardson guard; this guard screens the neutral sensible-heat
+estimate but does not turn the method into a MO correction.
+
+| Method family | `fieldClim` functions | How station data enter | Closure behaviour | Main sensitivity | Literature anchors |
+|----|----|----|----|----|----|
+| Priestley-Taylor | [`latent_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.md), [`sensible_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/sensible_priestley_taylor.md) | Available energy and empirical PT coefficient. | \\H + LE\\ closes \\R_n - G\\ by construction. | PT coefficient and available-energy quality. | Priestley and Taylor ([1972](#ref-priestley1972)); Sumner and Jacobs ([2005](#ref-sumner2005)) |
+| Penman-type | [`latent_penman()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md) | Available energy plus aerodynamic vapour-pressure term. | LE only; no paired H is returned. | Humidity, wind, resistance assumptions and pressure-unit consistency. | Penman ([1948](#ref-penman1948)); Allen et al. ([1998](#ref-allen1998)); Brutsaert ([1982](#ref-brutsaert1982)) |
+| Bowen ratio | [`sensible_bowen()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bowen.md), [`latent_bowen()`](https://gisma.github.io/migration-fieldclim/reference/latent_bowen.md) | Potential-temperature and absolute-humidity gradients partition available energy through the implemented `fieldClim` beta path. | Closes \\R_n - G\\ only for finite uncapped denominators; capped or non-finite beta cases are guarded diagnostics. | Small humidity gradients, sign changes, non-finite beta, near-zero denominator and source-form ambiguity of `gamma_code`. | Tomlinson ([1996](#ref-tomlinson1996)); Shi et al. ([2008](#ref-shi2008)); Billesbach et al. ([2024](#ref-billesbach2024)) |
+| Bulk-Residual | [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md), [`latent_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.md), [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md) | Temperature gradient and wind-dependent resistance estimate H; optional Richardson guard screens very stable or weak-shear cases; residual closes LE. | Closes \\R_n - G\\ by construction when H is valid; guarded H values propagate to NA residual LE. | Wind representation, temperature gradient, Richardson screening, weak-shear cases and residual error propagation. | Prueger and Kustas ([2005](#ref-prueger2005)); Kim and Kwon ([2019](#ref-kim2019)); Ala-Könni et al. ([2022](#ref-alakonni2022)); Allen et al. ([1998](#ref-allen1998)) |
+| Monin-Obukhov / profile | [`sensible_monin()`](https://gisma.github.io/migration-fieldclim/reference/sensible_monin.md), [`latent_monin()`](https://gisma.github.io/migration-fieldclim/reference/latent_monin.md), [`turb_flux_stability()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_stability.md) | Profile gradients, wind information and stability logic diagnose H and LE. | Diagnostic only; not forced to close \\R_n - G\\. | Low wind, zero gradients, weak wind shear, stability classification and invalid height/profile states; guarded cases return diagnostic `NA`. | Stull ([1988](#ref-stull1988)); Garratt ([1992](#ref-garratt1992)); Foken ([2008a](#ref-foken2008book)); Prueger and Kustas ([2005](#ref-prueger2005)) |
+| Radiation and soil helpers | `rad_*()`, `sol_*()`, `trans_*()`, `soil_*()` | Provide radiation, soil and auxiliary variables used by flux methods. | Input and consistency layer, not a turbulent-flux closure method. | Sensor consistency, surface type, time base, terrain and soil assumptions. | Oke ([1987](#ref-oke1987)); Campbell and Norman ([1998](#ref-campbell1998)); Monteith and Unsworth ([2013](#ref-monteith2013)); Bendix ([2004](#ref-bendix2004)) |
+
+This table should be read from left to right. The package functions are
+not alternative names for the same measurement. They are different ways
+of turning available station information into heat-flux estimates or
+diagnostics. Their outputs therefore have different closure behaviour
+and different failure modes.
+
+### Why fieldClim implements these methods and not EC processing
+
+`fieldClim` starts from the instrumentation reality of many field
+stations: radiation and soil variables are available, temperature and
+humidity profiles may be available, wind speed may be available at one
+or two heights, but high-frequency turbulence data usually are not.
+Under these conditions, EC processing would be the wrong package scope.
+It would require a different data model, a different quality-control
+chain and different raw variables ([Aubinet et al.
+2012](#ref-aubinet2012); [Foken et al. 2012](#ref-foken2012ec); [Lee et
+al. 2004](#ref-lee2004)).
+
+The implemented methods are therefore not second-best versions of an EC
+workflow. They are appropriate method families for mean station data. PT
+uses available energy with a compact coefficient; Penman uses available
+energy and aerodynamic vapour-pressure forcing; Bowen uses gradients to
+partition available energy; Bulk-Residual combines a wind-dependent
+sensible heat estimate, optionally screened by a Richardson guard, with
+residual latent heat; and MO/profile methods diagnose turbulent exchange
+from vertical gradients and stability information ([Priestley and Taylor
+1972](#ref-priestley1972); [Penman 1948](#ref-penman1948); [Allen et al.
+1998](#ref-allen1998); [Prueger and Kustas 2005](#ref-prueger2005);
+[Stull 1988](#ref-stull1988)). These approaches are comparable in the
+literature because they are used when the available data, surfaces and
+time scales differ ([Billesbach et al. 2024](#ref-billesbach2024); [Shi
+et al. 2008](#ref-shi2008); [Sumner and Jacobs 2005](#ref-sumner2005);
+[Ala-Könni et al. 2022](#ref-alakonni2022)).
 
 ## Surface energy balance and package sign convention
 
 The common reference point is the surface energy balance.
 Microclimatological and micrometeorological texts use partly different
-symbols for the same physical quantities. `fieldClim` uses technical
-field and output names such as `rad_bal`, `soil_flux`, `sensible_*` and
-`latent_*`. These are implementation names, not a separate theoretical
-notation.
+symbols for the same physical quantities, but the underlying balance is
+shared: net radiation is partitioned into ground heat flux, sensible
+heat flux, latent heat flux and, where relevant, storage or advection
+terms ([Oke 1987](#ref-oke1987); [Monteith and Unsworth
+2013](#ref-monteith2013); [Foken 2008a](#ref-foken2008book); [Bendix
+2004](#ref-bendix2004)). `fieldClim` uses technical field and output
+names such as `rad_bal`, `soil_flux`, `sensible_*` and `latent_*`. These
+are implementation names, not a separate theoretical notation.
 
 | Quantity | Common notation | fieldClim field / output | Positive direction / meaning in fieldClim |
 |:---|:---|:---|:---|
@@ -63,48 +212,26 @@ A residual latent heat flux follows directly from the same balance:
 
 This convention is used throughout the package: `soil_flux` is consumed
 as a positive heat flux into the soil, while positive sensible and
-latent heat fluxes are interpreted as fluxes away from the surface.
+latent heat fluxes are interpreted as fluxes away from the surface. This
+convention is also why the residual methods are algebraically
+transparent: if \\R_n\\, \\G\\ and \\H\\ are specified, \\LE\\ follows
+from the balance.
 
-## Direct flux measurement as reference, not as package scope
+## Method-specific background
 
-Eddy covariance (EC) uses high-frequency covariance between vertical
-wind and scalar fluctuations to estimate turbulent fluxes. It is often
-treated as the most direct field reference for sensible and latent heat
-fluxes because it measures turbulent exchange rather than inferring it
-from a mean-gradient or residual relation. However, EC is not a trivial
-truth source. Energy-balance non-closure is a persistent issue in EC
-datasets, and closure depends on footprint, heterogeneity, averaging
-period, storage terms, advection and instrumentation.
+### Priestley-Taylor
 
-For `fieldClim`, this means two things. First, the package does not
-implement EC processing. A field called `EC` in station metadata must
-not be interpreted as eddy covariance unless the data actually contain
-high-frequency sonic and gas-analyser measurements. Second, EC
-comparison literature is still essential background because it tells us
-how approximate station-based methods behave when compared to direct
-turbulent-flux systems.
+The Priestley-Taylor method reduces evaporation and latent heat
+estimation to an energy-parameter problem. It starts from available
+energy and scales the equilibrium evaporation term with an empirical
+coefficient ([Priestley and Taylor 1972](#ref-priestley1972)). This
+makes it attractive when radiation and soil heat flux are available but
+profile-gradient information is incomplete or noisy. The same method
+family is commonly compared with Penman-Monteith and other
+evapotranspiration estimates in practical ET applications ([Sumner and
+Jacobs 2005](#ref-sumner2005)).
 
-## Method families implemented in fieldClim
-
-| Method_family | Package_functions | Main_output | Closure_status | Key_assumption |
-|:---|:---|:---|:---|:---|
-| Priestley-Taylor | latent_priestley_taylor(), sensible_priestley_taylor() | H and LE partition of Rn - G | closes Rn - G by construction | empirical Priestley-Taylor coefficient and available energy |
-| Bulk-Residual | sensible_bulk(), latent_bulk_residual(), turb_flux_bulk_residual() | H from bulk resistance; LE as residual | closes Rn - G by construction | neutral wind-dependent resistance and residual closure |
-| Bowen ratio | sensible_bowen(), latent_bowen() | H and LE from gradient ratio | closes Rn - G only for finite uncapped denominators | temperature and humidity gradients represent turbulent partitioning |
-| Penman / Penman-type | latent_penman() | LE only | LE only; no paired H | energy term plus aerodynamic vapour-pressure term |
-| Monin-Obukhov / profile | sensible_monin(), latent_monin(), turb_flux_stability() | diagnostic H and LE from profile/stability logic | diagnostic only; not forced to close Rn - G | profile gradients and stability classification are meaningful |
-| Radiation and soil helpers | rad\_*(), sol\_*(), trans\_*(), soil\_*() | radiation, soil heat flux, helper quantities | provides inputs and consistency checks | radiation and soil parameters are internally consistent |
-
-The methods therefore represent approximation families. The correct
-question is not which method is the real one. The correct question is
-which assumptions are acceptable for the available station data and
-which diagnostic warnings appear in specific time steps.
-
-## Priestley-Taylor path
-
-The Priestley-Taylor path estimates latent heat flux from available
-energy and a coefficient. The implemented teaching path follows the
-structure:
+The implemented PT path has the structure:
 
 \\ LE\_{PT} = \alpha \frac{\Delta}{\Delta + \gamma} (R_n - G) \\
 
@@ -117,49 +244,55 @@ Therefore the closure invariant is exact:
 
 \\ H\_{PT} + LE\_{PT} = R_n - G \\
 
-This is why `turb_flux_calc(weather_station, pt_only = TRUE)` is useful
-as a beginner-safe workflow. It needs fewer profile assumptions than
-Bowen or Monin-Obukhov and avoids optional Penman, Bowen, Bulk and Monin
-paths.
+The practical strength of PT is robustness. It needs fewer profile
+assumptions than Bowen or MO and avoids explicit wind-resistance
+modelling. The price is that surface-atmosphere coupling is condensed
+into the coefficient and helper terms. PT is therefore useful as a
+stable baseline for station-based energy partitioning, not as a direct
+measurement of turbulence ([Priestley and Taylor
+1972](#ref-priestley1972); [Sumner and Jacobs 2005](#ref-sumner2005)).
 
-The limitation is also clear. Priestley-Taylor hides much of the
-surface-atmosphere coupling in the coefficient `alpha` and in helper
-terms such as the saturation-curve slope and psychrometric constant. It
-is stable and transparent for teaching, but it is not a direct
-measurement of turbulent exchange.
+### Penman-type latent heat path
 
-## Penman-type latent heat path
-
-The Penman family combines an energy term and an aerodynamic term. In
-`fieldClim`,
+The Penman family is a combination family: it links the energy available
+for evaporation with an aerodynamic term driven by atmospheric demand
+([Penman 1948](#ref-penman1948)). FAO-56 later standardized the
+Penman-Monteith framework for crop evapotranspiration and explicitly
+distinguishes the energy term, surface resistance and aerodynamic
+resistance ([Allen et al. 1998](#ref-allen1998)). In `fieldClim`,
 [`latent_penman()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
-is a latent-heat method only. It does not return a paired sensible heat
+is intentionally LE-only. It does not return a paired sensible heat
 flux.
 
-The package convention keeps the energy term as:
+The package keeps the energy term as:
 
 \\ R_n - G \\
 
 The implemented Penman path uses saturation vapour pressure and actual
 vapour pressure helpers that return hPa, converts them internally to kPa
-for the aerodynamic vapour-pressure deficit, and keeps `Delta` and
-`gamma` on the same kPa scale:
+for the aerodynamic vapour-pressure deficit, and keeps the
+saturation-curve slope and psychrometric constant on the same pressure
+scale:
 
 \\ VPD\_{kPa} = \frac{e_s - e_a}{10} \\
 
-The correction is important because mixing hPa vapour pressure deficit
-with kPa-scale `Delta` and `gamma` inflates the aerodynamic term. After
-the unit correction, the method remains LE-only, field-surface mapping
-is supported, and the output should still be interpreted as a modelled
-latent heat flux, not as an energy-closing pair.
+This unit consistency matters because mixing hPa vapour-pressure deficit
+with kPa-scale helper terms inflates the aerodynamic contribution. After
+the unit correction, the method remains a modelled latent heat estimate.
+It should not be compared with PT, Bowen or Bulk-Residual as if it also
+delivered a corresponding sensible heat flux. The general
+combination-method logic belongs to the Penman/Penman-Monteith family,
+but the package path is a simplified latent-heat implementation from
+standard station variables ([Penman 1948](#ref-penman1948); [Allen et
+al. 1998](#ref-allen1998); [Brutsaert 1982](#ref-brutsaert1982)).
 
 The relevant package distinction is:
 
 \\ \text{Penman path} = LE \text{ only} \\
 
-There is no package-defined `H_Penman`.
+There is no package-defined Penman sensible heat flux.
 
-## Bowen-ratio path
+### Bowen-ratio
 
 The Bowen-ratio method partitions available energy using the ratio of
 sensible to latent heat flux:
@@ -178,47 +311,64 @@ For finite uncapped denominators, the closure invariant is exact:
 
 \\ H + LE = R_n - G \\
 
-The implemented `fieldClim` Bowen ratio is based on a
-potential-temperature gradient and an absolute-humidity gradient:
+The Bowen-ratio energy-balance family is widely used because it connects
+measured vertical gradients to energy partitioning and can be compared
+directly with EC or lysimeter-based evapotranspiration estimates
+([Tomlinson 1996](#ref-tomlinson1996); [Shi et al. 2008](#ref-shi2008);
+[Billesbach et al. 2024](#ref-billesbach2024)). In `fieldClim`, the
+implemented Bowen ratio is based on a potential-temperature gradient and
+an absolute-humidity gradient:
 
 \\ \beta = \gamma\_{code} \frac{\Delta \theta / \Delta z}{\Delta AH /
 \Delta z} \\
 
-where:
+with:
 
 \\ \gamma\_{code} = 0.00066 (1 + 0.000946 t_1) \\
 
-The important documentation point is that this is not described as a
-generic symbol-only formula. The implementation converts `t1` and `t2`
-to potential temperature, converts `hum1` and `hum2` from relative
-humidity to absolute humidity, and then forms the gradient ratio.
+This matters because the implementation is more specific than a
+symbol-only textbook expression. The package converts `t1` and `t2` to
+potential temperature, converts `hum1` and `hum2` from relative humidity
+to absolute humidity, and then forms the gradient ratio. The coefficient
+\\\gamma\_{code}\\ is therefore treated as the empirical coefficient of
+the current `fieldClim` implementation. Current validation did not prove
+source-equivalence between this form and alternative Bowen-ratio
+formulations based on vapour-pressure gradients, specific-humidity
+gradients or heat-capacity / latent-heat scaling. The implemented beta
+path is therefore tested and documented as package behaviour, while the
+exact source-form decision remains open.
 
-The Bowen path is useful because it directly links two measured profile
-gradients to energy partitioning. It is also fragile because small
-humidity gradients, sign changes and near-zero values of `1 + beta` can
-create very large fluxes. The `cap` parameter is a numerical safeguard
-for near-zero denominators. When the cap is active, exact closure is no
-longer guaranteed.
+The method is powerful when gradients are well resolved. The same
+dependence makes it fragile. Small humidity gradients, sign changes and
+near-zero values of `1 + beta` can dominate the result. The `cap`
+parameter is therefore a numerical safeguard for near-zero denominators.
+For finite uncapped cases,
+[`sensible_bowen()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bowen.md)
+and
+[`latent_bowen()`](https://gisma.github.io/migration-fieldclim/reference/latent_bowen.md)
+use the same beta path and close \\R_n - G\\. If the denominator is
+capped, or if beta or the denominator becomes non-finite, the output is
+treated as guarded diagnostic behaviour rather than as an exact physical
+closure. Non-finite Bowen ratios or denominators are returned as `NA`
+for the affected time steps.
 
-Therefore:
+### Bulk-Residual
 
-\\ H\_{Bowen} + LE\_{Bowen} = R_n - G \\
+The Bulk-Residual path combines an aerodynamic-resistance estimate of
+sensible heat flux with a residual latent heat flux. It is not an EC
+measurement and it is not a full MO surface-layer model. It is a
+station-data implementation of a familiar aerodynamic-transfer idea:
+wind-driven exchange controls the resistance between a temperature
+difference and a sensible heat flux ([Prueger and Kustas
+2005](#ref-prueger2005); [Allen et al. 1998](#ref-allen1998); [Campbell
+and Norman 1998](#ref-campbell1998)).
 
-only for finite uncapped denominators.
-
-## Bulk-Residual path
-
-The Bulk-Residual path combines a wind- and temperature-gradient
-estimate of sensible heat flux with a residual latent heat flux. It is
-not a direct flux measurement. It is a station-data approximation in the
-bulk aerodynamic / aerodynamic-resistance family.
-
-The sensible heat calculation follows the general aerodynamic resistance
+The sensible heat calculation follows the general aerodynamic-resistance
 form:
 
 \\ H\_{bulk} = \rho c_p \frac{\Delta T}{r_a} \\
 
-In the current package implementation:
+In the neutral default implementation:
 
 \\ \Delta T = T_1 - T_2 \\
 
@@ -226,49 +376,101 @@ and:
 
 \\ r_a = \frac{\ln(z_2 / z_1)} {k \bar{u}} \\
 
-Here `T1` and `T2` are lower and upper air temperatures, `z1` and `z2`
-are the corresponding measurement heights, `k` is the von Karman
-constant and `u_mean` is the observed wind-speed scale used by the
-package. If two wind heights are available, `u_mean` is the arithmetic
-mean of `v1` and `v2`; otherwise `v1` is used.
+Here \\T_1\\ and \\T_2\\ are lower and upper air temperatures, \\z_1\\
+and \\z_2\\ are the corresponding measurement heights, \\k\\ is the von
+Karman constant and \\\bar{u}\\ is the observed wind-speed scale used by
+the package. If two wind heights are available, \\\bar{u}\\ is the
+arithmetic mean of `v1` and `v2`; otherwise `v1` is used.
 
-This formulation should be documented neither as a freely invented proxy
-nor as a full Monin-Obukhov or SEBAL/METRIC method. The established
-method family uses aerodynamic resistance and wind-driven turbulent
-exchange. The package implementation is a simplified neutral
-station-data approximation because the teaching dataset provides wind
-speed but not directly measured friction velocity.
+The wind term belongs to the aerodynamic-resistance logic used in
+micrometeorology, evapotranspiration modelling and flux-gradient methods
+([Allen et al. 1998](#ref-allen1998); [Prueger and Kustas
+2005](#ref-prueger2005); [Monteith and Unsworth
+2013](#ref-monteith2013)). It should not be read as a full
+friction-velocity-based surface-layer formulation. More complete
+formulations may use friction velocity, roughness length, displacement
+height and stability corrections ([Stull 1988](#ref-stull1988); [Garratt
+1992](#ref-garratt1992); [Foken 2008a](#ref-foken2008book)). The default
+`fieldClim` implementation is deliberately simpler because standard
+station datasets often provide wind speed but not directly measured
+friction velocity.
 
-A more complete surface-layer formulation would often use friction
-velocity, roughness length, displacement height and stability
-corrections. Those quantities are not required by
-[`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md).
+The optional Richardson guard does not replace this neutral bulk
+calculation. It screens the neutral estimate when two-height wind and
+temperature information are available. With
+`stability_method = "ri_guard"`, the package estimates a gradient
+Richardson number:
+
+\\ Ri_g = \frac{g}{\bar{\theta}} \frac{\Delta \theta / \Delta z}
+{(\Delta u / \Delta z)^2} \\
+
+where \\g\\ is gravitational acceleration, \\\bar{\theta}\\ is mean
+potential temperature if elevation is available, \\\Delta \theta /
+\Delta z\\ is the vertical potential-temperature gradient, and \\\Delta
+u / \Delta z\\ is the vertical wind-speed shear between the two
+measurement heights. If elevation is not available, the implementation
+uses Kelvin air temperature as a near-surface approximation for the
+stability screen.
+
+This Richardson number is used as a guard, not as a flux correction.
+Unstable, neutral and moderately stable cases keep the neutral bulk
+estimate. Very stable cases, invalid Richardson numbers and weak-shear
+cases are returned as `NA` for the affected time steps. The guard
+therefore prevents a formally computed neutral bulk flux from being
+treated as robust when the two-height profile indicates that the neutral
+approximation is not defensible.
+
+The implementation uses wind-speed shear rather than full vector shear
+because ordinary station data usually provide wind speed but not
+horizontal wind components. This makes the guard a speed-shear
+Richardson approximation. It is useful for screening problematic time
+steps, but it is not a full MO correction and it does not apply
+stability functions to rescale the flux.
 
 The residual latent heat flux is:
 
 \\ LE\_{res} = R_n - G - H\_{bulk} \\
 
-Therefore the Bulk-Residual workflow closes available energy by
-construction:
+Therefore, when \\H\_{bulk}\\ is valid, the Bulk-Residual workflow
+closes available energy by construction:
 
 \\ H\_{bulk} + LE\_{res} = R_n - G \\
 
+If the Richardson guard sets \\H\_{bulk}\\ to `NA`, the residual
+\\LE\_{res}\\ is also `NA` for that time step. This is intended. It
+prevents residual closure from hiding an invalid or non-robust sensible
+heat estimate.
+
 This closure is algebraic. It does not prove that `H_bulk` is a perfect
 physical estimate. It means that the residual latent heat flux inherits
-all errors in `Rn`, `G` and the bulk sensible heat estimate.
+all errors in \\R_n\\, \\G\\ and the bulk sensible heat estimate. This
+is not a special weakness of the Bulk-Residual path. It is the normal
+consequence of residual energy-balance reasoning.
 
-## Wind speed, friction velocity and two-height station data
+Empirically, the broader bulk-transfer and aerodynamic-transfer family
+has been compared with direct or near-direct turbulent-flux
+observations. Bulk-transfer sensible heat estimates have been validated
+against three-dimensional ultrasonic anemometer or scintillometer-based
+observations in UAV-based work ([Kim and Kwon 2019](#ref-kim2019)), and
+bulk-transfer models have been evaluated against EC turbulent heat
+fluxes over seasonal lake ice ([Ala-Könni et al.
+2022](#ref-alakonni2022)). These studies do not validate every possible
+station implementation, but they show that bulk/aerodynamic transfer is
+an evaluated method family rather than a package invention.
 
-The use of wind is not an add-on. It is part of the aerodynamic-transfer
-logic. Stronger turbulent exchange lowers aerodynamic resistance, so the
-same temperature difference produces a larger sensible heat flux when
-wind-driven mixing is stronger.
+#### Wind speed, friction velocity and two-height station data
 
-The package uses observed wind speed because that is what standard
-station data provide. If only one wind speed is available, a
-friction-velocity based method cannot be used without roughness
-assumptions. If two wind heights are available, friction velocity can be
-estimated under a neutral log-profile assumption:
+The use of wind is not an add-on. Stronger wind-driven turbulent
+exchange lowers aerodynamic resistance, so the same temperature
+difference produces a larger sensible heat flux when mixing is stronger.
+This wind dependence is explicit in aerodynamic-resistance formulations
+used in Penman-Monteith and related station-data methods ([Allen et al.
+1998](#ref-allen1998); [Monteith and Unsworth 2013](#ref-monteith2013)).
+
+If only one wind speed is available, a friction-velocity-based method
+cannot be used without additional roughness assumptions. If two wind
+heights are available, friction velocity can be estimated under a
+neutral log-profile assumption:
 
 \\ u\_\* = k \frac{u_2 - u_1} {\ln(z_2 / z_1)} \\
 
@@ -276,32 +478,43 @@ and then a neutral heat-transfer resistance can be written as:
 
 \\ r\_{ah} = \frac{\ln(z_2 / z_1)} {k u\_\*} \\
 
-This is a possible extension, but it is not automatically more robust.
-If the wind-speed difference is small, noisy or changes sign, the
-estimated friction velocity becomes unstable. For a teaching and
-diagnostic station workflow, using observed mean wind speed is
-transparent and robust, provided the approximation is documented.
+This is a possible alternative formulation, but it is not automatically
+more robust for ordinary station data. If the wind-speed difference is
+small, noisy or changes sign, the estimated friction velocity becomes
+unstable. The current Bulk-Residual implementation therefore keeps the
+observed-wind neutral resistance as its default and uses the Richardson
+number only as an optional stability guard.
 
-A stability-aware extension is also possible because two heights allow a
-gradient Richardson number to be estimated:
+The important distinction is this:
+[`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md)
+is not a full friction-velocity or MO method. Its default path is a
+neutral bulk-resistance estimate from observed wind speed. Its optional
+Richardson guard is a diagnostic screen for stability and weak-shear
+problems. A future friction-velocity-based mode would be a separate
+method option and should not silently replace the current default.
 
-\\ Ri_g = \frac{g}{\bar{\theta}} \frac{\Delta \theta / \Delta z}
-{(\Delta u / \Delta z)^2} \\
+### Monin-Obukhov and profile methods
 
-With wind speed rather than wind vector components, this is a
-speed-shear approximation. It can be used as a guard to identify stable
-or weak-shear cases where a simple neutral bulk estimate should be
-treated cautiously or set to `NA`. Such a guard is not the same as a
-full Monin-Obukhov correction.
+Monin-Obukhov similarity theory provides the theoretical background for
+profile-gradient and stability-based interpretations of turbulent
+transfer. The `fieldClim` implementation should be read more narrowly:
+it provides guarded diagnostic profile estimates and stability
+classifications from station data, not a full MOST solution with
+independently measured friction velocity, roughness lengths and complete
+stability-function correction. ([Stull 1988](#ref-stull1988); [Garratt
+1992](#ref-garratt1992); [Foken 2008a](#ref-foken2008book)). They are
+methodologically important because they connect observed profiles with
+turbulence theory. In `fieldClim`, however, the MO path is
+diagnostic-only.
 
-## Monin-Obukhov and profile methods
+The package uses profile information to derive diagnostic sensible and
+latent heat-flux estimates from vertical temperature, humidity and wind
+information. The sensible heat profile term follows the documented
+vertical-gradient structure and uses the height difference \\z_2 -
+z_1\\. This keeps the implemented profile-gradient term aligned with the
+Richardson-gradient logic used elsewhere in the package.
 
-Monin-Obukhov similarity theory and related profile-gradient methods
-attempt to represent turbulent transfer through vertical gradients,
-roughness, stability and surface-layer scaling. In package
-interpretation, the Monin path is diagnostic-only.
-
-The diagnostic rule is:
+The diagnostic rule remains:
 
 \\ H\_{MO} + LE\_{MO} \\
 
@@ -309,187 +522,192 @@ is not required to equal:
 
 \\ R_n - G \\
 
-This is not a defect. It is a consequence of method class. A
-Monin/profile method estimates turbulent fluxes from profile and
-stability assumptions, while PT, Bowen and Bulk-Residual are explicit
-energy-partition or residual workflows.
+This is not a defect. It is a consequence of method class. A profile
+method estimates fluxes from profile and stability assumptions, while
+PT, Bowen and Bulk-Residual are explicit energy-partition or residual
+workflows. Forcing MO output to close \\R_n - G\\ would hide the
+diagnostic information that profile methods are meant to expose.
 
 The practical issue is numerical robustness. Zero gradients, very small
-wind shear, invalid height relationships and unstable stability
-functions can produce extreme outputs. For this reason, Monin-Obukhov
-outputs should be interpreted together with stability classification and
-diagnostic warnings. They should not be silently normalized to available
-energy.
+wind shear, invalid height relationships and unstable or non-finite
+stability diagnostics can produce misleading or undefined outputs.
+`fieldClim` therefore treats these cases explicitly. A zero
+potential-temperature gradient returns zero sensible heat flux. A zero
+moisture gradient returns zero latent heat flux. Invalid heights,
+invalid wind and invalid numerical profile states return `NA` with a
+warning. Richardson-number diagnostics return `NA` for invalid heights,
+invalid wind, weak or zero shear, and non-finite values.
 
-## Evidence from intercomparison literature
-
-The implemented method families are not isolated package inventions.
-They belong to a large literature comparing direct turbulent-flux
-measurements with energy-balance, gradient, aerodynamic, residual and
-evaporation-model approaches.
-
-A recent year-long grassland comparison by Billesbach et al. compared
-eddy covariance, energy-balance/Bowen-ratio, residual-energy and
-modified Bowen-ratio methods for sensible and latent heat flux over a
-mixed grass prairie. This is directly relevant to `fieldClim` because it
-treats the same family structure: direct EC, energy-balance closure,
-residual methods and Bowen-type gradient logic.
-
-FAO-56 provides the standard reference for Penman-Monteith style
-evapotranspiration calculations from meteorological data. It explicitly
-distinguishes aerodynamic resistance and surface resistance, and it
-shows how aerodynamic resistance can be reduced to wind-dependent forms
-under standardized assumptions.
-
-Priestley and Taylor introduced a large-scale energy-parameter approach
-for evaporation and surface heat fluxes, which motivates the PT family
-used in many simplified evaporation and energy-balance applications.
-
-Penman combined energy and aerodynamic reasoning for natural evaporation
-from open water, bare soil and grass. The package Penman path follows
-that method family in a simplified latent-heat implementation.
-
-Zhao et al. compared EC, Bowen-ratio energy balance and aerodynamic
-methods for paddy fields and emphasized the role of measurement-height
-differences, growth stage, weather and atmospheric stability. This is
-directly relevant to station workflows with two measurement heights.
-
-Prueger and Kustas discuss aerodynamic methods for estimating turbulent
-fluxes in agricultural systems, including flux-gradient approaches. This
-provides method-family background for profile and aerodynamic transfer
-estimates.
-
-Kim et al. validated sensible heat flux estimates from a bulk transfer
-method against a three-dimensional ultrasonic anemometer or
-scintillometer at multiple sites. This is especially relevant to the
-question of whether bulk-transfer estimates are empirically compared
-against sonic-anemometer-type flux measurements.
-
-Ala-Konni et al. compared bulk transfer models with eddy-covariance
-turbulent heat fluxes over seasonal lake ice for several ice seasons.
-This demonstrates the broader use of bulk-transfer model validation
-against EC, even though the surface type differs from the Caldern meadow
-example.
-
-Sumner and Jacobs compared Penman-Monteith, Priestley-Taylor, reference
-evapotranspiration and pan evaporation approaches for pasture
-evapotranspiration. This is relevant for interpreting PT and Penman-type
-methods as practical evapotranspiration approximations rather than
-direct turbulent-flux measurements.
-
-Tomlinson compared Bowen-ratio, eddy-correlation and Priestley-Taylor
-approaches in an evapotranspiration context and explicitly connects
-energy-budget closure with sensible and latent heat flux estimation.
-
-The conclusion is not that one station method is universally correct.
-The conclusion is that the implemented approaches belong to evaluated
-micrometeorological method families. They differ in data requirements,
-closure behaviour and sensitivity to gradients, wind, stability and
-surface assumptions.
+This guard behaviour does not make MO an energy-balance closure method.
+It only prevents invalid profile states from being interpreted as
+ordinary heat-flux events. MO outputs should therefore be inspected
+together with stability classification and diagnostic warnings. They
+should not be silently normalized to available turbulent energy.
 
 ## Practical interpretation in fieldClim
 
-The methods should be read as complementary diagnostics.
+The practical interpretation follows from the closure behaviour. If the
+goal is a stable first estimate of the partitioning of available energy,
+the PT path is the least demanding because it avoids explicit
+profile-gradient and wind-resistance assumptions. Its stability is
+bought by using an empirical coefficient. It is therefore useful as a
+baseline, not as a direct turbulent-flux measurement ([Priestley and
+Taylor 1972](#ref-priestley1972); [Sumner and Jacobs
+2005](#ref-sumner2005)).
 
-Priestley-Taylor is the most stable teaching path. It partitions
-available energy with few profile assumptions and closes exactly.
+The Penman path should be interpreted separately because it is LE-only.
+It combines an energy term with an aerodynamic vapour-pressure term and
+is useful when a latent heat estimate is needed from standard
+meteorological variables. It should not be compared with PT, Bowen or
+Bulk-Residual as if it also provided a corresponding sensible heat flux
+([Penman 1948](#ref-penman1948); [Allen et al. 1998](#ref-allen1998)).
 
-Bulk-Residual is transparent and uses directly available station data:
-temperature gradient, wind speed, net radiation and soil heat flux. Its
-latent heat flux is residual and therefore closes exactly, but the
-sensible heat component is a simplified neutral bulk estimate.
+The Bowen path is a gradient-partitioning method. Its strength is that
+it uses measured vertical gradients to divide available energy into
+sensible and latent parts. Its weakness is the same property: small
+humidity gradients, sign changes and near-singular values of `1 + beta`
+can dominate the result. In `fieldClim`, the beta path is locked and
+tested as the current implementation, but the exact source-form
+equivalence of the empirical \\\gamma\_{code}\\ coefficient remains
+open. Exact closure is therefore a property of finite uncapped cases,
+not of capped, non-finite or otherwise guarded Bowen outputs ([Tomlinson
+1996](#ref-tomlinson1996); [Shi et al. 2008](#ref-shi2008); [Billesbach
+et al. 2024](#ref-billesbach2024)).
 
-Bowen is a gradient-ratio partition method. It is physically meaningful
-when gradients are well resolved, but it is highly sensitive to small
-humidity gradients and near-singular denominators.
+The Bulk-Residual path uses measured temperature gradients and wind
+speed to estimate sensible heat flux, optionally screens this estimate
+with the Richardson guard, and then assigns the remaining available
+energy to latent heat. This makes the residual closure transparent, but
+the closure is only meaningful for time steps where the sensible heat
+estimate is valid. If the guard marks a very stable, weak-shear or
+otherwise invalid profile as non-robust, `H_bulk` and the residual
+`LE_res` become `NA` for that time step. The method should therefore be
+interpreted as a station-data aerodynamic/residual pathway with an
+optional stability screen, not as a full MO correction ([Prueger and
+Kustas 2005](#ref-prueger2005); [Kim and Kwon 2019](#ref-kim2019);
+[Ala-Könni et al. 2022](#ref-alakonni2022); [Stull
+1988](#ref-stull1988); [Garratt 1992](#ref-garratt1992)).
 
-Penman is a latent-heat-only combination method. It should be used as an
-LE estimate, not as an energy-closing H/LE pair.
+The MO/profile path has the strongest link to profile and stability
+reasoning, but it is also the most numerically sensitive. The current
+implementation guards zero-gradient, low-wind, invalid-height and
+non-finite Richardson cases, but it remains diagnostic-only. Its value
+is to show how profile gradients and stability assumptions behave in the
+available data, not to force closure with \\R_n - G\\. Guarded `NA`
+values should therefore be read as diagnostic information rather than
+ordinary heat-flux events ([Stull 1988](#ref-stull1988); [Garratt
+1992](#ref-garratt1992); [Foken 2008a](#ref-foken2008book); [Arya
+2001](#ref-arya2001)).
 
-Monin-Obukhov is a diagnostic profile/stability path. It is
-methodologically important, but its output should be checked for
-zero-gradient, low-wind and stability singularities. It should not be
-forced to close available energy.
-
-## Recommended wording for package documentation
-
-For method summaries, use symmetrical language. Do not over-defend one
-method while treating the others as exact.
-
-A robust summary is:
-
-> `fieldClim` implements common micrometeorological approximation
-> families for heat-flux analysis from weather-station data.
-> Priestley-Taylor, Bowen-ratio, Penman-type, bulk-resistance/residual
-> and Monin-Obukhov/profile methods differ in data requirements and
-> assumptions. Some methods close the available energy by construction;
-> others are LE-only or diagnostic profile estimates. Eddy covariance
-> and 3D sonic-anemometer studies provide empirical reference
-> comparisons, but EC itself has known energy-balance closure
-> limitations.
+The central conclusion is therefore not that one method is universally
+correct. The implemented methods belong to evaluated micrometeorological
+method families, but they answer different operational questions.
+`fieldClim` makes these differences explicit so that station-based
+heat-flux estimates can be compared, diagnosed and interpreted without
+pretending that they are interchangeable measurements.
 
 ## References
 
-Ala-Konni, J., Mammarella, I., Ojala, A., et al. (2022). Validation of
-turbulent heat transfer models against eddy-covariance flux measurements
-over a seasonally ice-covered lake. *Geoscientific Model Development*,
-15, 4739-4755. <https://doi.org/10.5194/gmd-15-4739-2022>
+Ala-Könni, Joonatan, Ivan Mammarella, Anne Ojala, et al. 2022.
+“Validation of Turbulent Heat Transfer Models Against Eddy-Covariance
+Flux Measurements over a Seasonally Ice-Covered Lake.” *Geoscientific
+Model Development* 15: 4739–55.
+<https://doi.org/10.5194/gmd-15-4739-2022>.
 
-Allen, R. G., Pereira, L. S., Raes, D., & Smith, M. (1998). *Crop
-evapotranspiration: Guidelines for computing crop water requirements*.
-FAO Irrigation and Drainage Paper 56. Food and Agriculture Organization
-of the United Nations.
+Allen, Richard G., Luis S. Pereira, Dirk Raes, and Martin Smith. 1998.
+*Crop Evapotranspiration: Guidelines for Computing Crop Water
+Requirements*. FAO Irrigation and Drainage Paper 56. Food; Agriculture
+Organization of the United Nations.
+<https://www.fao.org/4/x0490e/x0490e00.htm>.
 
-Bastiaanssen, W. G. M., Menenti, M., Feddes, R. A., & Holtslag, A. A. M.
-(1998). A remote sensing surface energy balance algorithm for land
-(SEBAL). 1. Formulation. *Journal of Hydrology*, 212-213, 198-212.
+Arya, S. Pal. 2001. *Introduction to Micrometeorology*. 2nd ed. Academic
+Press.
 
-Billesbach, D. P., Arkebauer, T. J., Walters, D. T., & Verma, S. B.
-(2024). Intercomparison of sensible and latent heat flux measurements
-from combined eddy covariance, energy balance, and Bowen ratio methods
-above a grassland prairie. *Scientific Reports*, 14, 21486.
-<https://doi.org/10.1038/s41598-024-67911-z>
+Aubinet, Marc, Timo Vesala, and Dario Papale, eds. 2012. *Eddy
+Covariance: A Practical Guide to Measurement and Data Analysis*.
+Springer. <https://doi.org/10.1007/978-94-007-2351-1>.
 
-Foken, T. (2008). The energy balance closure problem: An overview.
-*Ecological Applications*, 18(6), 1351-1367.
-<https://doi.org/10.1890/06-0922.1>
+Bendix, Jörg. 2004. *Geländeklimatologie*. Gebrüder Borntraeger.
 
-Kim, M. S., Kwon, B. H., & Kim, J. (2019). Estimation of sensible heat
-flux and atmospheric boundary layer height using an unmanned aerial
-vehicle. *Atmosphere*, 10(7), 363.
-<https://doi.org/10.3390/atmos10070363>
+Billesbach, David P., Timothy J. Arkebauer, Daniel T. Walters, and
+Shashi B. Verma. 2024. “Intercomparison of Sensible and Latent Heat Flux
+Measurements from Combined Eddy Covariance, Energy Balance, and Bowen
+Ratio Methods Above a Grassland Prairie.” *Scientific Reports* 14:
+21486. <https://doi.org/10.1038/s41598-024-67911-z>.
 
-Penman, H. L. (1948). Natural evaporation from open water, bare soil and
-grass. *Proceedings of the Royal Society of London. Series A*, 193,
-120-145. <https://doi.org/10.1098/rspa.1948.0037>
+Brutsaert, Wilfried. 1982. *Evaporation into the Atmosphere: Theory,
+History, and Applications*. D. Reidel.
+<https://doi.org/10.1007/978-94-017-1497-6>.
 
-Priestley, C. H. B., & Taylor, R. J. (1972). On the assessment of
-surface heat flux and evaporation using large-scale parameters. *Monthly
-Weather Review*, 100(2), 81-92.
-<https://doi.org/10.1175/1520-0493(1972)100>\<0081:OTAOSH\>2.3.CO;2
+Campbell, Gaylon S., and John M. Norman. 1998. *An Introduction to
+Environmental Biophysics*. 2nd ed. Springer.
+<https://doi.org/10.1007/978-1-4612-1626-1>.
 
-Prueger, J. H., & Kustas, W. P. (2005). Aerodynamic methods for
-estimating turbulent fluxes. In J. L. Hatfield & J. M. Baker (Eds.),
-*Micrometeorology in agricultural systems*. Agronomy Monograph 47. ASA,
-CSSA and SSSA.
+Foken, Thomas. 2008a. *Micrometeorology*. Springer.
 
-Shi, T., Guan, D., Wu, J., Wang, A., Jin, C., & Han, S. (2008).
-Comparison of methods for estimating evapotranspiration rate of dry
-forest canopy: Eddy covariance, Bowen ratio energy balance, and
-Penman-Monteith equation. *Journal of Geophysical Research:
-Atmospheres*, 113, D19116. <https://doi.org/10.1029/2008JD010174>
+Foken, Thomas. 2008b. “The Energy Balance Closure Problem: An Overview.”
+*Ecological Applications* 18 (6): 1351–67.
+<https://doi.org/10.1890/06-0922.1>.
 
-Sumner, D. M., & Jacobs, J. M. (2005). Utility of Penman-Monteith,
-Priestley-Taylor, reference evapotranspiration, and pan evaporation
-methods to estimate pasture evapotranspiration. *Journal of Hydrology*,
-308(1-4), 81-104. <https://doi.org/10.1016/j.jhydrol.2004.10.023>
+Foken, Thomas, Marc Aubinet, and Ray Leuning. 2012. “The Eddy Covariance
+Method.” In *Eddy Covariance: A Practical Guide to Measurement and Data
+Analysis*, edited by Marc Aubinet, Timo Vesala, and Dario Papale.
+Springer. <https://doi.org/10.1007/978-94-007-2351-1_1>.
 
-Tomlinson, S. A. (1996). *Comparison of Bowen-ratio, eddy-correlation,
-and weighing-lysimeter evapotranspiration measurements in a semiarid
-rangeland*. U.S. Geological Survey Water-Resources Investigations Report
-96-4081.
+Garratt, J. R. 1992. *The Atmospheric Boundary Layer*. Cambridge
+University Press.
 
-Zhao, Y., et al. (2023). Comparing the eddy covariance and gradient
-methods for estimating evapotranspiration in paddy fields. *Agricultural
-Water Management*, 284, 108332.
-<https://doi.org/10.1016/j.agwat.2023.108332>
+Kaimal, J. C., and J. J. Finnigan. 1994. *Atmospheric Boundary Layer
+Flows: Their Structure and Measurement*. Oxford University Press.
+<https://doi.org/10.1093/oso/9780195062397.001.0001>.
+
+Kim, Min-Seong, and Byung Hyuk Kwon. 2019. “Estimation of Sensible Heat
+Flux and Atmospheric Boundary Layer Height Using an Unmanned Aerial
+Vehicle.” *Atmosphere* 10 (7): 363.
+<https://doi.org/10.3390/atmos10070363>.
+
+Lee, Xuhui, William Massman, and Beverly Law, eds. 2004. *Handbook of
+Micrometeorology: A Guide for Surface Flux Measurement and Analysis*.
+Kluwer Academic Publishers. <https://doi.org/10.1007/1-4020-2265-4>.
+
+Monteith, John L., and Mike H. Unsworth. 2013. *Principles of
+Environmental Physics: Plants, Animals, and the Atmosphere*. 4th ed.
+Academic Press.
+
+Oke, T. R. 1987. *Boundary Layer Climates*. 2nd ed. Methuen.
+
+Penman, Howard L. 1948. “Natural Evaporation from Open Water, Bare Soil
+and Grass.” *Proceedings of the Royal Society of London. Series A* 193
+(1032): 120–45. <https://doi.org/10.1098/rspa.1948.0037>.
+
+Priestley, C. H. B., and R. J. Taylor. 1972. “On the Assessment of
+Surface Heat Flux and Evaporation Using Large-Scale Parameters.”
+*Monthly Weather Review* 100 (2): 81–92.
+<https://doi.org/10.1175/1520-0493(1972)100%3C0081:OTAOSH%3E2.3.CO;2>.
+
+Prueger, John H., and William P. Kustas. 2005. “Aerodynamic Methods for
+Estimating Turbulent Fluxes.” In *Micrometeorology in Agricultural
+Systems*, edited by Jerry L. Hatfield and John M. Baker. Agronomy
+Monograph 47. American Society of Agronomy, Crop Science Society of
+America,; Soil Science Society of America.
+
+Shi, Ting-Ting, De-Xin Guan, Jia-Bing Wu, An-Zhi Wang, Chang-Jie Jin,
+and Shi-Jie Han. 2008. “Comparison of Methods for Estimating
+Evapotranspiration Rate of Dry Forest Canopy: Eddy Covariance, Bowen
+Ratio Energy Balance, and Penman-Monteith Equation.” *Journal of
+Geophysical Research: Atmospheres* 113 (D19): D19116.
+<https://doi.org/10.1029/2008JD010174>.
+
+Stull, Roland B. 1988. *An Introduction to Boundary Layer Meteorology*.
+Springer. <https://doi.org/10.1007/978-94-009-3027-8>.
+
+Sumner, David M., and Jennifer M. Jacobs. 2005. “Utility of
+Penman-Monteith, Priestley-Taylor, Reference Evapotranspiration, and Pan
+Evaporation Methods to Estimate Pasture Evapotranspiration.” *Journal of
+Hydrology* 308 (1–4): 81–104.
+<https://doi.org/10.1016/j.jhydrol.2004.10.023>.
+
+Tomlinson, Stuart A. 1996. *Comparison of Bowen-Ratio, Eddy-Correlation,
+and Weighing-Lysimeter Evapotranspiration Measurements in a Semiarid
+Rangeland*. Water-Resources Investigations Report Nos. 96-4081. U.S.
+Geological Survey. <https://pubs.usgs.gov/wri/1996/4081/report.pdf>.
