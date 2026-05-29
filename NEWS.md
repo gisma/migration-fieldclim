@@ -1,5 +1,3 @@
-# NEWS
-
 ## fieldClim 1.2.0
 
 ### Functional changes

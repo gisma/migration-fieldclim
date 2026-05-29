@@ -48,7 +48,35 @@
       <small>Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.2.0" id="fieldclim-120">fieldClim 1.2.0<a class="anchor" aria-label="anchor" href="#fieldclim-120"></a></h2>
+<div class="section level3">
+<h3 id="functional-changes-1-2-0">Functional changes<a class="anchor" aria-label="anchor" href="#functional-changes-1-2-0"></a></h3>
+<ul><li>Added a Bulk-Residual heat-flux workflow with <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code>, and <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
+<li>Added optional Richardson-number screening for Bulk-Residual via <code>stability_method = "ri_guard"</code>; the default remains the neutral bulk estimate.</li>
+<li>Corrected Penman vapour-pressure scaling by converting saturation and actual vapour pressure from hPa to kPa before using the aerodynamic vapour-pressure-deficit term.</li>
+<li>Corrected the Monin-Obukhov sensible-heat gradient denominator from <code>log(z2 - z1)</code> to <code>z2 - z1</code>.</li>
+<li>Added elementwise guards for invalid or non-finite Bowen, Monin-Obukhov/Profile, Penman, soil, Richardson-number and transmittance states.</li>
+<li>Improved POSIXct/POSIXlt datetime handling in solar and humidity-related paths, including precipitable-water calculations.</li>
+<li>Extended <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> with Bulk-Residual outputs, a <code>pt_only</code> mode, and graceful Penman fallback to <code>NA</code> when required inputs are unavailable.</li>
+<li>Improved <code>weather_station</code> handling, including a more robust <code><a href="../reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> fallback.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-1-2-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-2-0"></a></h3>
+<ul><li>Updated Roxygen documentation for formulas, units, sign conventions, guard behaviour and remaining source-validation items.</li>
+<li>Clarified that Monin-Obukhov/Profile outputs are profile-based estimates and are not forced to close <code>rad_bal - soil_flux</code>.</li>
+<li>Clarified that Bowen closure is guaranteed only for finite, uncapped denominator cases.</li>
+<li>Clarified that Penman is a latent-heat-only comparison path in the package workflow.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="notes-1-2-0">Notes<a class="anchor" aria-label="anchor" href="#notes-1-2-0"></a></h3>
+<ul><li>Priestley-Taylor formulas remain unchanged.</li>
+<li>The Bulk-Residual Richardson guard is opt-in; existing default neutral bulk behaviour is preserved.</li>
+<li>Several source-form validation questions remain open, especially for Bowen <code>gamma_code</code>, simplified Penman resistance assumptions, Monin-Obukhov/Profile stability forms, Priestley-Taylor helper coefficient scales, radiation/transmittance references and soil table values.</li>
+</ul></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
