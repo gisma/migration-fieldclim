@@ -51,28 +51,85 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.2.0" id="fieldclim-120">fieldClim 1.2.0<a class="anchor" aria-label="anchor" href="#fieldclim-120"></a></h2>
 <div class="section level3">
-<h3 id="functional-changes-1-2-0">Functional changes<a class="anchor" aria-label="anchor" href="#functional-changes-1-2-0"></a></h3>
-<ul><li>Added a Bulk-Residual heat-flux workflow with <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code>, and <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
-<li>Added optional Richardson-number screening for Bulk-Residual via <code>stability_method = "ri_guard"</code>; the default remains the neutral bulk estimate.</li>
-<li>Corrected Penman vapour-pressure scaling by converting saturation and actual vapour pressure from hPa to kPa before using the aerodynamic vapour-pressure-deficit term.</li>
-<li>Corrected the Monin-Obukhov sensible-heat gradient denominator from <code>log(z2 - z1)</code> to <code>z2 - z1</code>.</li>
-<li>Added elementwise guards for invalid or non-finite Bowen, Monin-Obukhov/Profile, Penman, soil, Richardson-number and transmittance states.</li>
-<li>Improved POSIXct/POSIXlt datetime handling in solar and humidity-related paths, including precipitable-water calculations.</li>
-<li>Extended <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> with Bulk-Residual outputs, a <code>pt_only</code> mode, and graceful Penman fallback to <code>NA</code> when required inputs are unavailable.</li>
-<li>Improved <code>weather_station</code> handling, including a more robust <code><a href="../reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> fallback.</li>
+<h3 id="heat-flux-methods-1-2-0">Heat-flux methods<a class="anchor" aria-label="anchor" href="#heat-flux-methods-1-2-0"></a></h3>
+<ul><li>Added a Bulk-Residual workflow with <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code> and <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
+<li>
+<code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code> estimates sensible heat flux from the temperature difference between two heights and a simplified aerodynamic resistance.</li>
+<li>
+<code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code> computes latent heat flux as <code>rad_bal - soil_flux - sensible</code>.</li>
+<li>Added optional Richardson-number screening for Bulk-Residual via <code>stability_method = "ri_guard"</code>.</li>
+<li>The Richardson guard attaches <code>bulk_Ri_g</code> and <code>bulk_stability</code> attributes and returns <code>NA</code> for invalid, weak-shear or very stable profile cases.</li>
+<li>The default Bulk-Residual behaviour remains the neutral, unguarded estimate with <code>stability_method = "none"</code>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="documentation-1-2-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-2-0"></a></h3>
-<ul><li>Updated Roxygen documentation for formulas, units, sign conventions, guard behaviour and remaining source-validation items.</li>
-<li>Clarified that Monin-Obukhov/Profile outputs are profile-based estimates and are not forced to close <code>rad_bal - soil_flux</code>.</li>
-<li>Clarified that Bowen closure is guaranteed only for finite, uncapped denominator cases.</li>
-<li>Clarified that Penman is a latent-heat-only comparison path in the package workflow.</li>
+<h3 id="penman-latent-heat-1-2-0">Penman latent heat<a class="anchor" aria-label="anchor" href="#penman-latent-heat-1-2-0"></a></h3>
+<ul><li>Corrected the Penman vapour-pressure-deficit term by converting saturation and actual vapour pressure from hPa to kPa before use.</li>
+<li>This fixes a unit mismatch in <code><a href="../reference/latent_penman.html">latent_penman()</a></code> and can substantially change Penman latent-heat estimates.</li>
+<li>Aerodynamic-resistance handling in <code><a href="../reference/latent_penman.html">latent_penman()</a></code> is now elementwise; invalid log arguments, invalid wind and non-finite aerodynamic states return <code>NA</code> with a warning.</li>
+<li>
+<code><a href="../reference/latent_penman.html">latent_penman.weather_station()</a></code> now uses <code>hum1</code> when available and falls back to <code>rh</code>; missing humidity input produces an explicit failure instead of an unclear downstream error.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="notes-1-2-0">Notes<a class="anchor" aria-label="anchor" href="#notes-1-2-0"></a></h3>
-<ul><li>Priestley-Taylor formulas remain unchanged.</li>
-<li>The Bulk-Residual Richardson guard is opt-in; existing default neutral bulk behaviour is preserved.</li>
-<li>Several source-form validation questions remain open, especially for Bowen <code>gamma_code</code>, simplified Penman resistance assumptions, Monin-Obukhov/Profile stability forms, Priestley-Taylor helper coefficient scales, radiation/transmittance references and soil table values.</li>
+<h3 id="bowen-ratio-1-2-0">Bowen ratio<a class="anchor" aria-label="anchor" href="#bowen-ratio-1-2-0"></a></h3>
+<ul><li>Sensible and latent Bowen paths now use the same guarded denominator logic for <code>1 + beta</code>.</li>
+<li>Finite, uncapped Bowen cases still close the available energy <code>rad_bal - soil_flux</code>.</li>
+<li>Non-finite Bowen ratios or non-finite denominators now return <code>NA</code> elementwise with warnings.</li>
+<li>Near-singular capped cases are treated as guarded outputs and are not interpreted as exact energy-balance closure.</li>
+<li>The implemented beta form remains <code>gamma_code * dpot / dah</code>; source-form equivalence to a textbook Bowen-ratio formulation remains open.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="monin-obukhov--profile-1-2-0">Monin-Obukhov / Profile<a class="anchor" aria-label="anchor" href="#monin-obukhov--profile-1-2-0"></a></h3>
+<ul><li>Corrected <code><a href="../reference/sensible_monin.html">sensible_monin()</a></code> to use the documented vertical gradient denominator <code>z2 - z1</code> instead of <code>log(z2 - z1)</code>.</li>
+<li>
+<code><a href="../reference/sensible_monin.html">sensible_monin()</a></code> and <code><a href="../reference/latent_monin.html">latent_monin()</a></code> now return controlled values for critical profile cases: zero temperature gradient gives zero sensible heat flux, and zero moisture gradient gives zero latent heat flux.</li>
+<li>Invalid heights, invalid wind input, weak shear and non-finite profile states return <code>NA</code> with warnings.</li>
+<li>Monin-Obukhov/Profile outputs remain profile-based estimates. They are not forced to close <code>rad_bal - soil_flux</code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="priestley-taylor-1-2-0">Priestley-Taylor<a class="anchor" aria-label="anchor" href="#priestley-taylor-1-2-0"></a></h3>
+<ul><li>Priestley-Taylor sensible and latent heat formulas remain unchanged.</li>
+<li>Warning checks were made more robust for vectors containing <code>NA</code>.</li>
+<li>Documentation now clarifies that <code>sc()</code> and <code>gam()</code> are used as compatible table-scale coefficients in the package implementation; their absolute source-unit scale remains an open validation item.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="radiation-solar-geometry-and-transmittance-1-2-0">Radiation, solar geometry and transmittance<a class="anchor" aria-label="anchor" href="#radiation-solar-geometry-and-transmittance-1-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/sol_hour_angle.html">sol_hour_angle()</a></code> and <code><a href="../reference/sol_azimuth.html">sol_azimuth()</a></code> now handle POSIXct and POSIXlt datetime inputs consistently.</li>
+<li>
+<code><a href="../reference/trans_air_mass_rel.html">trans_air_mass_rel()</a></code> now returns <code>NA</code> with a warning for non-positive or invalid solar elevation instead of leaking <code>NaN</code>.</li>
+<li>Valid positive-elevation transmittance calculations keep the previous formula.</li>
+<li>Radiation-balance formulas were not changed in this release.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="soil-thermal-functions-1-2-0">Soil thermal functions<a class="anchor" aria-label="anchor" href="#soil-thermal-functions-1-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/soil_heat_flux.html">soil_heat_flux()</a></code> now returns <code>NA</code> with a warning for invalid depth pairs, including non-finite, negative or equal depths.</li>
+<li>Valid <code><a href="../reference/soil_heat_flux.html">soil_heat_flux()</a></code> calculations keep the existing sign convention: positive <code>soil_flux</code> means heat flux into the soil.</li>
+<li>Corrected <code><a href="../reference/soil_attenuation.html">soil_attenuation()</a></code> to call <code>soil_thermal_cond(texture, moisture)</code> in the documented argument order.</li>
+<li>Soil table values and source validation remain unchanged.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="humidity-and-helper-functions-1-2-0">Humidity and helper functions<a class="anchor" aria-label="anchor" href="#humidity-and-helper-functions-1-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/hum_precipitable_water.html">hum_precipitable_water()</a></code> now handles POSIXct input safely by converting internally to POSIXlt before extracting month information.</li>
+<li>This fixes failures in the <code><a href="../reference/rad_sw_in.html">rad_sw_in()</a></code> -&gt; <code><a href="../reference/trans_vapor.html">trans_vapor()</a></code> -&gt; <code><a href="../reference/hum_precipitable_water.html">hum_precipitable_water()</a></code> path when datetime input is POSIXct.</li>
+<li>Existing POSIXlt input remains supported.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="weather_station-workflows-1-2-0">
+<code>weather_station</code> workflows<a class="anchor" aria-label="anchor" href="#weather_station-workflows-1-2-0"></a></h3>
+<ul><li>
+<code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> now includes Bulk-Residual outputs in the full workflow.</li>
+<li>Added <code>pt_only = TRUE</code> to compute only the Priestley-Taylor sensible and latent heat fluxes for a narrower, robust entry workflow.</li>
+<li>Penman failures inside <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> are now caught and represented as <code>NA</code> output instead of stopping the whole workflow.</li>
+<li>
+<code><a href="../reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> is more robust for objects without a <code>$measurements</code> field.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-and-validation-notes-1-2-0">Documentation and validation notes<a class="anchor" aria-label="anchor" href="#documentation-and-validation-notes-1-2-0"></a></h3>
+<ul><li>Roxygen documentation was updated for formulas, units, sign conventions, examples, guard behaviour and remaining source-validation items.</li>
+<li>The documentation now separates energy-balance-closing methods from profile-based estimates and latent-heat-only paths.</li>
+<li>Remaining open validation items include the exact Penman source form, Bowen <code>gamma_code</code> equivalence, Monin-Obukhov/Profile stability forms, Priestley-Taylor helper coefficient scales, radiation/transmittance references, soil table values and precipitable-water reference tables.</li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
