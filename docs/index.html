@@ -70,17 +70,17 @@
 <p><code>fieldClim</code> is an R package for weather-station based microclimate and micrometeorological calculations.</p>
 <p>It provides functions for:</p>
 <ul>
-<li>organizing station data in a structured <code>weather_station</code> object</li>
+<li>organizing station data in a <code>weather_station</code> object</li>
 <li>calculating short-wave, long-wave and net radiation components</li>
 <li>estimating atmospheric transmittance and solar-geometry variables</li>
 <li>calculating soil heat flux and soil thermal parameters</li>
-<li>estimating latent and sensible heat fluxes from standard station data</li>
+<li>estimating sensible and latent heat fluxes from standard station data</li>
 <li>comparing Priestley-Taylor, Bulk-Residual, Bowen-ratio, Monin-Obukhov/Profile and Penman-type heat-flux paths</li>
 <li>estimating thermal and mechanical boundary-layer properties</li>
 </ul>
 <p>The package was originally cloned from:</p>
 <pre class="text"><code>https://gitlab.uni-marburg.de/fb19/ag-bendix/fieldClim.git</code></pre>
-<p>This repository is a private development and migration repository. It is currently under construction and should not be treated as a stable public release.</p>
+<p>This repository is a private development and migration repository. It is under active consolidation and should not be treated as a stable public release.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -95,12 +95,12 @@
 <div class="section level2">
 <h2 id="current-status">Current status<a class="anchor" aria-label="anchor" href="#current-status"></a>
 </h2>
-<p>The package is under active consolidation. Historical rendered HTML vignettes included in the repository may be archived outputs and should not be treated as current numerical references.</p>
-<p>In the Caldern metadata, <code>EC</code> means electric conductivity. The package does not implement a complete Eddy Covariance processing chain. It does not include Reynolds decomposition, coordinate rotation, WPL correction, quality control or covariance aggregation.</p>
-<p>The current package workflow is a weather-station based energy-balance and heat-flux workflow, not an Eddy Covariance workflow.</p>
-<p>A small packaged example dataset is provided:</p>
+<p>The current workflow is a weather-station based energy-balance and heat-flux workflow. It is not a full Eddy Covariance workflow.</p>
+<p>In the Caldern metadata, <code>EC</code> means electric conductivity. <code>fieldClim</code> does not implement Reynolds decomposition, covariance calculation, coordinate rotation, WPL correction, quality control or flux aggregation.</p>
+<p>A small packaged example dataset is included:</p>
 <pre class="text"><code>inst/extdata/caldern_wiese_2017-06-30.csv</code></pre>
-<p>It contains one complete 5-minute day with 288 observations. The full Caldern raw dataset is intentionally not included in the package.</p>
+<p>It contains one complete 5-minute day with 288 observations. The full Caldern raw dataset is intentionally not included.</p>
+<p>Historical rendered HTML vignettes in the repository may be archived outputs and should not be treated as current numerical references.</p>
 </div>
 <div class="section level2">
 <h2 id="sign-convention">Sign convention<a class="anchor" aria-label="anchor" href="#sign-convention"></a>
@@ -112,25 +112,23 @@ H  &gt; 0   sensible heat flux away from the surface
 LE &gt; 0   latent heat flux away from the surface</code></pre>
 <p>The available turbulent energy is:</p>
 <pre class="text"><code><span><span class="va">Rn</span> <span class="op">-</span> <span class="va">G</span></span></code></pre>
-<p>For energy-balance closing methods, the working relation is:</p>
+<p>For energy-balance closing methods:</p>
 <pre class="text"><code><span><span class="va">H</span> <span class="op">+</span> <span class="va">LE</span> <span class="op">=</span> <span class="va">Rn</span> <span class="op">-</span> <span class="va">G</span></span></code></pre>
-<p>Not all implemented methods are energy-balance closing methods.</p>
-<p>Priestley-Taylor, finite uncapped Bowen-ratio cases and valid Bulk-Residual cases are interpreted through this balance. Monin-Obukhov/Profile outputs are profile-based estimates and are not forced to close <code>Rn - G</code>. Penman is implemented as a latent-heat-only comparison path.</p>
+<p>Not all implemented methods are energy-balance closing methods. Priestley-Taylor, finite uncapped Bowen-ratio cases and valid Bulk-Residual cases are interpreted through this balance. Monin-Obukhov/Profile outputs are profile-based estimates and are not forced to close <code>Rn - G</code>. Penman is implemented as a latent-heat-only comparison path.</p>
 </div>
 <div class="section level2">
 <h2 id="main-heat-flux-workflows">Main heat-flux workflows<a class="anchor" aria-label="anchor" href="#main-heat-flux-workflows"></a>
 </h2>
-<p>A narrow Priestley-Taylor workflow is available through:</p>
+<p>A restricted Priestley-Taylor workflow is available through:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">weather_station</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>This computes only:</p>
 <pre class="text"><code><span><span class="va">sensible_priestley_taylor</span></span>
 <span><span class="va">latent_priestley_taylor</span></span></code></pre>
-<p>and avoids optional Penman, Bowen, Bulk-Residual and Monin-Obukhov/Profile paths.</p>
 <p>The full workflow is available through:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<p>It attempts the available package heat-flux paths:</p>
+<p>It attempts the available heat-flux paths:</p>
 <pre class="text"><code>Priestley-Taylor
 Bulk-Residual
 Bowen-ratio
@@ -145,137 +143,43 @@ Penman-type latent heat</code></pre>
 <span>  <span class="va">weather_station</span>,</span>
 <span>  stability_method <span class="op">=</span> <span class="st">"ri_guard"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>The Richardson guard classifies profile stability and returns <code>NA</code> for invalid, weak-shear or very stable profile cases. The default remains the neutral unguarded bulk estimate:</p>
+<p>The default remains the neutral unguarded bulk estimate:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stability_method</span> <span class="op">=</span> <span class="st">"none"</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="consolidation-changes-in-this-branch">Consolidation changes in this branch<a class="anchor" aria-label="anchor" href="#consolidation-changes-in-this-branch"></a>
+<h2 id="main-changes-in-version-120">Main changes in version 1.2.0<a class="anchor" aria-label="anchor" href="#main-changes-in-version-120"></a>
 </h2>
-<p>This branch includes functional fixes, robustness improvements and documentation consolidation.</p>
-<div class="section level3">
-<h3 id="heat-flux-methods">Heat-flux methods<a class="anchor" aria-label="anchor" href="#heat-flux-methods"></a>
-</h3>
+<p>The detailed changelog is maintained in <code>NEWS.md</code>. The main functional changes are:</p>
 <ul>
-<li>Added a package-level Bulk-Residual workflow with <code><a href="reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="reference/latent_bulk_residual.html">latent_bulk_residual()</a></code> and <code><a href="reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
-<li>Added optional Richardson-number screening for Bulk-Residual through <code>stability_method = "ri_guard"</code>.</li>
-<li>Preserved the default neutral Bulk-Residual behaviour with <code>stability_method = "none"</code>.</li>
-<li>Extended <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> so that the full workflow also includes Bulk-Residual output fields.</li>
-<li>Added <code>pt_only = TRUE</code> to <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> for a narrower Priestley-Taylor workflow.</li>
+<li>Added Bulk-Residual workflow with <code><a href="reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="reference/latent_bulk_residual.html">latent_bulk_residual()</a></code> and <code><a href="reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
+<li>Added optional Richardson-number guard for Bulk-Residual.</li>
+<li>Corrected Penman vapour-pressure scaling from hPa to kPa.</li>
+<li>Corrected <code><a href="reference/sensible_monin.html">sensible_monin()</a></code> to use <code>z2 - z1</code> instead of <code>log(z2 - z1)</code>.</li>
+<li>Added guards for invalid or non-finite Bowen, Monin-Obukhov/Profile, Penman, soil, Richardson-number and transmittance states.</li>
+<li>Improved POSIXct/POSIXlt handling in solar and humidity-related paths.</li>
+<li>Fixed <code><a href="reference/hum_precipitable_water.html">hum_precipitable_water()</a></code> for POSIXct input in the <code><a href="reference/rad_sw_in.html">rad_sw_in()</a></code> -&gt; <code><a href="reference/trans_vapor.html">trans_vapor()</a></code> path.</li>
+<li>Corrected <code><a href="reference/soil_attenuation.html">soil_attenuation()</a></code> argument forwarding.</li>
+<li>Extended <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> with Bulk-Residual output, <code>pt_only</code>, and graceful Penman fallback to <code>NA</code>.</li>
+<li>Updated Roxygen documentation for formulas, units, sign conventions, guard behaviour and remaining validation boundaries.</li>
 </ul>
-</div>
-<div class="section level3">
-<h3 id="penman">Penman<a class="anchor" aria-label="anchor" href="#penman"></a>
-</h3>
-<ul>
-<li>Corrected Penman vapour-pressure scaling by converting saturation and actual vapour pressure from hPa to kPa before use in the aerodynamic vapour-pressure-deficit term.</li>
-<li>Made aerodynamic-resistance handling elementwise.</li>
-<li>Invalid Penman aerodynamic states now return <code>NA</code> with a warning.</li>
-<li>
-<code><a href="reference/latent_penman.html">latent_penman.weather_station()</a></code> uses <code>hum1</code> when available and falls back to <code>rh</code>.</li>
-<li>Penman failures inside <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> are now non-fatal and are represented as <code>NA</code> output.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="bowen">Bowen<a class="anchor" aria-label="anchor" href="#bowen"></a>
-</h3>
-<ul>
-<li>Bowen denominator handling was made more robust.</li>
-<li>Sensible and latent Bowen paths now share guarded denominator logic.</li>
-<li>Finite, uncapped Bowen cases close <code>rad_bal - soil_flux</code>.</li>
-<li>Capped or non-finite cases are not interpreted as exact energy-balance closure.</li>
-<li>The implemented Bowen beta form remains source-form open and is documented as the <code>fieldClim</code> implementation.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="monin-obukhovprofile">Monin-Obukhov/Profile<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile"></a>
-</h3>
-<ul>
-<li>Corrected <code><a href="reference/sensible_monin.html">sensible_monin()</a></code> to use the documented vertical gradient denominator <code>z2 - z1</code> instead of <code>log(z2 - z1)</code>.</li>
-<li>Zero temperature gradients return zero sensible heat flux.</li>
-<li>Zero moisture gradients return zero latent heat flux.</li>
-<li>Invalid heights, invalid wind input, weak shear and non-finite profile states return <code>NA</code> with warnings.</li>
-<li>Monin-Obukhov/Profile outputs remain profile-based estimates and are not forced to close <code>rad_bal - soil_flux</code>.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="radiation-solar-geometry-and-humidity">Radiation, solar geometry and humidity<a class="anchor" aria-label="anchor" href="#radiation-solar-geometry-and-humidity"></a>
-</h3>
-<ul>
-<li>Improved POSIXct/POSIXlt datetime handling in solar and humidity-related paths.</li>
-<li>Fixed <code><a href="reference/hum_precipitable_water.html">hum_precipitable_water()</a></code> so POSIXct input works through the <code><a href="reference/rad_sw_in.html">rad_sw_in()</a></code> -&gt; <code><a href="reference/trans_vapor.html">trans_vapor()</a></code> -&gt; <code><a href="reference/hum_precipitable_water.html">hum_precipitable_water()</a></code> path.</li>
-<li>
-<code><a href="reference/trans_air_mass_rel.html">trans_air_mass_rel()</a></code> now returns <code>NA</code> with a warning for non-positive or invalid solar elevation instead of leaking <code>NaN</code>.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="soil">Soil<a class="anchor" aria-label="anchor" href="#soil"></a>
-</h3>
-<ul>
-<li>
-<code><a href="reference/soil_heat_flux.html">soil_heat_flux()</a></code> now returns <code>NA</code> with a warning for invalid depth pairs.</li>
-<li>Valid <code><a href="reference/soil_heat_flux.html">soil_heat_flux()</a></code> cases keep the existing sign convention.</li>
-<li>
-<code><a href="reference/soil_attenuation.html">soil_attenuation()</a></code> now calls <code>soil_thermal_cond(texture, moisture)</code> in the documented argument order.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="weather_station-handling">
-<code>weather_station</code> handling<a class="anchor" aria-label="anchor" href="#weather_station-handling"></a>
-</h3>
-<ul>
-<li>
-<code><a href="reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> now supports the current flat <code>weather_station</code> object structure.</li>
-<li>
-<code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> now has a full workflow and a restricted Priestley-Taylor-only workflow.</li>
-<li>Several wrapper and availability paths were made more explicit.</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="documentation-and-tests">Documentation and tests<a class="anchor" aria-label="anchor" href="#documentation-and-tests"></a>
-</h3>
-<p>New or updated documentation covers:</p>
-<ul>
-<li>energy-balance workflow steps</li>
-<li>scientific background for heat-flux methods</li>
-<li>additional package functionality</li>
-<li>radiation and soil heat-flux checks</li>
-<li>method-specific sign conventions</li>
-<li>guard behaviour and remaining validation boundaries</li>
-</ul>
-<p>Tests were added or updated for:</p>
-<ul>
-<li>the packaged Caldern one-day dataset</li>
-<li>
-<code>weather_station</code> handling</li>
-<li>Priestley-Taylor closure</li>
-<li>Bulk-Residual and Richardson guard behaviour</li>
-<li>Bowen closure, cap and non-finite cases</li>
-<li>Penman source-form and unit behaviour</li>
-<li>Monin-Obukhov/Profile guards</li>
-<li>radiation, solar and transmittance contracts</li>
-<li>soil thermal functions</li>
-<li>POSIXct/POSIXlt handling in humidity and solar-related paths</li>
-</ul>
-</div>
 </div>
 <div class="section level2">
-<h2 id="remaining-validation-boundaries">Remaining validation boundaries<a class="anchor" aria-label="anchor" href="#remaining-validation-boundaries"></a>
+<h2 id="validation-boundaries">Validation boundaries<a class="anchor" aria-label="anchor" href="#validation-boundaries"></a>
 </h2>
-<p>This branch fixes implementation-level issues such as unit mismatches, denominator errors, invalid input handling and numerical edge cases. It does not fully re-derive or independently validate every empirical coefficient, lookup table or simplified method form against primary literature.</p>
-<p>Remaining scientific source-validation items include:</p>
+<p>This version fixes implementation-level issues such as unit mismatches, denominator errors, invalid input handling and numerical edge cases. It does not fully re-derive or independently validate every empirical coefficient, lookup table or simplified method form against primary literature.</p>
+<p>Remaining source-validation items include:</p>
 <ul>
-<li>exact source form and literature equivalence of the Bowen <code>gamma_code</code> coefficient</li>
-<li>simplified Penman resistance assumptions and their mapping to published Penman-Monteith variants</li>
-<li>Monin-Obukhov/Profile stability functions, constants and interpretation of profile-based outputs</li>
-<li>absolute unit scale and source interpretation of the Priestley-Taylor helper coefficients <code>sc()</code> and <code>gam()</code>
+<li>Bowen <code>gamma_code</code> source form and literature equivalence</li>
+<li>simplified Penman resistance assumptions</li>
+<li>Monin-Obukhov/Profile stability functions and constants</li>
+<li>Priestley-Taylor helper coefficient scales for <code>sc()</code> and <code>gam()</code>
 </li>
-<li>radiation and atmospheric transmittance formula references</li>
-<li>soil thermal conductivity, heat-capacity and attenuation table values</li>
-<li>precipitable-water seasonal reference table used by <code><a href="reference/hum_precipitable_water.html">hum_precipitable_water()</a></code>
-</li>
+<li>radiation and atmospheric transmittance references</li>
+<li>soil thermal table values</li>
+<li>precipitable-water seasonal reference tables</li>
 </ul>
-<p>These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this branch and scientific source validation that remains to be completed.</p>
+<p>These open items do not mean that the affected functions are known to be wrong. They mark the boundary between completed code-level consolidation and remaining scientific source validation.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
