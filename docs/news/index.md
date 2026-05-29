@@ -4,7 +4,7 @@
 
 ### Heat-flux methods
 
-- Added a Bulk-Residual workflow with
+- Added a Bulk-Residual heat-flux workflow with
   [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md),
   [`latent_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.md)
   and
@@ -139,7 +139,27 @@
   items.
 - The documentation now separates energy-balance-closing methods from
   profile-based estimates and latent-heat-only paths.
-- Remaining open validation items include the exact Penman source form,
-  Bowen `gamma_code` equivalence, Monin-Obukhov/Profile stability forms,
-  Priestley-Taylor helper coefficient scales, radiation/transmittance
-  references, soil table values and precipitable-water reference tables.
+- This release fixes implementation-level problems such as unit
+  mismatches, denominator errors, invalid input handling and numerical
+  edge cases. It does not fully re-derive or independently validate
+  every empirical coefficient, lookup table or simplified method form
+  against primary literature.
+- Remaining scientific source-validation items include:
+  - the exact source form and literature equivalence of the Bowen
+    `gamma_code` coefficient;
+  - the simplified Penman resistance assumptions and their mapping to
+    published Penman-Monteith variants;
+  - the Monin-Obukhov/Profile stability functions, constants and
+    interpretation of profile-based outputs;
+  - the absolute unit scale and source interpretation of the
+    Priestley-Taylor helper coefficients `sc()` and `gam()`;
+  - the reference consistency of radiation and atmospheric transmittance
+    formulas;
+  - the soil thermal conductivity, heat-capacity and attenuation table
+    values;
+  - the precipitable-water seasonal reference table used by
+    [`hum_precipitable_water()`](https://gisma.github.io/migration-fieldclim/reference/hum_precipitable_water.md).
+- These open items do not mean that the affected functions are known to
+  be wrong. They document the boundary between code-level fixes
+  completed in this release and scientific source validation that
+  remains to be completed.

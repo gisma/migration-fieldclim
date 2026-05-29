@@ -52,7 +52,7 @@
 <h2 class="pkg-version" data-toc-text="1.2.0" id="fieldclim-120">fieldClim 1.2.0<a class="anchor" aria-label="anchor" href="#fieldclim-120"></a></h2>
 <div class="section level3">
 <h3 id="heat-flux-methods-1-2-0">Heat-flux methods<a class="anchor" aria-label="anchor" href="#heat-flux-methods-1-2-0"></a></h3>
-<ul><li>Added a Bulk-Residual workflow with <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code> and <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
+<ul><li>Added a Bulk-Residual heat-flux workflow with <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>, <code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code> and <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code>.</li>
 <li>
 <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code> estimates sensible heat flux from the temperature difference between two heights and a simplified aerodynamic resistance.</li>
 <li>
@@ -129,7 +129,17 @@
 <h3 id="documentation-and-validation-notes-1-2-0">Documentation and validation notes<a class="anchor" aria-label="anchor" href="#documentation-and-validation-notes-1-2-0"></a></h3>
 <ul><li>Roxygen documentation was updated for formulas, units, sign conventions, examples, guard behaviour and remaining source-validation items.</li>
 <li>The documentation now separates energy-balance-closing methods from profile-based estimates and latent-heat-only paths.</li>
-<li>Remaining open validation items include the exact Penman source form, Bowen <code>gamma_code</code> equivalence, Monin-Obukhov/Profile stability forms, Priestley-Taylor helper coefficient scales, radiation/transmittance references, soil table values and precipitable-water reference tables.</li>
+<li>This release fixes implementation-level problems such as unit mismatches, denominator errors, invalid input handling and numerical edge cases. It does not fully re-derive or independently validate every empirical coefficient, lookup table or simplified method form against primary literature.</li>
+<li>Remaining scientific source-validation items include:
+<ul><li>the exact source form and literature equivalence of the Bowen <code>gamma_code</code> coefficient;</li>
+<li>the simplified Penman resistance assumptions and their mapping to published Penman-Monteith variants;</li>
+<li>the Monin-Obukhov/Profile stability functions, constants and interpretation of profile-based outputs;</li>
+<li>the absolute unit scale and source interpretation of the Priestley-Taylor helper coefficients <code>sc()</code> and <code>gam()</code>;</li>
+<li>the reference consistency of radiation and atmospheric transmittance formulas;</li>
+<li>the soil thermal conductivity, heat-capacity and attenuation table values;</li>
+<li>the precipitable-water seasonal reference table used by <code><a href="../reference/hum_precipitable_water.html">hum_precipitable_water()</a></code>.</li>
+</ul></li>
+<li>These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this release and scientific source validation that remains to be completed.</li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

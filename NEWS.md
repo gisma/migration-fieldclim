@@ -2,7 +2,7 @@
 
 ## Heat-flux methods
 
-- Added a Bulk-Residual workflow with `sensible_bulk()`, `latent_bulk_residual()` and `turb_flux_bulk_residual()`.
+- Added a Bulk-Residual heat-flux workflow with `sensible_bulk()`, `latent_bulk_residual()` and `turb_flux_bulk_residual()`.
 - `sensible_bulk()` estimates sensible heat flux from the temperature difference between two heights and a simplified aerodynamic resistance.
 - `latent_bulk_residual()` computes latent heat flux as `rad_bal - soil_flux - sensible`.
 - Added optional Richardson-number screening for Bulk-Residual via `stability_method = "ri_guard"`.
@@ -68,4 +68,13 @@
 
 - Roxygen documentation was updated for formulas, units, sign conventions, examples, guard behaviour and remaining source-validation items.
 - The documentation now separates energy-balance-closing methods from profile-based estimates and latent-heat-only paths.
-- Remaining open validation items include the exact Penman source form, Bowen `gamma_code` equivalence, Monin-Obukhov/Profile stability forms, Priestley-Taylor helper coefficient scales, radiation/transmittance references, soil table values and precipitable-water reference tables.
+- This release fixes implementation-level problems such as unit mismatches, denominator errors, invalid input handling and numerical edge cases. It does not fully re-derive or independently validate every empirical coefficient, lookup table or simplified method form against primary literature.
+- Remaining scientific source-validation items include:
+  - the exact source form and literature equivalence of the Bowen `gamma_code` coefficient;
+  - the simplified Penman resistance assumptions and their mapping to published Penman-Monteith variants;
+  - the Monin-Obukhov/Profile stability functions, constants and interpretation of profile-based outputs;
+  - the absolute unit scale and source interpretation of the Priestley-Taylor helper coefficients `sc()` and `gam()`;
+  - the reference consistency of radiation and atmospheric transmittance formulas;
+  - the soil thermal conductivity, heat-capacity and attenuation table values;
+  - the precipitable-water seasonal reference table used by `hum_precipitable_water()`.
+- These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this release and scientific source validation that remains to be completed.
