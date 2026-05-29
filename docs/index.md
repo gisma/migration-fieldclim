@@ -1,20 +1,22 @@
 # fieldClim
 
-`fieldClim` is an R package for calculations of weather-station based
-microclimate and micrometeorological parameters.
+`fieldClim` is an R package for weather-station based microclimate and
+micrometeorological calculations.
 
 It provides functions for:
 
-- estimating radiation properties,
-- calculating latent and sensible heat fluxes,
-- calculating turbulent heat flux diagnostics,
-- calculating soil heat fluxes,
-- estimating thermal and mechanical boundary-layer properties,
-- organizing station data in a structured `weather_station` object.
+- organizing station data in a structured `weather_station` object
+- calculating short-wave, long-wave and net radiation components
+- estimating atmospheric transmittance and solar-geometry variables
+- calculating soil heat flux and soil thermal parameters
+- estimating latent and sensible heat fluxes from standard station data
+- comparing Priestley-Taylor, Bulk-Residual, Bowen-ratio,
+  Monin-Obukhov/Profile and Penman-type heat-flux paths
+- estimating thermal and mechanical boundary-layer properties
 
 The package was originally cloned from:
 
-``` r
+``` text
 https://gitlab.uni-marburg.de/fb19/ag-bendix/fieldClim.git
 ```
 
@@ -43,17 +45,19 @@ for example via a valid `GITHUB_PAT`.
 
 ## Current status
 
-The package is under active consolidation. Some historical rendered HTML
-vignettes included in the repository are archived outputs and should not
-be treated as current numerical references.
+The package is under active consolidation. Historical rendered HTML
+vignettes included in the repository may be archived outputs and should
+not be treated as current numerical references.
 
 In the Caldern metadata, `EC` means electric conductivity. The package
-does not implement a complete Eddy Covariance processing chain.
+does not implement a complete Eddy Covariance processing chain. It does
+not include Reynolds decomposition, coordinate rotation, WPL correction,
+quality control or covariance aggregation.
 
-This clone adds a stable workflow for microclimate energy-balance
-calculations.
+The current package workflow is a weather-station based energy-balance
+and heat-flux workflow, not an Eddy Covariance workflow.
 
-A small packaged teaching dataset is provided:
+A small packaged example dataset is provided:
 
 ``` text
 inst/extdata/caldern_wiese_2017-06-30.csv
@@ -62,23 +66,40 @@ inst/extdata/caldern_wiese_2017-06-30.csv
 It contains one complete 5-minute day with 288 observations. The full
 Caldern raw dataset is intentionally not included in the package.
 
+## Sign convention
+
 The consolidated sign convention is:
 
-- `Rn > 0`: radiative energy input at the surface
-- `G > 0`: heat flux into the soil
-- `H > 0`: sensible heat flux away from the surface
-- `LE > 0`: latent heat flux away from the surface
+``` text
+Rn > 0   radiative energy input at the surface
+G  > 0   heat flux into the soil
+H  > 0   sensible heat flux away from the surface
+LE > 0   latent heat flux away from the surface
+```
 
-For the Priestley-Taylor teaching path:
+The available turbulent energy is:
+
+``` text
+Rn - G
+```
+
+For energy-balance closing methods, the working relation is:
 
 ``` text
 H + LE = Rn - G
 ```
 
-The Priestley-Taylor formulas were not changed. Documentation and tests
-were updated to match the already implemented `Rn - G` convention.
+Not all implemented methods are energy-balance closing methods.
 
-A beginner-safe workflow is available through:
+Priestley-Taylor, finite uncapped Bowen-ratio cases and valid
+Bulk-Residual cases are interpreted through this balance.
+Monin-Obukhov/Profile outputs are profile-based estimates and are not
+forced to close `Rn - G`. Penman is implemented as a latent-heat-only
+comparison path.
+
+## Main heat-flux workflows
+
+A narrow Priestley-Taylor workflow is available through:
 
 ``` r
 
@@ -92,84 +113,197 @@ sensible_priestley_taylor
 latent_priestley_taylor
 ```
 
-and avoids optional Penman, Bowen and Monin-Obukhov paths in first
-teaching exercises.
+and avoids optional Penman, Bowen, Bulk-Residual and
+Monin-Obukhov/Profile paths.
+
+The full workflow is available through:
+
+``` r
+
+turb_flux_calc(weather_station)
+```
+
+It attempts the available package heat-flux paths:
+
+``` text
+Priestley-Taylor
+Bulk-Residual
+Bowen-ratio
+Monin-Obukhov/Profile
+Penman-type latent heat
+```
+
+Bulk-Residual can also be calculated explicitly:
+
+``` r
+
+turb_flux_bulk_residual(weather_station)
+```
+
+For stations with two wind heights, the optional Richardson-number guard
+can be enabled:
+
+``` r
+
+turb_flux_bulk_residual(
+  weather_station,
+  stability_method = "ri_guard"
+)
+```
+
+The Richardson guard classifies profile stability and returns `NA` for
+invalid, weak-shear or very stable profile cases. The default remains
+the neutral unguarded bulk estimate:
+
+``` r
+
+stability_method = "none"
+```
 
 ## Consolidation changes in this branch
 
-This branch includes small robustness fixes and documentation
-clarifications:
+This branch includes functional fixes, robustness improvements and
+documentation consolidation.
 
-`turb_flux_calc(weather_station, pt_only = TRUE)` provides a
-beginner-safe teaching path. It computes only:
+### Heat-flux methods
 
-- `sensible_priestley_taylor`
-- `latent_priestley_taylor`
+- Added a package-level Bulk-Residual workflow with
+  [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md),
+  [`latent_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.md)
+  and
+  [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md).
+- Added optional Richardson-number screening for Bulk-Residual through
+  `stability_method = "ri_guard"`.
+- Preserved the default neutral Bulk-Residual behaviour with
+  `stability_method = "none"`.
+- Extended
+  [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
+  so that the full workflow also includes Bulk-Residual output fields.
+- Added `pt_only = TRUE` to
+  [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
+  for a narrower Priestley-Taylor workflow.
 
-This avoids the optional Penman, Bowen and Monin-Obukhov paths in first
-teaching exercises.
+### Penman
 
-[`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
-keeps the full method workflow available, including:
+- Corrected Penman vapour-pressure scaling by converting saturation and
+  actual vapour pressure from hPa to kPa before use in the aerodynamic
+  vapour-pressure-deficit term.
+- Made aerodynamic-resistance handling elementwise.
+- Invalid Penman aerodynamic states now return `NA` with a warning.
+- [`latent_penman.weather_station()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
+  uses `hum1` when available and falls back to `rh`.
+- Penman failures inside
+  [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
+  are now non-fatal and are represented as `NA` output.
 
-- Priestley-Taylor
-- Bowen
-- Monin-Obukhov
-- Penman
+### Bowen
 
-Penman failures are now non-fatal inside
-[`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md).
+- Bowen denominator handling was made more robust.
+- Sensible and latent Bowen paths now share guarded denominator logic.
+- Finite, uncapped Bowen cases close `rad_bal - soil_flux`.
+- Capped or non-finite cases are not interpreted as exact energy-balance
+  closure.
+- The implemented Bowen beta form remains source-form open and is
+  documented as the `fieldClim` implementation.
 
-[`latent_penman.weather_station()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
-was consolidated so that common `fieldClim` surface types, such as
-`field`, can be mapped to Penman-compatible resistance classes.
+### Monin-Obukhov/Profile
 
-Relative humidity handling in the Penman weather-station method was made
-consistent:
+- Corrected
+  [`sensible_monin()`](https://gisma.github.io/migration-fieldclim/reference/sensible_monin.md)
+  to use the documented vertical gradient denominator `z2 - z1` instead
+  of `log(z2 - z1)`.
+- Zero temperature gradients return zero sensible heat flux.
+- Zero moisture gradients return zero latent heat flux.
+- Invalid heights, invalid wind input, weak shear and non-finite profile
+  states return `NA` with warnings.
+- Monin-Obukhov/Profile outputs remain profile-based estimates and are
+  not forced to close `rad_bal - soil_flux`.
 
-- profile humidity is used when available,
-- otherwise the standard `rh` field is used.
+### Radiation, solar geometry and humidity
 
-[`as.data.frame.weather_station()`](https://gisma.github.io/migration-fieldclim/reference/as.data.frame.weather_station.md)
-now supports the current flat `weather_station` object structure.
+- Improved POSIXct/POSIXlt datetime handling in solar and
+  humidity-related paths.
+- Fixed
+  [`hum_precipitable_water()`](https://gisma.github.io/migration-fieldclim/reference/hum_precipitable_water.md)
+  so POSIXct input works through the
+  [`rad_sw_in()`](https://gisma.github.io/migration-fieldclim/reference/rad_sw_in.md)
+  -\>
+  [`trans_vapor()`](https://gisma.github.io/migration-fieldclim/reference/trans_vapor.md)
+  -\>
+  [`hum_precipitable_water()`](https://gisma.github.io/migration-fieldclim/reference/hum_precipitable_water.md)
+  path.
+- [`trans_air_mass_rel()`](https://gisma.github.io/migration-fieldclim/reference/trans_air_mass_rel.md)
+  now returns `NA` with a warning for non-positive or invalid solar
+  elevation instead of leaking `NaN`.
 
-Numeric warning checks in heat-flux functions were repaired so warnings
-are based on calculated numeric values rather than broken logical
-checks.
+### Soil
 
-[`soil_attenuation()`](https://gisma.github.io/migration-fieldclim/reference/soil_attenuation.md)
-argument forwarding was corrected.
+- [`soil_heat_flux()`](https://gisma.github.io/migration-fieldclim/reference/soil_heat_flux.md)
+  now returns `NA` with a warning for invalid depth pairs.
+- Valid
+  [`soil_heat_flux()`](https://gisma.github.io/migration-fieldclim/reference/soil_heat_flux.md)
+  cases keep the existing sign convention.
+- [`soil_attenuation()`](https://gisma.github.io/migration-fieldclim/reference/soil_attenuation.md)
+  now calls `soil_thermal_cond(texture, moisture)` in the documented
+  argument order.
 
-Bowen denominator handling was made more robust.
+### `weather_station` handling
 
-The Caldern teaching vignette now uses the packaged one-day dataset. It:
+- [`as.data.frame.weather_station()`](https://gisma.github.io/migration-fieldclim/reference/as.data.frame.weather_station.md)
+  now supports the current flat `weather_station` object structure.
+- [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
+  now has a full workflow and a restricted Priestley-Taylor-only
+  workflow.
+- Several wrapper and availability paths were made more explicit.
 
-- reads `"NULL"` as `NA`,
-- parses timestamps explicitly with `Europe/Berlin`,
-- avoids depending on the full raw CSV.
+### Documentation and tests
 
-New teaching and documentation material was added for:
+New or updated documentation covers:
 
-- energy-balance workflows,
-- radiation checks,
-- soil heat flux checks,
-- additional package use cases.
+- energy-balance workflow steps
+- scientific background for heat-flux methods
+- additional package functionality
+- radiation and soil heat-flux checks
+- method-specific sign conventions
+- guard behaviour and remaining validation boundaries
 
 Tests were added or updated for:
 
-- the consolidated teaching dataset,
-- `weather_station` handling,
-- warning logic,
-- soil attenuation,
-- Bowen denominator behavior,
-- Penman availability.
+- the packaged Caldern one-day dataset
+- `weather_station` handling
+- Priestley-Taylor closure
+- Bulk-Residual and Richardson guard behaviour
+- Bowen closure, cap and non-finite cases
+- Penman source-form and unit behaviour
+- Monin-Obukhov/Profile guards
+- radiation, solar and transmittance contracts
+- soil thermal functions
+- POSIXct/POSIXlt handling in humidity and solar-related paths
 
-## What this package does not currently provide
+## Remaining validation boundaries
 
-`fieldClim` currently does not provide a full Eddy Covariance workflow.
-It does not implement a complete chain including Reynolds decomposition,
-covariance calculation, coordinate rotation, WPL correction, quality
-control and 30-minute flux aggregation.
+This branch fixes implementation-level issues such as unit mismatches,
+denominator errors, invalid input handling and numerical edge cases. It
+does not fully re-derive or independently validate every empirical
+coefficient, lookup table or simplified method form against primary
+literature.
 
-The current teaching workflow is therefore an energy-balance and
-heat-flux-methods workflow, not an Eddy Covariance workflow.
+Remaining scientific source-validation items include:
+
+- exact source form and literature equivalence of the Bowen `gamma_code`
+  coefficient
+- simplified Penman resistance assumptions and their mapping to
+  published Penman-Monteith variants
+- Monin-Obukhov/Profile stability functions, constants and
+  interpretation of profile-based outputs
+- absolute unit scale and source interpretation of the Priestley-Taylor
+  helper coefficients `sc()` and `gam()`
+- radiation and atmospheric transmittance formula references
+- soil thermal conductivity, heat-capacity and attenuation table values
+- precipitable-water seasonal reference table used by
+  [`hum_precipitable_water()`](https://gisma.github.io/migration-fieldclim/reference/hum_precipitable_water.md)
+
+These open items do not mean that the affected functions are known to be
+wrong. They document the boundary between code-level fixes completed in
+this branch and scientific source validation that remains to be
+completed.
