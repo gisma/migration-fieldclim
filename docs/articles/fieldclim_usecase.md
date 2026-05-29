@@ -1137,7 +1137,7 @@ L_summary
 #> 1 manuelle Bulk-Referenz     -30.82530
 #> 2       Priestley-Taylor      25.12080
 #> 3                  Bowen     -21.12343
-#> 4          Monin-Obukhov     400.83673
+#> 4          Monin-Obukhov     104.18957
 V_summary
 #>              Methode V_Mittel_W_m2
 #> 1 manuelles Residuum     139.51979
@@ -1351,12 +1351,12 @@ energy_consistency
 #> 1    Bulk-Residual           108.7                 108.7                 0.0
 #> 2 Priestley-Taylor           108.7                 108.7                 0.0
 #> 3            Bowen           108.7                 108.7                 0.0
-#> 4    Monin-Obukhov           453.5                 108.7               344.8
+#> 4    Monin-Obukhov           156.9                 108.7                48.2
 #>   Max_abs_Abweichung
 #> 1                0.0
 #> 2                0.0
 #> 3                0.0
-#> 4            11334.9
+#> 4             5004.3
 ```
 
 **Interpretation.** Diese Tabelle ist die zentrale Konsistenzprüfung.
@@ -1484,7 +1484,7 @@ extreme_count <- extreme_count[extreme_count$Anzahl > 0, ]
 extreme_count
 #>         Methode Fluss Anzahl
 #> 1         Bowen     L      4
-#> 2 Monin-Obukhov     L     47
+#> 2 Monin-Obukhov     L     15
 #> 3         Bowen     V      4
 #> 4 Monin-Obukhov     V      3
 ```
@@ -1509,28 +1509,28 @@ if (nrow(extreme_cases) > 0) {
 } else {
   data.frame(Hinweis = "Keine Werte oberhalb der Diagnosegrenze gefunden.")
 }
-#>                datetime       Methode Fluss   Wert dT_2_10 dH_2_10 dU_2_10
-#> 678 2017-06-30 08:25:00 Monin-Obukhov     L 8554.1    0.08    3.28   0.003
-#> 721 2017-06-30 12:00:00 Monin-Obukhov     L 7766.6    0.30    0.52  -0.028
-#> 724 2017-06-30 12:15:00 Monin-Obukhov     L 6951.4    0.21    2.47  -0.022
-#> 698 2017-06-30 10:05:00 Monin-Obukhov     L 5819.1    0.29    2.66   0.037
-#> 711 2017-06-30 11:10:00 Monin-Obukhov     L 5633.3    0.42    1.38  -0.094
-#> 708 2017-06-30 10:55:00 Monin-Obukhov     L 4796.9    0.46    1.48  -0.112
-#> 682 2017-06-30 08:45:00 Monin-Obukhov     L 4160.1    0.23    2.33  -0.031
-#> 750 2017-06-30 14:25:00 Monin-Obukhov     L 3921.8    0.23    2.58   0.037
-#> 700 2017-06-30 10:15:00 Monin-Obukhov     L 3864.1    0.25    2.27   0.051
-#> 710 2017-06-30 11:05:00 Monin-Obukhov     L 3390.9    0.54    0.04  -0.223
+#>                datetime       Methode Fluss    Wert dT_2_10 dH_2_10 dU_2_10
+#> 966 2017-06-30 08:25:00 Monin-Obukhov     V  2988.5    0.08    3.28   0.003
+#> 232 2017-06-30 19:15:00         Bowen     L -2695.0   -0.84    7.67  -0.137
+#> 520 2017-06-30 19:15:00         Bowen     V  2646.2   -0.84    7.67  -0.137
+#> 678 2017-06-30 08:25:00 Monin-Obukhov     L  2223.5    0.08    3.28   0.003
+#> 721 2017-06-30 12:00:00 Monin-Obukhov     L  2018.8    0.30    0.52  -0.028
+#> 234 2017-06-30 19:25:00         Bowen     L -1861.2   -0.90    8.35   0.062
+#> 522 2017-06-30 19:25:00         Bowen     V  1810.2   -0.90    8.35   0.062
+#> 724 2017-06-30 12:15:00 Monin-Obukhov     L  1806.9    0.21    2.47  -0.022
+#> 698 2017-06-30 10:05:00 Monin-Obukhov     L  1512.6    0.29    2.66   0.037
+#> 711 2017-06-30 11:10:00 Monin-Obukhov     L  1464.3    0.42    1.38  -0.094
 #>     Q_star_minus_B abs_Wert
-#> 678          207.7   8554.1
-#> 721          428.4   7766.6
-#> 724          318.2   6951.4
-#> 698          498.7   5819.1
-#> 711          554.5   5633.3
-#> 708          362.4   4796.9
-#> 682          275.1   4160.1
-#> 750          221.3   3921.8
-#> 700          343.9   3864.1
-#> 710          698.2   3390.9
+#> 966          207.7   2988.5
+#> 232          -48.8   2695.0
+#> 520          -48.8   2646.2
+#> 678          207.7   2223.5
+#> 721          428.4   2018.8
+#> 234          -50.9   1861.2
+#> 522          -50.9   1810.2
+#> 724          318.2   1806.9
+#> 698          498.7   1512.6
+#> 711          554.5   1464.3
 ```
 
 **Interpretation.** Die Extremwertzählung zeigt, dass die auffälligen

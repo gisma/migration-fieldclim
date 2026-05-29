@@ -43,6 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul>
@@ -69,7 +70,7 @@
                         <h4 data-toc-skip class="author">You-De
 Chen</h4>
             
-            <h4 data-toc-skip class="date">2026-05-28 17:49:55 UTC</h4>
+            <h4 data-toc-skip class="date">2026-05-29 05:08:35 UTC</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/vignettes/fieldclim_check_rad_soil.Rmd" class="external-link"><code>vignettes/fieldclim_check_rad_soil.Rmd</code></a></small>
       <div class="d-none name"><code>fieldclim_check_rad_soil.Rmd</code></div>
@@ -342,31 +343,31 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <pre><code><span><span class="co">## [1] 0.0379263 0.0379263 0.0379263 0.0379263 0.0379263 0.0379263</span></span></code></pre>
 <div class="sourceCode" id="cb113"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>        <span class="fu"><a href="../reference/trans_gas.html">trans_gas</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]       NaN       NaN       NaN 0.9872992 0.9873083 0.9873167</span></span></code></pre>
+<pre><code><span><span class="co">## [1]        NA        NA        NA 0.9872992 0.9873083 0.9873167</span></span></code></pre>
 <div class="sourceCode" id="cb115"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>          <span class="fu"><a href="../reference/trans_air_mass_abs.html">trans_air_mass_abs</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]      NaN      NaN      NaN 1.025120 1.022253 1.019638</span></span></code></pre>
+<pre><code><span><span class="co">## [1]       NA       NA       NA 1.025120 1.022253 1.019638</span></span></code></pre>
 <div class="sourceCode" id="cb117"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>            <span class="fu"><a href="../reference/trans_air_mass_rel.html">trans_air_mass_rel</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]      NaN      NaN      NaN 1.056950 1.053949 1.051229</span></span></code></pre>
+<pre><code><span><span class="co">## [1]       NA       NA       NA 1.056950 1.053949 1.051229</span></span></code></pre>
 <div class="sourceCode" id="cb119"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>            <span class="fu"><a href="../reference/pres_p.html">pres_p</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 982.1623 982.1537 982.1548 982.7353 982.7785 982.8001</span></span></code></pre>
 <div class="sourceCode" id="cb121"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>        <span class="fu"><a href="../reference/trans_ozone.html">trans_ozone</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]       NaN       NaN       NaN 0.9830862 0.9831191 0.9831490</span></span></code></pre>
+<pre><code><span><span class="co">## [1]        NA        NA        NA 0.9830862 0.9831191 0.9831490</span></span></code></pre>
 <div class="sourceCode" id="cb123"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>        <span class="fu"><a href="../reference/trans_rayleigh.html">trans_rayleigh</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]       NaN       NaN       NaN 0.9119427 0.9121377 0.9123158</span></span></code></pre>
+<pre><code><span><span class="co">## [1]        NA        NA        NA 0.9119427 0.9121377 0.9123158</span></span></code></pre>
 <div class="sourceCode" id="cb125"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>        <span class="fu"><a href="../reference/trans_vapor.html">trans_vapor</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]       NaN       NaN       NaN 0.8378446 0.8382666 0.8385097</span></span></code></pre>
+<pre><code><span><span class="co">## [1]        NA        NA        NA 0.8378446 0.8382666 0.8385097</span></span></code></pre>
 <div class="sourceCode" id="cb127"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>          <span class="fu"><a href="../reference/hum_precipitable_water.html">hum_precipitable_water</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 13.43360 13.47472 13.46956 11.29129 11.16609 11.10503</span></span></code></pre>
 <div class="sourceCode" id="cb129"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>        <span class="fu"><a href="../reference/trans_aerosol.html">trans_aerosol</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1]       NaN       NaN       NaN 0.8303224 0.8307157 0.8310748</span></span></code></pre>
+<pre><code><span><span class="co">## [1]        NA        NA        NA 0.8303224 0.8307157 0.8310748</span></span></code></pre>
 <div class="sourceCode" id="cb131"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span>        <span class="fu"><a href="../reference/terr_terrain_angle.html">terr_terrain_angle</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 105.95104 105.93532 105.90315  29.81698  29.46693  29.14472</span></span></code></pre>
@@ -479,8 +480,33 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 </h3>
 <div class="sourceCode" id="cb157"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Shortwave incoming"</span></span>
-<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_sw_in.html">rad_sw_in</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/rad_diffuse_in.html">rad_diffuse_in</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
-<span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">rad_sw_in</span></span>
+<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_sw_in.html">rad_sw_in</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/rad_diffuse_in.html">rad_diffuse_in</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span></code></pre>
+<div class="sourceCode" id="cb159"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">rad_sw_in</span></span>
 <span><span class="va">legend_position</span> <span class="op">&lt;-</span> <span class="st">"topright"</span></span>
 <span><span class="fu">plotme</span><span class="op">(</span><span class="va">topic</span>, <span class="va">calculated</span>, <span class="va">measured</span>, <span class="va">legend_position</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_check_rad_soil_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
@@ -488,10 +514,35 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="shortwave-outgoing">Shortwave outgoing<a class="anchor" aria-label="anchor" href="#shortwave-outgoing"></a>
 </h3>
-<div class="sourceCode" id="cb158"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb160"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Shortwave outgoing"</span></span>
-<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_sw_out.html">rad_sw_out</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/rad_diffuse_out.html">rad_diffuse_out</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
-<span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">rad_sw_out</span></span>
+<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_sw_out.html">rad_sw_out</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="../reference/rad_diffuse_out.html">rad_diffuse_out</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span></code></pre>
+<div class="sourceCode" id="cb162"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">rad_sw_out</span></span>
 <span><span class="va">legend_position</span> <span class="op">&lt;-</span> <span class="st">"topright"</span></span>
 <span><span class="fu">plotme</span><span class="op">(</span><span class="va">topic</span>, <span class="va">calculated</span>, <span class="va">measured</span>, <span class="va">legend_position</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_check_rad_soil_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="700"></p>
@@ -499,10 +550,59 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="shortwave-balance">Shortwave balance<a class="anchor" aria-label="anchor" href="#shortwave-balance"></a>
 </h3>
-<div class="sourceCode" id="cb159"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb163"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Shortwave balance"</span></span>
-<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_sw_bal.html">rad_sw_bal</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
-<span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">RsNet</span></span>
+<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_sw_bal.html">rad_sw_bal</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span></code></pre>
+<div class="sourceCode" id="cb165"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">RsNet</span></span>
 <span><span class="va">legend_position</span> <span class="op">&lt;-</span> <span class="st">"topright"</span></span>
 <span><span class="fu">plotme</span><span class="op">(</span><span class="va">topic</span>, <span class="va">calculated</span>, <span class="va">measured</span>, <span class="va">legend_position</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_check_rad_soil_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="700"></p>
@@ -510,7 +610,7 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="longwave-incoming">Longwave incoming<a class="anchor" aria-label="anchor" href="#longwave-incoming"></a>
 </h3>
-<div class="sourceCode" id="cb160"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb166"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Longwave incoming"</span></span>
 <span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_lw_in.html">rad_lw_in</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
 <span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">LUpCo</span></span>
@@ -521,7 +621,7 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="longwave-outgoing">Longwave outgoing<a class="anchor" aria-label="anchor" href="#longwave-outgoing"></a>
 </h3>
-<div class="sourceCode" id="cb161"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb167"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Longwave outgoing"</span></span>
 <span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_lw_out.html">rad_lw_out</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
 <span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">LDnCo</span></span>
@@ -532,7 +632,7 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="longwave-balance">Longwave balance<a class="anchor" aria-label="anchor" href="#longwave-balance"></a>
 </h3>
-<div class="sourceCode" id="cb162"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb168"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Longwave balance"</span></span>
 <span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_lw_bal.html">rad_lw_bal</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
 <span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">RlNet</span></span>
@@ -543,10 +643,59 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="radiation-balance">Radiation balance<a class="anchor" aria-label="anchor" href="#radiation-balance"></a>
 </h3>
-<div class="sourceCode" id="cb163"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb169"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Radiation balance"</span></span>
-<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_bal.html">rad_bal</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
-<span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">rad_net</span></span>
+<span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_bal.html">rad_bal</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span>
+<span><span class="co">## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA</span></span>
+<span><span class="co">## there.</span></span></code></pre>
+<div class="sourceCode" id="cb171"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">rad_net</span></span>
 <span><span class="va">legend_position</span> <span class="op">&lt;-</span> <span class="st">"topright"</span></span>
 <span><span class="fu">plotme</span><span class="op">(</span><span class="va">topic</span>, <span class="va">calculated</span>, <span class="va">measured</span>, <span class="va">legend_position</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_check_rad_soil_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
@@ -554,7 +703,7 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="soil-heat-flux">Soil heat flux<a class="anchor" aria-label="anchor" href="#soil-heat-flux"></a>
 </h3>
-<div class="sourceCode" id="cb164"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb172"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">topic</span> <span class="op">&lt;-</span> <span class="st">"Soil heat flux"</span></span>
 <span><span class="va">calculated</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/soil_heat_flux.html">soil_heat_flux</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span>
 <span><span class="va">measured</span> <span class="op">&lt;-</span> <span class="va">input</span><span class="op">$</span><span class="va">heatflux_soil</span></span>
@@ -569,24 +718,24 @@ values<a class="anchor" aria-label="anchor" href="#check--weather_station-method
 <div class="section level3">
 <h3 id="default-method-with-optional-arguments">.default method with optional arguments<a class="anchor" aria-label="anchor" href="#default-method-with-optional-arguments"></a>
 </h3>
-<div class="sourceCode" id="cb165"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb173"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pres_p.html">pres_p</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1013.25</span></span></code></pre>
-<div class="sourceCode" id="cb167"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb175"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pres_p.html">pres_p</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span>, p0 <span class="op">=</span> <span class="fl">1013</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1013</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="weather_station-method-with-optional-arguments">.weather_station method with optional arguments<a class="anchor" aria-label="anchor" href="#weather_station-method-with-optional-arguments"></a>
 </h3>
-<div class="sourceCode" id="cb169"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb177"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">weather_station</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_weather_station.html">build_weather_station</a></span><span class="op">(</span></span>
 <span>  elev <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  temp <span class="op">=</span> <span class="fl">20</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/pres_p.html">pres_p</a></span><span class="op">(</span><span class="va">weather_station</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1013.25</span></span></code></pre>
-<div class="sourceCode" id="cb171"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb179"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/pres_p.html">pres_p</a></span><span class="op">(</span><span class="va">weather_station</span>, p0 <span class="op">=</span> <span class="fl">1013</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1013</span></span></code></pre>
 </div>

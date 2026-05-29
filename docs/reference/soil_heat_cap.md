@@ -2,7 +2,8 @@
 
 Calculates soil volumetric heat capacity (MJ / (m³ \* K)) from soil
 moisture and texture. Works by linearly interpolating volumetric heat
-capacity based on measured data.
+capacity based on measured data. Moisture is supplied as m3 m-3 and
+converted internally to volume percent.
 
 ## Usage
 
@@ -42,7 +43,9 @@ Soil volumetric heat capacity in MJ/(m³ \* K).
 
 The volumetric heat capacity (\\C_v\\) of the soil is determined based
 on its texture and moisture content. The values are interpolated from
-measured data for different soil types.
+measured data for different soil types. Values below the tabulated
+moisture domain return `NA`; values above the tabulated domain use the
+highest tabulated heat capacity.
 
 ## References
 

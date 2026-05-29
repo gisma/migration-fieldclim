@@ -63,6 +63,9 @@ Bendix 2004, p. 245.
 
 ``` r
 # Calculate transmittance due to rayleigh scattering
-trans_rayleigh(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20)
+trans_rayleigh(
+  datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+  lon = 8.68, lat = 50.77, elev = 100, temp = 20
+)
 #> [1] 0.9080087
 ```

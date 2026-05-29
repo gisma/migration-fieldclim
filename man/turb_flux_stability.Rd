@@ -25,7 +25,9 @@ A stability class string: "unstable", "neutral",
 Gradient-Richardson-Number thresholds.
 }
 \description{
-Conversion of Gradient-Richardson-Number to stability string.
+Conversion of Gradient-Richardson-Number to stability string. Non-finite
+Richardson numbers return \code{NA}. This is a diagnostic classification,
+not a heat-flux closure check.
 }
 \references{
 Based on Bendix 2004, p.43, picture 2.10

@@ -31,6 +31,7 @@ towards the surface."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -146,7 +147,8 @@ potential-temperature gradient and an absolute-humidity gradient:
 $$B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}$$
 where:
 \(\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)\)
-is an empirical coefficient,
+is the empirical implementation coefficient; its exact source-form
+equivalence remains source-open,
 \(\theta\) is potential temperature, and
 \(AH\) is absolute humidity.
 The inputs <code>t1</code> and <code>t2</code> are converted to potential temperature
@@ -158,7 +160,8 @@ unrealistically high. The <code>cap</code> parameter is a numerical safeguard th
 replaces near-zero denominators with <code>+/- cap</code>. Exact closure with
 <code><a href="latent_bowen.html">latent_bowen()</a></code> is guaranteed only for finite uncapped denominators;
 capped cases are guarded diagnostic outputs and may not close
-<code>rad_bal - soil_flux</code> exactly.</p>
+<code>rad_bal - soil_flux</code> exactly. Non-finite Bowen ratios or denominators
+return <code>NA</code> for affected elements with a warning.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -168,7 +171,11 @@ capped cases are guarded diagnostic outputs and may not close
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Calculate sensible heat flux using the Bowen method</span></span></span>
-<span class="r-in"><span><span class="fu">sensible_bowen</span><span class="op">(</span>t1 <span class="op">=</span> <span class="fl">20</span>, t2 <span class="op">=</span> <span class="fl">15</span>, hum1 <span class="op">=</span> <span class="fl">80</span>, hum2 <span class="op">=</span> <span class="fl">60</span>, z1 <span class="op">=</span> <span class="fl">2</span>, z2 <span class="op">=</span> <span class="fl">10</span>, elev <span class="op">=</span> <span class="fl">100</span>, rad_bal <span class="op">=</span> <span class="fl">200</span>, soil_flux <span class="op">=</span> <span class="fl">50</span>, cap <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">sensible_bowen</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  t1 <span class="op">=</span> <span class="fl">20</span>, t2 <span class="op">=</span> <span class="fl">15</span>, hum1 <span class="op">=</span> <span class="fl">80</span>, hum2 <span class="op">=</span> <span class="fl">60</span>,</span></span>
+<span class="r-in"><span>  z1 <span class="op">=</span> <span class="fl">2</span>, z2 <span class="op">=</span> <span class="fl">10</span>, elev <span class="op">=</span> <span class="fl">100</span>,</span></span>
+<span class="r-in"><span>  rad_bal <span class="op">=</span> <span class="fl">200</span>, soil_flux <span class="op">=</span> <span class="fl">50</span>, cap <span class="op">=</span> <span class="fl">1</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 52.46608</span>
 </code></pre></div>
     </div>

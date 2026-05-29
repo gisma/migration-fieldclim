@@ -70,7 +70,8 @@ potential-temperature gradient and an absolute-humidity gradient:
 \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 where:
 \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
-is an empirical coefficient,
+is the empirical implementation coefficient; its exact source-form
+equivalence remains source-open,
 \eqn{\theta} is potential temperature, and
 \eqn{AH} is absolute humidity.
 The inputs \code{t1} and \code{t2} are converted to potential temperature
@@ -83,11 +84,16 @@ unrealistically high. The \code{cap} parameter is a numerical safeguard that
 replaces near-zero denominators with \code{+/- cap}. Exact closure with
 \code{latent_bowen()} is guaranteed only for finite uncapped denominators;
 capped cases are guarded diagnostic outputs and may not close
-\code{rad_bal - soil_flux} exactly.
+\code{rad_bal - soil_flux} exactly. Non-finite Bowen ratios or denominators
+return \code{NA} for affected elements with a warning.
 }
 \examples{
 # Calculate sensible heat flux using the Bowen method
-sensible_bowen(t1 = 20, t2 = 15, hum1 = 80, hum2 = 60, z1 = 2, z2 = 10, elev = 100, rad_bal = 200, soil_flux = 50, cap = 1)
+sensible_bowen(
+  t1 = 20, t2 = 15, hum1 = 80, hum2 = 60,
+  z1 = 2, z2 = 10, elev = 100,
+  rad_bal = 200, soil_flux = 50, cap = 1
+)
 }
 \references{
 Bendix 2004, p. 221, eq. 9.21

@@ -1,0 +1,19 @@
+utils::globalVariables(c(
+  "datetime",
+  "elev",
+  "exposition",
+  "lat",
+  "lon",
+  "moisture",
+  "rh",
+  "slope",
+  "soil_depth1",
+  "soil_depth2",
+  "soil_temp1",
+  "soil_temp2",
+  "surface_temp",
+  "surface_type",
+  "temp",
+  "texture",
+  "valley"
+))

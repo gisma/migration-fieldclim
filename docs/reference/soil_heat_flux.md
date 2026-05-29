@@ -68,7 +68,9 @@ The soil heat flux (\\G\\) is calculated using the formula: \$\$G =
 -\lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}\$\$ where: \\\lambda\\ is the
 thermal conductivity of the soil (W/m/K), \\T_1\\ and \\T_2\\ are the
 temperatures at two different depths (°C), \\z_1\\ and \\z_2\\ are the
-depths at which the temperatures are measured (m).
+depths at which the temperatures are measured (m). Depths must be finite
+non-negative values and must not be equal. Invalid depth pairs return
+`NA` with a warning; valid vector elements are not changed.
 
 ## References
 
@@ -78,6 +80,10 @@ Bendix 2004, p. 71 eq. 4.2.
 
 ``` r
 # Calculate soil heat flux
-soil_heat_flux(texture = "sand", moisture = 0.25, soil_temp1 = 15, soil_temp2 = 10, soil_depth1 = 0.1, soil_depth2 = 0.3)
+soil_heat_flux(
+  texture = "sand", moisture = 0.25,
+  soil_temp1 = 15, soil_temp2 = 10,
+  soil_depth1 = 0.1, soil_depth2 = 0.3
+)
 #> [1] 60
 ```

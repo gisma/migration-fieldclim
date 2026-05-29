@@ -16,7 +16,11 @@
 #' \eqn{R_n} is the net radiation, and
 #' \eqn{G} is the soil heat flux.
 #'
-#' The Priestley-Taylor coefficient depends on the surface type and can be selected from predefined values.
+#' The Priestley-Taylor coefficient depends on the surface type and is selected
+#' from the internal \code{priestley_taylor_coefficient} table. The helpers
+#' \code{sc()} and \code{gam()} are Foken table-scale polynomial coefficients
+#' used together in the ratio \eqn{\Delta / (\Delta + \gamma)}; their absolute
+#' pressure unit scale remains source-open.
 #' @param temp Air temperature in degrees C.
 #' @param rad_bal Radiation balance in W m-2.
 #' @param soil_flux Soil flux in W m-2.
@@ -116,12 +120,12 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
   )
 }
 
-#' Latent Heat Penman-Monteith Method
+#' Latent Heat Penman-Monteith-Type Method
 #'
-#' Calculates the latent heat flux using the Penman-Monteith equation. Positive
-#' latent heat flux signifies flux away from the surface. Negative latent heat
-#' flux indicates flux toward the surface or a condensation-like direction,
-#' depending on context.
+#' Calculates latent heat flux using a simplified Penman-Monteith-type
+#' combination equation. Positive latent heat flux signifies flux away from the
+#' surface. Negative latent heat flux indicates flux toward the surface or a
+#' condensation-like direction, depending on context.
 #'
 #' @param datetime POSIXt object (POSIXct, POSIXlt). See [base::as.POSIXlt] and [base::strptime] for conversion.
 #' @param v Wind velocity in m/s.
@@ -139,7 +143,8 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 #' @param weather_station A weather_station object.
 #' @return Latent heat flux in W m-2.
 #' @details
-#' The latent heat flux (\eqn{Q_e}) using the Penman-Monteith method is calculated as:
+#' The latent heat flux (\eqn{Q_e}) using the simplified Penman-Monteith-type
+#' method is calculated as:
 #' \deqn{Q_e = \frac{\Delta (R_n - G) + \gamma \frac{c_p \rho}{r_a} (e_s - e_a)}{\Delta + \gamma (1 + \frac{r_s}{r_a})}}
 #' where:
 #' \eqn{\Delta} is the slope of the saturation vapor pressure curve,
@@ -158,7 +163,15 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 #' before computing the aerodynamic vapour-pressure-deficit term. \eqn{\Delta}
 #' and \eqn{\gamma} are handled on the same kPa scale.
 #'
-#' The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed, observation height, and surface roughness. The surface resistance (\eqn{r_s}) is selected based on the specified surface type.
+#' The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed,
+#' observation height, and surface roughness. The surface resistance (\eqn{r_s})
+#' is selected based on the specified surface type. The function returns latent
+#' heat flux only; it does not return evaporation depth or a paired sensible heat
+#' flux and is not forced to close \eqn{R_n - G}.
+#'
+#' For weather-station objects, the method uses \code{hum1} as relative humidity
+#' when present and otherwise uses \code{rh}. Both fields are interpreted as
+#' relative humidity in percent for this calculation.
 #'
 #' **Available Surface Types:**
 #' - Temperate grassland
@@ -175,11 +188,13 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 #' For example, `field` is mapped to `Temperate grassland`.
 #'
 #' @examples
-#' # Calculate latent heat flux using the Penman-Monteith method
+#' # Calculate latent heat flux using the Penman-Monteith-type method
 #' datetime <- as.POSIXlt("2022-07-15 12:00:00")
 #' latent_penman(
 #'   datetime = datetime, v = 2, temp = 25, rh = 60, z = 2, rad_bal = 200,
-#'   elev = 100, lat = 50, lon = 8, soil_flux = 50, obs_height = 10, surface_type = "Temperate grassland"
+#'   elev = 100, lat = 50, lon = 8,
+#'   soil_flux = 50, obs_height = 10,
+#'   surface_type = "Temperate grassland"
 #' )
 #' @references Monteith, John L., Mike H. Unsworth, and Ann Webb. "Principles of environmental physics." Quarterly Journal of the Royal Meteorological Society 120.520 (1994): 1699.
 #' @export
@@ -355,7 +370,8 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #'
 #' Calculates the latent heat flux using the Monin-Obukhov length. Positive
 #' flux signifies flux away from the surface, negative values signify flux
-#' towards the surface.
+#' towards the surface. Monin-Obukhov outputs are diagnostic profile/stability
+#' estimates and are not expected to close \eqn{R_n - G}.
 #'
 #' @param ... Additional arguments.
 #' @return Latent heat flux in W m-2.
@@ -373,9 +389,8 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #'
 #' The stability correction function for humidity (\eqn{\phi_q}) is calculated using the gradient Richardson number (\eqn{Ri_g}) and the stability parameter (\eqn{s_1}).
 #' The stability parameter (\eqn{s_1}) is the ratio of the upper measurement height to the Monin-Obukhov length.
-#' When the Monin-Obukhov length close to zero, the ratio can become excessively large, leading to unrealistic values.
-#' To address this, the stability parameter (\eqn{s_1}) is capped to a maximum absolute value.
-#' The default cap is set to NULL.
+#' When the Monin-Obukhov length is close to zero, the ratio can become excessively large, leading to unrealistic values.
+#' To address this, the stability parameter (\eqn{s_1}) can be capped to a maximum absolute value. Invalid heights, invalid wind speeds, and invalid numerical profile states are guarded elementwise and return \code{NA} with a warning. Zero moisture gradient returns zero latent heat flux. The default cap is set to NULL.
 #' \deqn{\phi_q = \begin{cases}
 #' 0.95 \cdot (1 - 11.6 \cdot s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\
 #' 0.95 + 7.8 \cdot s_1, & \text{if } Ri_g > 0
@@ -395,7 +410,11 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #' @inheritParams turb_roughness_length
 #' @examples
 #' # Calculate latent heat flux using Monin-Obukhov length
-#' latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "coniferous forest")
+#' latent_monin(
+#'   hum1 = 80, hum2 = 60, t1 = 20, t2 = 15,
+#'   v1 = 3, v2 = 5, z1 = 2, z2 = 10,
+#'   elev = 100, surface_type = "coniferous forest"
+#' )
 #' @references Bendix 2004, p. 77, eq.4.6
 #' @references Foken 2016, p. 61, Tab. 2.10
 #' @export
@@ -406,50 +425,92 @@ latent_monin <- function(...) {
 #' @rdname latent_monin
 #' @export
 latent_monin.default <- function(hum1, hum2, t1, t2, v1, v2, z1 = 2, z2 = 10, elev, cap = NULL, surface_type = NULL, obs_height = NULL, ...) {
-  # calculate ustar
-  if (!is.null(obs_height)) {
-    ustar <- turb_ustar(v = v2, z = z2, obs_height = obs_height)
-  } else if (!is.null(surface_type)) {
-    ustar <- turb_ustar(v = v2, z = z2, surface_type = surface_type)
-  } else {
-    stop("The input is not valid. Either obs_height or surface_type has to be defined.")
+  if (is.null(obs_height) && is.null(surface_type)) {
+    stop("The input is not valid. Either obs_height or surface_type has to be defined.", call. = FALSE)
   }
 
-  # calculate Monin-Obukhov-Length
+  n <- max(length(hum1), length(hum2), length(t1), length(t2), length(v1), length(v2), length(z1), length(z2), length(elev))
+  hum1 <- rep_len(hum1, n)
+  hum2 <- rep_len(hum2, n)
+  t1 <- rep_len(t1, n)
+  t2 <- rep_len(t2, n)
+  v1 <- rep_len(v1, n)
+  v2 <- rep_len(v2, n)
+  z1 <- rep_len(z1, n)
+  z2 <- rep_len(z2, n)
+  elev <- rep_len(elev, n)
+
+  invalid_height <- !is.finite(z1) | !is.finite(z2) | z1 <= 0 | z2 <= 0 | z2 <= z1
+  invalid_wind <- !is.finite(v1) | !is.finite(v2) | v1 <= 0 | v2 <= 0
+  invalid_profile <- invalid_height | invalid_wind | !is.finite(hum1) | !is.finite(hum2) |
+    !is.finite(t1) | !is.finite(t2) | !is.finite(elev)
+
+  safe_hum1 <- hum1
+  safe_hum2 <- hum2
+  safe_t1 <- t1
+  safe_t2 <- t2
+  safe_v1 <- v1
+  safe_v2 <- v2
+  safe_z1 <- z1
+  safe_z2 <- z2
+  safe_elev <- elev
+  safe_hum1[invalid_profile] <- 60
+  safe_hum2[invalid_profile] <- 55
+  safe_t1[invalid_profile] <- 20
+  safe_t2[invalid_profile] <- 19
+  safe_v1[invalid_profile] <- 2
+  safe_v2[invalid_profile] <- 4
+  safe_z1[invalid_profile] <- 2
+  safe_z2[invalid_profile] <- 10
+  safe_elev[invalid_profile] <- 0
+
   if (!is.null(obs_height)) {
-    monin <- turb_flux_monin(z1 = z1, z2 = z2, v1 = v1, v2 = v2, t1 = t1, t2 = t2, elev = elev, obs_height = obs_height)
-  } else if (!is.null(surface_type)) {
-    monin <- turb_flux_monin(z1 = z1, z2 = z2, v1 = v1, v2 = v2, t1 = t1, t2 = t2, elev = elev, surface_type = surface_type)
+    ustar <- turb_ustar(v = safe_v2, z = safe_z2, obs_height = obs_height)
+    monin <- turb_flux_monin(z1 = safe_z1, z2 = safe_z2, v1 = safe_v1, v2 = safe_v2,
+                             t1 = safe_t1, t2 = safe_t2, elev = safe_elev, obs_height = obs_height)
   } else {
-    stop("The input is not valid. Either obs_height or surface_type has to be defined.")
+    ustar <- turb_ustar(v = safe_v2, z = safe_z2, surface_type = surface_type)
+    monin <- turb_flux_monin(z1 = safe_z1, z2 = safe_z2, v1 = safe_v1, v2 = safe_v2,
+                             t1 = safe_t1, t2 = safe_t2, elev = safe_elev, surface_type = surface_type)
   }
 
-  grad_rich_no <- turb_flux_grad_rich_no(t1, t2, z1, z2, v1, v2, elev)
-  moist_gradient <- hum_moisture_gradient(hum1, hum2, t1, t2, z1, z2, elev)
-  air_density <- pres_air_density(elev, t1)
-  lv <- hum_evap_heat(t1)
-  k <- 0.4 # Karman constant
-  schmidt <- 1
-  s1 <- z2 / monin # s1 = variant of the greek letter sigma
+  grad_rich_no <- suppressWarnings(turb_flux_grad_rich_no(safe_t1, safe_t2, safe_z1, safe_z2, safe_v1, safe_v2, safe_elev))
+  moist_gradient <- hum_moisture_gradient(safe_hum1, safe_hum2, safe_t1, safe_t2, safe_z1, safe_z2, safe_elev)
+  air_density <- pres_air_density(safe_elev, safe_t1)
+  lv <- hum_evap_heat(safe_t1)
+  k <- 0.4
+  s1 <- safe_z2 / monin
 
-  if(!is.null(cap)){
-    # Apply cap
+  if (!is.null(cap)) {
     s1 <- pmax(pmin(s1, cap), -cap)
   }
 
-  busi <- rep(NA, length(grad_rich_no))
-  for (i in 1:length(busi)) {
-    if (is.na(grad_rich_no[i])) {
-      busi[i] <- NA
-    } else if (grad_rich_no[i] <= 0) {
-      busi[i] <- 0.95 * (1 - (11.6 * s1[i]))^-0.5
-    } else if (grad_rich_no[i] > 0) {
-      busi[i] <- 0.95 + (7.8 * s1[i])
-    }
-  }
+  busi <- rep(NA_real_, length(grad_rich_no))
+  unstable <- is.finite(grad_rich_no) & grad_rich_no <= 0
+  stable <- is.finite(grad_rich_no) & grad_rich_no > 0
+  busi[unstable] <- 0.95 * (1 - (11.6 * s1[unstable]))^-0.5
+  busi[stable] <- 0.95 + (7.8 * s1[stable])
+
   out <- (-1) * air_density * lv * ((k * ustar) / busi) * moist_gradient
 
-  # Check if values exceed the valid data range.
+  zero_gradient <- !invalid_profile & is.finite(moist_gradient) & moist_gradient == 0
+  out[zero_gradient] <- 0
+
+  invalid_numeric <- !is.finite(out) & !zero_gradient
+  invalid_out <- invalid_profile | invalid_numeric
+
+  if (any(invalid_height, na.rm = TRUE)) {
+    warning("latent_monin: invalid heights for some values; returning NA there.", call. = FALSE)
+  }
+  if (any(invalid_wind, na.rm = TRUE)) {
+    warning("latent_monin: invalid wind speeds for some values; returning NA there.", call. = FALSE)
+  }
+  if (any(invalid_numeric & !invalid_profile, na.rm = TRUE)) {
+    warning("latent_monin: invalid Monin-Obukhov numerical state for some values; returning NA there.", call. = FALSE)
+  }
+
+  out[invalid_out] <- NA_real_
+
   if (any(out > 600, na.rm = TRUE)) {
     warning("There are values above 600 W m-2!")
   }
@@ -520,7 +581,8 @@ latent_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 #' where:
 #' \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
-#' is an empirical coefficient,
+#' is the empirical implementation coefficient; its exact source-form
+#' equivalence remains source-open,
 #' \eqn{\theta} is potential temperature, and
 #' \eqn{AH} is absolute humidity.
 #' The inputs \code{t1} and \code{t2} are converted to potential temperature
@@ -533,10 +595,15 @@ latent_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' replaces near-zero denominators with \code{+/- cap}. Exact closure with
 #' \code{sensible_bowen()} is guaranteed only for finite uncapped denominators;
 #' capped cases are guarded diagnostic outputs and may not close
-#' \code{rad_bal - soil_flux} exactly.
+#' \code{rad_bal - soil_flux} exactly. Non-finite Bowen ratios or denominators
+#' return \code{NA} for affected elements with a warning.
 #' @examples
 #' # Calculate latent heat flux using Bowen method
-#' latent_bowen(t1 = 20, t2 = 15, hum1 = 80, hum2 = 60, z1 = 2, z2 = 10, elev = 100, rad_bal = 200, soil_flux = 50)
+#' latent_bowen(
+#'   t1 = 20, t2 = 15, hum1 = 80, hum2 = 60,
+#'   z1 = 2, z2 = 10, elev = 100,
+#'   rad_bal = 200, soil_flux = 50
+#' )
 #' @references Bendix 2004, p. 221, eq. 9.21
 #' @export
 latent_bowen <- function(...) {
@@ -563,12 +630,17 @@ latent_bowen.default <- function(t1, t2, hum1, hum2, z1 = 2, z2 = 10, elev,
 
   # Define a small cap to prevent division by a value close to zero
   denominator <- 1 + bowen_ratio
+  invalid_partition <- !is.finite(bowen_ratio) | !is.finite(denominator)
   if(!is.null(cap)){
-    near_zero <- abs(denominator) < cap
+    near_zero <- !invalid_partition & abs(denominator) < cap
     denominator[near_zero] <- ifelse(denominator[near_zero] < 0, -cap, cap)
   }
 
   out <- (rad_bal - soil_flux) / denominator
+  out[invalid_partition] <- NA_real_
+  if (any(invalid_partition, na.rm = TRUE)) {
+    warning("latent_bowen: invalid Bowen ratio or denominator for some values; returning NA there.", call. = FALSE)
+  }
 
   # Check if values exceed the valid data range and issue warnings
   if (any(out > 600, na.rm = TRUE)) {

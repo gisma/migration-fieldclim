@@ -1,6 +1,8 @@
 # Stability
 
-Conversion of Gradient-Richardson-Number to stability string.
+Conversion of Gradient-Richardson-Number to stability string. Non-finite
+Richardson numbers return `NA`. This is a diagnostic classification, not
+a heat-flux closure check.
 
 ## Usage
 

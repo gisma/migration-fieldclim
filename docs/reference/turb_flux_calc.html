@@ -5,9 +5,13 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sensible and latent heat fluxes — turb_flux_calc"><meta name="description" content="Calculate sensible and latent heat fluxes, using the methods of Priestly-Taylor, Bowen,
-Monin and Penman (only latent)."><meta property="og:description" content="Calculate sensible and latent heat fluxes, using the methods of Priestly-Taylor, Bowen,
-Monin and Penman (only latent)."></head><body>
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Sensible and latent heat fluxes — turb_flux_calc"><meta name="description" content="Calculate sensible and latent heat-flux estimates for a
+weather_station object using the available fieldClim method families:
+Priestley-Taylor, Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and
+Penman-type latent heat flux."><meta property="og:description" content="Calculate sensible and latent heat-flux estimates for a
+weather_station object using the available fieldClim method families:
+Priestley-Taylor, Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and
+Penman-type latent heat flux."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -29,6 +33,7 @@ Monin and Penman (only latent)."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -47,8 +52,10 @@ Monin and Penman (only latent)."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>Calculate sensible and latent heat fluxes, using the methods of Priestly-Taylor, Bowen,
-Monin and Penman (only latent).</p>
+    <p>Calculate sensible and latent heat-flux estimates for a
+<code>weather_station</code> object using the available <code>fieldClim</code> method families:
+Priestley-Taylor, Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and
+Penman-type latent heat flux.</p>
     </div>
 
     <div class="section level2">
@@ -61,19 +68,34 @@ Monin and Penman (only latent).</p>
 
 
 <dl><dt id="arg-weather-station">weather_station<a class="anchor" aria-label="anchor" href="#arg-weather-station"></a></dt>
-<dd><p>Object of class weather_station</p></dd>
+<dd><p>Object of class <code>weather_station</code>.</p></dd>
 
 
 <dt id="arg-pt-only">pt_only<a class="anchor" aria-label="anchor" href="#arg-pt-only"></a></dt>
 <dd><p>If <code>TRUE</code>, calculate only the Priestley-Taylor sensible and
-latent heat fluxes. This supports the introductory energy balance workflow
-without requiring inputs for the optional additional methods. In the full
-workflow, unavailable Penman inputs result in <code>NA</code> values and a warning.</p></dd>
+latent heat fluxes. This supports the introductory or robust available-energy
+workflow without requiring inputs for the optional additional methods.
+If <code>FALSE</code>, the full workflow attempts the available additional methods,
+including Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and Penman-type
+latent heat flux. Unavailable optional inputs produce <code>NA</code> values and/or
+warnings according to the respective method.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>Object of class weather_station</p>
+    <p>Object of class <code>weather_station</code> with additional heat-flux fields.
+Depending on <code>pt_only</code> and on available input fields, these may include:
+<code>sensible_priestley_taylor</code>, <code>latent_priestley_taylor</code>,
+<code>sensible_bulk</code>, <code>latent_bulk_residual</code>,
+<code>sensible_bowen</code>, <code>latent_bowen</code>,
+<code>sensible_monin</code>, <code>latent_monin</code>, and <code>latent_penman</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The methods are not interchangeable measurements. Priestley-Taylor,
+Bulk-Residual and Bowen-ratio are energy-partition or residual workflows.
+Penman returns latent heat flux only. Monin-Obukhov/profile outputs are
+diagnostic and are not forced to close the available energy.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -8,10 +8,14 @@
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Gradient-Richardson-Number — turb_flux_grad_rich_no"><meta name="description" content="Calculation of the Gradient-Richardson-Number. The number represents the
 stability of the atmosphere. Negative values signify unstable conditions,
 positive values signify stable conditions, whereas values around zero represent
-neutral conditions."><meta property="og:description" content="Calculation of the Gradient-Richardson-Number. The number represents the
+neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
+cases return NA; these helpers are diagnostics and do not enforce
+turbulent heat-flux closure."><meta property="og:description" content="Calculation of the Gradient-Richardson-Number. The number represents the
 stability of the atmosphere. Negative values signify unstable conditions,
 positive values signify stable conditions, whereas values around zero represent
-neutral conditions."></head><body>
+neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
+cases return NA; these helpers are diagnostics and do not enforce
+turbulent heat-flux closure."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -33,6 +37,7 @@ neutral conditions."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -54,7 +59,9 @@ neutral conditions."></head><body>
     <p>Calculation of the Gradient-Richardson-Number. The number represents the
 stability of the atmosphere. Negative values signify unstable conditions,
 positive values signify stable conditions, whereas values around zero represent
-neutral conditions.</p>
+neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
+cases return <code>NA</code>; these helpers are diagnostics and do not enforce
+turbulent heat-flux closure.</p>
     </div>
 
     <div class="section level2">
@@ -62,7 +69,17 @@ neutral conditions.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">turb_flux_grad_rich_no</span><span class="op">(</span><span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Default S3 method</span></span>
-<span><span class="fu">turb_flux_grad_rich_no</span><span class="op">(</span><span class="va">t1</span>, <span class="va">t2</span>, z1 <span class="op">=</span> <span class="fl">2</span>, z2 <span class="op">=</span> <span class="fl">10</span>, <span class="va">v1</span>, <span class="va">v2</span>, <span class="va">elev</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">turb_flux_grad_rich_no</span><span class="op">(</span></span>
+<span>  <span class="va">t1</span>,</span>
+<span>  <span class="va">t2</span>,</span>
+<span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  <span class="va">v1</span>,</span>
+<span>  <span class="va">v2</span>,</span>
+<span>  <span class="va">elev</span>,</span>
+<span>  min_shear <span class="op">=</span> <span class="fl">1e-04</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'weather_station'</span></span>
 <span><span class="fu">turb_flux_grad_rich_no</span><span class="op">(</span><span class="va">weather_station</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
@@ -104,15 +121,19 @@ neutral conditions.</p>
 <dd><p>Elevation above sea level in m.</p></dd>
 
 
+<dt id="arg-min-shear">min_shear<a class="anchor" aria-label="anchor" href="#arg-min-shear"></a></dt>
+<dd><p>Minimum absolute wind-speed shear in s-1. Values at or
+below this threshold return <code>NA</code>.</p></dd>
+
+
 <dt id="arg-weather-station">weather_station<a class="anchor" aria-label="anchor" href="#arg-weather-station"></a></dt>
 <dd><p>Object of class weather_station</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A stability class string: "unstable", "neutral",
-"stable", or <code>NA</code>, according to the current
-Gradient-Richardson-Number thresholds.</p>
+    <p>Gradient Richardson number, or <code>NA</code> for invalid profile or
+weak-shear cases.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -25,6 +25,8 @@ Authors:
 
 - Fabian Mitze <Mitze@students.uni-marburg.de>
 
+- Christoph Reudenbach <reudenbach@uni-marburg.de>
+
 - David Langenohl <langenoh@students.uni-marburg.de>
 
 - Jonas Viehweger <jonas.viehweger@rwth-aachen.de>
@@ -36,5 +38,3 @@ Authors:
 - Kai Richter <richter5@students.uni-marburg.de>
 
 - You-De Chen <you-de.chen@students.uni-marburg.de>
-
-- Christoph Reudenbach <reudenbach@uni-marburg.de>

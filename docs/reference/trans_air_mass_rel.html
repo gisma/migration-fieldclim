@@ -27,6 +27,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -91,7 +92,9 @@
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The relative optical air mass is calculated using the formula:
 $$M_{rel} = \frac{1}{\sin(elevation) + 1.5 \cdot elevation^{-0.72}}$$
-where \(elevation\) is the solar elevation angle in degrees.</p>
+where \(elevation\) is the solar elevation angle in degrees. The formula
+is only evaluated for positive solar elevation; below-horizon or invalid
+elevations return <code>NA</code> with a warning.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -101,7 +104,10 @@ where \(elevation\) is the solar elevation angle in degrees.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Calculate relative optical air mass</span></span></span>
-<span class="r-in"><span><span class="fu">trans_air_mass_rel</span><span class="op">(</span>datetime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXlt</a></span><span class="op">(</span><span class="st">"2023-08-06 12:00:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span>, lon <span class="op">=</span> <span class="fl">8.68</span>, lat <span class="op">=</span> <span class="fl">50.77</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">trans_air_mass_rel</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  datetime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXlt</a></span><span class="op">(</span><span class="st">"2023-08-06 12:00:00"</span>, tz <span class="op">=</span> <span class="st">"UTC"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  lon <span class="op">=</span> <span class="fl">8.68</span>, lat <span class="op">=</span> <span class="fl">50.77</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1.096104</span>
 </code></pre></div>
     </div>

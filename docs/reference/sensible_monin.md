@@ -2,7 +2,8 @@
 
 Calculates the sensible heat flux using the Monin-Obukhov length.
 Positive flux signifies flux away from the surface, negative values
-signify flux towards the surface.
+signify flux towards the surface. Monin-Obukhov outputs are diagnostic
+profile/stability estimates and are not expected to close \\R_n - G\\.
 
 ## Usage
 
@@ -100,8 +101,12 @@ using the gradient Richardson number (\\Ri_g\\) and the stability
 parameter (\\s_1\\). The stability parameter is the ratio of the higher
 measurement height and the Monin-Obukhov length. With Monin-Obukhov
 length values close to zero, the ratio can result in very high values,
-which is why the stability parameter (\\s_1\\) is capped. The default
-cap is set to NULL.
+which is why the stability parameter (\\s_1\\) can be capped. The
+implemented potential-temperature gradient uses the measurement-height
+difference \\z_2 - z_1\\. Invalid heights, invalid wind speeds, and
+invalid numerical profile states are guarded elementwise and return `NA`
+with a warning. Zero potential-temperature gradient returns zero
+sensible heat flux. The default cap is set to NULL.
 
 ## References
 
@@ -115,5 +120,5 @@ Foken 2016, p. 362: Businger
 # Calculate sensible heat flux using the Monin-Obukhov method
 sensible_monin(t1 = 20, t2 = 15, z1 = 2, z2 = 10, v1 = 3, v2 = 5, elev = 100, surface_type = "lawn")
 #> Warning: There are values above 600 W/m^2!
-#> [1] 27759.3
+#> [1] 7215.479
 ```

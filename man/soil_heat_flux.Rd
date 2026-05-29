@@ -51,10 +51,16 @@ where:
 \eqn{\lambda} is the thermal conductivity of the soil (W/m/K),
 \eqn{T_1} and \eqn{T_2} are the temperatures at two different depths (°C),
 \eqn{z_1} and \eqn{z_2} are the depths at which the temperatures are measured (m).
+Depths must be finite non-negative values and must not be equal. Invalid depth
+pairs return \code{NA} with a warning; valid vector elements are not changed.
 }
 \examples{
 # Calculate soil heat flux
-soil_heat_flux(texture = "sand", moisture = 0.25, soil_temp1 = 15, soil_temp2 = 10, soil_depth1 = 0.1, soil_depth2 = 0.3)
+soil_heat_flux(
+  texture = "sand", moisture = 0.25,
+  soil_temp1 = 15, soil_temp2 = 10,
+  soil_depth1 = 0.1, soil_depth2 = 0.3
+)
 }
 \references{
 Bendix 2004, p. 71 eq. 4.2.

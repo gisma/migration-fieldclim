@@ -7,17 +7,33 @@
 turb_flux_calc(weather_station, pt_only = FALSE)
 }
 \arguments{
-\item{weather_station}{Object of class weather_station}
+\item{weather_station}{Object of class \code{weather_station}.}
 
 \item{pt_only}{If \code{TRUE}, calculate only the Priestley-Taylor sensible and
-latent heat fluxes. This supports the introductory energy balance workflow
-without requiring inputs for the optional additional methods. In the full
-workflow, unavailable Penman inputs result in \code{NA} values and a warning.}
+latent heat fluxes. This supports the introductory or robust available-energy
+workflow without requiring inputs for the optional additional methods.
+If \code{FALSE}, the full workflow attempts the available additional methods,
+including Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and Penman-type
+latent heat flux. Unavailable optional inputs produce \code{NA} values and/or
+warnings according to the respective method.}
 }
 \value{
-Object of class weather_station
+Object of class \code{weather_station} with additional heat-flux fields.
+Depending on \code{pt_only} and on available input fields, these may include:
+\code{sensible_priestley_taylor}, \code{latent_priestley_taylor},
+\code{sensible_bulk}, \code{latent_bulk_residual},
+\code{sensible_bowen}, \code{latent_bowen},
+\code{sensible_monin}, \code{latent_monin}, and \code{latent_penman}.
 }
 \description{
-Calculate sensible and latent heat fluxes, using the methods of Priestly-Taylor, Bowen,
-Monin and Penman (only latent).
+Calculate sensible and latent heat-flux estimates for a
+\code{weather_station} object using the available \code{fieldClim} method families:
+Priestley-Taylor, Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and
+Penman-type latent heat flux.
+}
+\details{
+The methods are not interchangeable measurements. Priestley-Taylor,
+Bulk-Residual and Bowen-ratio are energy-partition or residual workflows.
+Penman returns latent heat flux only. Monin-Obukhov/profile outputs are
+diagnostic and are not forced to close the available energy.
 }

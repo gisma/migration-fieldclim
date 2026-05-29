@@ -43,6 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul>
@@ -1018,11 +1019,11 @@ Nenner nahe null oder extrem große Stabilitätsparameter.</p>
 <span><span class="co">#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. </span></span>
 <span><span class="co">#&gt; -50.662   8.904  55.312  98.534 171.439 479.809</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">L_monin_no_cap</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. </span></span>
-<span><span class="co">#&gt;  -46.657   -8.328   -2.361  400.837  299.437 8554.126</span></span>
+<span><span class="co">#&gt;      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. </span></span>
+<span><span class="co">#&gt;  -12.1277   -2.1647   -0.6137  104.1896   77.8327 2223.4756</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">L_monin_cap</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. </span></span>
-<span><span class="co">#&gt;  -46.657   -8.328   -2.361  236.923  276.368 3390.888</span></span></code></pre></div>
+<span><span class="co">#&gt; -12.1277  -2.1647  -0.6137  61.5833  71.8363 881.3943</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Caps verändern nicht die Messdaten.
 Sie begrenzen numerisch kritische Fälle. In einer Vignette sollten Caps
 deshalb immer als Diagnose- und Schutzparameter beschrieben werden,

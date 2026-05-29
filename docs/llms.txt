@@ -205,7 +205,7 @@ heat-flux-methods workflow, not an Eddy Covariance workflow.
 - [`latent_monin()`](https://gisma.github.io/migration-fieldclim/reference/latent_monin.md)
   : Latent Heat using Monin-Obukhov length
 - [`latent_penman()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
-  : Latent Heat Penman-Monteith Method
+  : Latent Heat Penman-Monteith-Type Method
 - [`latent_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.md)
   : Latent Heat Priestley-Taylor Method
 - [`plot_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/plot_weather_station.md)
@@ -335,6 +335,8 @@ heat-flux-methods workflow, not an Eddy Covariance workflow.
   Use-Case-Workflows](https://gisma.github.io/migration-fieldclim/articles/fieldclim_additional.md):
 - [fieldClim: Check radiation and soil heat
   flux](https://gisma.github.io/migration-fieldclim/articles/fieldclim_check_rad_soil.md):
+- [Scientific background for fieldClim heat-flux
+  methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_methods.md):
 - [FieldClim Package Update
   Documentation](https://gisma.github.io/migration-fieldclim/articles/fieldclim_update2024.md):
 - [fieldClim: Use-Case-Workflows für Energiebilanz und

@@ -29,7 +29,7 @@
 - [`latent_monin()`](https://gisma.github.io/migration-fieldclim/reference/latent_monin.md)
   : Latent Heat using Monin-Obukhov length
 - [`latent_penman()`](https://gisma.github.io/migration-fieldclim/reference/latent_penman.md)
-  : Latent Heat Penman-Monteith Method
+  : Latent Heat Penman-Monteith-Type Method
 - [`latent_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.md)
   : Latent Heat Priestley-Taylor Method
 - [`plot_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/plot_weather_station.md)

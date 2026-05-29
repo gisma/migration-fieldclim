@@ -1,7 +1,7 @@
 # Latent heat flux as residual of the surface energy balance
 
-Calculates latent heat flux as residual from net radiation, soil heat
-flux and sensible heat flux.
+Calculates latent heat flux as the residual of the available turbulent
+energy after subtracting sensible heat flux.
 
 ## Usage
 
@@ -28,7 +28,7 @@ latent_bulk_residual(
 
 - rad_bal:
 
-  Net radiation `Rn` in W m-2.
+  Net radiation \\R_n\\ in W m-2.
 
 - ...:
 
@@ -36,31 +36,37 @@ latent_bulk_residual(
 
 - soil_flux:
 
-  Soil heat flux `G` in W m-2.
+  Soil heat flux \\G\\ in W m-2.
 
 - sensible:
 
-  Sensible heat flux `H` in W m-2.
+  Sensible heat flux \\H\\ in W m-2.
 
 - warn_threshold:
 
-  Absolute flux threshold for diagnostic warnings.
+  Absolute flux threshold in W m-2 for diagnostic warnings.
 
 - rho:
 
-  Air density in kg m-3.
+  Air density in kg m-3, used by the weather-station method when
+  `sensible` is not supplied and
+  [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md)
+  is calculated internally.
 
 - cp:
 
-  Specific heat capacity of air in J kg-1 K-1.
+  Specific heat capacity of air in J kg-1 K-1, used by the
+  weather-station method when `sensible` is not supplied.
 
 - k:
 
-  von Karman constant.
+  von Karman constant, used by the weather-station method when
+  `sensible` is not supplied.
 
 - min_wind:
 
-  Minimum wind speed used by the internal bulk calculation.
+  Minimum wind speed in m s-1 used by the internal bulk calculation in
+  the weather-station method.
 
 ## Value
 
@@ -68,16 +74,46 @@ Latent heat flux in W m-2.
 
 ## Details
 
+The package energy-balance convention is:
+
+\$\$ R_n = G + H + LE \$\$
+
+when storage is omitted. Here \\R_n\\ is net radiation, \\G\\ is soil
+heat flux, \\H\\ is sensible heat flux, and \\LE\\ is latent heat flux.
+
+The implemented residual is:
+
+\$\$ LE\_{res} = R_n - G - H \$\$
+
+where \\LE\_{res}\\ is latent heat flux in W m-2, \\R_n\\ is net
+radiation in W m-2, \\G\\ is soil heat flux in W m-2, and \\H\\ is
+sensible heat flux in W m-2.
+
 The sign convention is:
 
-`Rn > 0`: radiative energy input at the surface
+- \\R_n \> 0\\: radiative energy input at the surface.
 
-`G > 0`: heat flux into the soil
+- \\G \> 0\\: heat flux into the soil.
 
-`H > 0`: sensible heat flux away from the surface
+- \\H \> 0\\: sensible heat flux away from the surface.
 
-`LE > 0`: latent heat flux away from the surface
+- \\LE \> 0\\: latent heat flux away from the surface.
 
-Therefore:
+In the Bulk-Residual workflow,
+[`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md)
+first estimates \\H\_{bulk}\\. The latent heat flux is then calculated
+as:
 
-`LE = Rn - G - H`
+\$\$ LE\_{res} = R_n - G - H\_{bulk} \$\$
+
+Therefore the Bulk-Residual workflow closes the available energy by
+construction:
+
+\$\$ H\_{bulk} + LE\_{res} = R_n - G \$\$
+
+This closure is algebraic. It does not prove that \\H\_{bulk}\\ is a
+physically perfect sensible-heat estimate. Any error in \\R_n\\, \\G\\,
+or \\H\_{bulk}\\ is inherited by the residual latent heat flux.
+
+Large absolute residuals are warned about using `warn_threshold`, but
+they are not capped.

@@ -29,6 +29,7 @@ Negative values signify flux towards the atmosphere, while positive values signi
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -117,7 +118,9 @@ $$G = -\lambda \cdot \frac{T_1 - T_2}{z_1 - z_2}$$
 where:
 \(\lambda\) is the thermal conductivity of the soil (W/m/K),
 \(T_1\) and \(T_2\) are the temperatures at two different depths (°C),
-\(z_1\) and \(z_2\) are the depths at which the temperatures are measured (m).</p>
+\(z_1\) and \(z_2\) are the depths at which the temperatures are measured (m).
+Depths must be finite non-negative values and must not be equal. Invalid depth
+pairs return <code>NA</code> with a warning; valid vector elements are not changed.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -127,7 +130,11 @@ where:
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Calculate soil heat flux</span></span></span>
-<span class="r-in"><span><span class="fu">soil_heat_flux</span><span class="op">(</span>texture <span class="op">=</span> <span class="st">"sand"</span>, moisture <span class="op">=</span> <span class="fl">0.25</span>, soil_temp1 <span class="op">=</span> <span class="fl">15</span>, soil_temp2 <span class="op">=</span> <span class="fl">10</span>, soil_depth1 <span class="op">=</span> <span class="fl">0.1</span>, soil_depth2 <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">soil_heat_flux</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  texture <span class="op">=</span> <span class="st">"sand"</span>, moisture <span class="op">=</span> <span class="fl">0.25</span>,</span></span>
+<span class="r-in"><span>  soil_temp1 <span class="op">=</span> <span class="fl">15</span>, soil_temp2 <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>  soil_depth1 <span class="op">=</span> <span class="fl">0.1</span>, soil_depth2 <span class="op">=</span> <span class="fl">0.3</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 60</span>
 </code></pre></div>
     </div>

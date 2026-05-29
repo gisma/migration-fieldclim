@@ -52,7 +52,11 @@ where \eqn{u_*} is the friction velocity, \eqn{v} is the windspeed, \eqn{d} is t
 }
 \examples{
 # Calculate the average height of the TIBL with given parameters
-bound_thermal_avg(v = 5, z = 10, temp_change_dist = 500, t_pot_upwind = 15, t_pot = 20, lapse_rate = 0.0065, surface_type = "lawn")
+bound_thermal_avg(
+  v = 5, z = 10, temp_change_dist = 500,
+  t_pot_upwind = 15, t_pot = 20,
+  lapse_rate = 0.0065, surface_type = "lawn"
+)
 
 }
 \references{

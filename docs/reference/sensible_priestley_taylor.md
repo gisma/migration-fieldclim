@@ -37,7 +37,8 @@ sensible_priestley_taylor(weather_station, ...)
 - surface_type:
 
   Surface type, for which a Priestley-Taylor coefficient will be
-  selected. Options: `surface_type options`
+  selected. Options: field, bare soil, coniferous forest, water,
+  wetland, spruce forest
 
 - weather_station:
 
@@ -55,6 +56,14 @@ calculated as: \$\$Q_h = \frac{(1 - \alpha) \cdot s + \gamma}{s +
 coefficient specific to the surface type, \\s\\ is the slope of the
 saturation vapor pressure curve, \\\gamma\\ is the psychrometric
 constant, \\R_n\\ is the net radiation, and \\G\\ is the soil heat flux.
+
+This formula is algebraically equivalent to \\(R_n - G) - Q_e\\ when
+`sensible_priestley_taylor()` and
+[`latent_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.md)
+use the same temperature, surface type, radiation balance, and soil heat
+flux. The helpers `sc()` and `gam()` are Foken table-scale polynomial
+coefficients used together in the ratio terms; their absolute pressure
+unit scale remains source-open.
 
 ## References
 

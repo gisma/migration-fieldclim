@@ -4,7 +4,7 @@
 \alias{latent_penman}
 \alias{latent_penman.default}
 \alias{latent_penman.weather_station}
-\title{Latent Heat Penman-Monteith Method}
+\title{Latent Heat Penman-Monteith-Type Method}
 \usage{
 latent_penman(...)
 
@@ -59,13 +59,14 @@ latent_penman(...)
 Latent heat flux in W m-2.
 }
 \description{
-Calculates the latent heat flux using the Penman-Monteith equation. Positive
-latent heat flux signifies flux away from the surface. Negative latent heat
-flux indicates flux toward the surface or a condensation-like direction,
-depending on context.
+Calculates latent heat flux using a simplified Penman-Monteith-type
+combination equation. Positive latent heat flux signifies flux away from the
+surface. Negative latent heat flux indicates flux toward the surface or a
+condensation-like direction, depending on context.
 }
 \details{
-The latent heat flux (\eqn{Q_e}) using the Penman-Monteith method is calculated as:
+The latent heat flux (\eqn{Q_e}) using the simplified Penman-Monteith-type
+method is calculated as:
 \deqn{Q_e = \frac{\Delta (R_n - G) + \gamma \frac{c_p \rho}{r_a} (e_s - e_a)}{\Delta + \gamma (1 + \frac{r_s}{r_a})}}
 where:
 \eqn{\Delta} is the slope of the saturation vapor pressure curve,
@@ -84,7 +85,15 @@ where:
 before computing the aerodynamic vapour-pressure-deficit term. \eqn{\Delta}
 and \eqn{\gamma} are handled on the same kPa scale.
 
-The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed, observation height, and surface roughness. The surface resistance (\eqn{r_s}) is selected based on the specified surface type.
+The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed,
+observation height, and surface roughness. The surface resistance (\eqn{r_s})
+is selected based on the specified surface type. The function returns latent
+heat flux only; it does not return evaporation depth or a paired sensible heat
+flux and is not forced to close \eqn{R_n - G}.
+
+For weather-station objects, the method uses \code{hum1} as relative humidity
+when present and otherwise uses \code{rh}. Both fields are interpreted as
+relative humidity in percent for this calculation.
 
 \strong{Available Surface Types:}
 \itemize{
@@ -103,11 +112,13 @@ surface class such as \code{field}, \code{lawn}, \code{agriculture},
 For example, \code{field} is mapped to \verb{Temperate grassland}.
 }
 \examples{
-# Calculate latent heat flux using the Penman-Monteith method
+# Calculate latent heat flux using the Penman-Monteith-type method
 datetime <- as.POSIXlt("2022-07-15 12:00:00")
 latent_penman(
   datetime = datetime, v = 2, temp = 25, rh = 60, z = 2, rad_bal = 200,
-  elev = 100, lat = 50, lon = 8, soil_flux = 50, obs_height = 10, surface_type = "Temperate grassland"
+  elev = 100, lat = 50, lon = 8,
+  soil_flux = 50, obs_height = 10,
+  surface_type = "Temperate grassland"
 )
 }
 \references{

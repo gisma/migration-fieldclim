@@ -8,7 +8,17 @@
 \usage{
 turb_flux_grad_rich_no(...)
 
-\method{turb_flux_grad_rich_no}{default}(t1, t2, z1 = 2, z2 = 10, v1, v2, elev, ...)
+\method{turb_flux_grad_rich_no}{default}(
+  t1,
+  t2,
+  z1 = 2,
+  z2 = 10,
+  v1,
+  v2,
+  elev,
+  min_shear = 1e-04,
+  ...
+)
 
 \method{turb_flux_grad_rich_no}{weather_station}(weather_station, ...)
 }
@@ -29,18 +39,22 @@ turb_flux_grad_rich_no(...)
 
 \item{elev}{Elevation above sea level in m.}
 
+\item{min_shear}{Minimum absolute wind-speed shear in s-1. Values at or
+below this threshold return \code{NA}.}
+
 \item{weather_station}{Object of class weather_station}
 }
 \value{
-A stability class string: "unstable", "neutral",
-"stable", or \code{NA}, according to the current
-Gradient-Richardson-Number thresholds.
+Gradient Richardson number, or \code{NA} for invalid profile or
+weak-shear cases.
 }
 \description{
 Calculation of the Gradient-Richardson-Number. The number represents the
 stability of the atmosphere. Negative values signify unstable conditions,
 positive values signify stable conditions, whereas values around zero represent
-neutral conditions.
+neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
+cases return \code{NA}; these helpers are diagnostics and do not enforce
+turbulent heat-flux closure.
 }
 \references{
 Bendix 2004, p. 43, eq. 2.5

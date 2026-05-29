@@ -488,21 +488,21 @@ rad_bal(weather_station)
         trans_gas(weather_station)
 ```
 
-    ## [1]       NaN       NaN       NaN 0.9872992 0.9873083 0.9873167
+    ## [1]        NA        NA        NA 0.9872992 0.9873083 0.9873167
 
 ``` r
 
           trans_air_mass_abs(weather_station)
 ```
 
-    ## [1]      NaN      NaN      NaN 1.025120 1.022253 1.019638
+    ## [1]       NA       NA       NA 1.025120 1.022253 1.019638
 
 ``` r
 
             trans_air_mass_rel(weather_station)
 ```
 
-    ## [1]      NaN      NaN      NaN 1.056950 1.053949 1.051229
+    ## [1]       NA       NA       NA 1.056950 1.053949 1.051229
 
 ``` r
 
@@ -516,21 +516,21 @@ rad_bal(weather_station)
         trans_ozone(weather_station)
 ```
 
-    ## [1]       NaN       NaN       NaN 0.9830862 0.9831191 0.9831490
+    ## [1]        NA        NA        NA 0.9830862 0.9831191 0.9831490
 
 ``` r
 
         trans_rayleigh(weather_station)
 ```
 
-    ## [1]       NaN       NaN       NaN 0.9119427 0.9121377 0.9123158
+    ## [1]        NA        NA        NA 0.9119427 0.9121377 0.9123158
 
 ``` r
 
         trans_vapor(weather_station)
 ```
 
-    ## [1]       NaN       NaN       NaN 0.8378446 0.8382666 0.8385097
+    ## [1]        NA        NA        NA 0.8378446 0.8382666 0.8385097
 
 ``` r
 
@@ -544,7 +544,7 @@ rad_bal(weather_station)
         trans_aerosol(weather_station)
 ```
 
-    ## [1]       NaN       NaN       NaN 0.8303224 0.8307157 0.8310748
+    ## [1]        NA        NA        NA 0.8303224 0.8307157 0.8310748
 
 ``` r
 
@@ -709,6 +709,35 @@ plotme <- function(topic, calculated, measured, legend_position) {
 
 topic <- "Shortwave incoming"
 calculated <- rad_sw_in(weather_station) + rad_diffuse_in(weather_station)
+```
+
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+
+``` r
+
 measured <- input$rad_sw_in
 legend_position <- "topright"
 plotme(topic, calculated, measured, legend_position)
@@ -722,6 +751,35 @@ plotme(topic, calculated, measured, legend_position)
 
 topic <- "Shortwave outgoing"
 calculated <- rad_sw_out(weather_station) + rad_diffuse_out(weather_station)
+```
+
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+
+``` r
+
 measured <- input$rad_sw_out
 legend_position <- "topright"
 plotme(topic, calculated, measured, legend_position)
@@ -735,6 +793,59 @@ plotme(topic, calculated, measured, legend_position)
 
 topic <- "Shortwave balance"
 calculated <- rad_sw_bal(weather_station)
+```
+
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+
+``` r
+
 measured <- input$RsNet
 legend_position <- "topright"
 plotme(topic, calculated, measured, legend_position)
@@ -787,6 +898,59 @@ plotme(topic, calculated, measured, legend_position)
 
 topic <- "Radiation balance"
 calculated <- rad_bal(weather_station)
+```
+
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+    ## Warning: trans_air_mass_rel: solar elevation must be positive; returning NA
+    ## there.
+
+``` r
+
 measured <- input$rad_net
 legend_position <- "topright"
 plotme(topic, calculated, measured, legend_position)

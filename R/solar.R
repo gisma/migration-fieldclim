@@ -341,6 +341,7 @@ sol_hour_angle <- function(...) {
 #' @inheritParams build_weather_station
 #' @export
 sol_hour_angle.default <- function(datetime, lon, ...) {
+  datetime <- as.POSIXlt(datetime)
   medium_suntime <- datetime$hour + datetime$min / 60 + datetime$sec / 3600
   time_formula <- sol_time_formula(datetime, lon)
 
@@ -489,6 +490,7 @@ sol_azimuth <- function(...) {
 #' @inheritParams build_weather_station
 #' @export
 sol_azimuth.default <- function(datetime, lon, lat, ...) {
+  datetime <- as.POSIXlt(datetime)
   declination <- sol_declination(datetime)
   hour_angle <- sol_hour_angle(datetime, lon)
   elevation <- sol_elevation(datetime, lon, lat)

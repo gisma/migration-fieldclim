@@ -8,7 +8,7 @@
 
 - **Jörg Bendix**. Author.
 
-- **Fabian Mitze**. Author, maintainer.
+- **Fabian Mitze**. Author.
 
 - **Hanna Wenzel**. Author.
 
@@ -16,7 +16,7 @@
 
 - **You-De Chen**. Author.
 
-- **Christoph Reudenbach**. Author.
+- **Christoph Reudenbach**. Author, maintainer.
 
 ## Citation
 

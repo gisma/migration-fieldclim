@@ -57,8 +57,11 @@ Priestley-Taylor coefficient, \\\Delta\\ is the slope of the saturation
 vapor pressure curve, \\\gamma\\ is the psychrometric constant, \\R_n\\
 is the net radiation, and \\G\\ is the soil heat flux.
 
-The Priestley-Taylor coefficient depends on the surface type and can be
-selected from predefined values.
+The Priestley-Taylor coefficient depends on the surface type and is
+selected from the internal `priestley_taylor_coefficient` table. The
+helpers `sc()` and `gam()` are Foken table-scale polynomial coefficients
+used together in the ratio \\\Delta / (\Delta + \gamma)\\; their
+absolute pressure unit scale remains source-open.
 
 ## References
 

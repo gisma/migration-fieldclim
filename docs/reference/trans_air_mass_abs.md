@@ -63,6 +63,9 @@ Bendix 2004, p. 247.
 
 ``` r
 # Calculate absolute optical air mass
-trans_air_mass_abs(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20)
+trans_air_mass_abs(
+  datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+  lon = 8.68, lat = 50.77, elev = 100, temp = 20
+)
 #> [1] 1.0834
 ```

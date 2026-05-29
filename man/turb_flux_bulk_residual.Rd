@@ -9,13 +9,68 @@ turb_flux_bulk_residual(weather_station, ...)
 \arguments{
 \item{weather_station}{A \code{weather_station} object.}
 
-\item{...}{Further arguments passed to \code{sensible_bulk()}.}
+\item{...}{Further arguments passed to \code{sensible_bulk()} and
+\code{latent_bulk_residual()}.}
 }
 \value{
-The input \code{weather_station} object with additional fields:
+The input \code{weather_station} object with additional fields
 \code{sensible_bulk} and \code{latent_bulk_residual}.
 }
 \description{
-Adds \code{sensible_bulk} and \code{latent_bulk_residual} to a \code{weather_station}
-object.
+Adds \code{sensible_bulk} and \code{latent_bulk_residual} to a
+\code{weather_station} object.
+}
+\details{
+This workflow combines the simple bulk-transfer estimate of sensible heat
+flux with an energy-balance residual for latent heat flux.
+
+First, sensible heat flux is estimated with:
+
+\deqn{
+H_{bulk} = \rho c_p \frac{T_1 - T_2}{r_a}
+}
+
+with:
+
+\deqn{
+r_a = \frac{\log(z_2 / z_1)}{k \bar{u}}
+}
+
+Then latent heat flux is calculated as:
+
+\deqn{
+LE_{res} = R_n - G - H_{bulk}
+}
+
+The resulting workflow closes the available turbulent energy exactly:
+
+\deqn{
+H_{bulk} + LE_{res} = R_n - G
+}
+
+under the package sign convention. Here \eqn{R_n > 0} is net radiative
+input at the surface, \eqn{G > 0} is heat flux into the soil,
+\eqn{H > 0} is sensible heat flux away from the surface, and
+\eqn{LE > 0} is latent heat flux away from the surface.
+
+The workflow is intended as a transparent reference and teaching path. It is
+not a full Monin-Obukhov method and does not apply stability corrections.
+The latent heat flux is a residual and therefore depends directly on the
+quality of \code{rad_bal}, \code{soil_flux}, and the bulk sensible heat
+estimate.
+
+Required fields in \code{weather_station} are:
+
+\itemize{
+\item \code{t1}: lower air temperature in degrees C.
+\item \code{t2}: upper air temperature in degrees C.
+\item \code{v1}: lower wind speed in m s-1.
+\item \code{z1}: lower measurement height in m.
+\item \code{z2}: upper measurement height in m.
+\item \code{rad_bal}: net radiation \eqn{R_n} in W m-2.
+\item \code{soil_flux}: soil heat flux \eqn{G} in W m-2.
+}
+
+If \code{v2} is present, it is used together with \code{v1} to compute mean
+wind speed. If \code{v2} is missing, \code{v1} is used.
 }

@@ -6,6 +6,8 @@
   Use-Case-Workflows](https://gisma.github.io/migration-fieldclim/articles/fieldclim_additional.md):
 - [fieldClim: Check radiation and soil heat
   flux](https://gisma.github.io/migration-fieldclim/articles/fieldclim_check_rad_soil.md):
+- [Scientific background for fieldClim heat-flux
+  methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_methods.md):
 - [FieldClim Package Update
   Documentation](https://gisma.github.io/migration-fieldclim/articles/fieldclim_update2024.md):
 - [fieldClim: Use-Case-Workflows für Energiebilanz und

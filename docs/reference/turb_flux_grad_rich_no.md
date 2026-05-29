@@ -3,7 +3,9 @@
 Calculation of the Gradient-Richardson-Number. The number represents the
 stability of the atmosphere. Negative values signify unstable
 conditions, positive values signify stable conditions, whereas values
-around zero represent neutral conditions.
+around zero represent neutral conditions. Invalid heights, invalid wind
+speeds, and weak wind-shear cases return `NA`; these helpers are
+diagnostics and do not enforce turbulent heat-flux closure.
 
 ## Usage
 
@@ -11,7 +13,17 @@ around zero represent neutral conditions.
 turb_flux_grad_rich_no(...)
 
 # Default S3 method
-turb_flux_grad_rich_no(t1, t2, z1 = 2, z2 = 10, v1, v2, elev, ...)
+turb_flux_grad_rich_no(
+  t1,
+  t2,
+  z1 = 2,
+  z2 = 10,
+  v1,
+  v2,
+  elev,
+  min_shear = 1e-04,
+  ...
+)
 
 # S3 method for class 'weather_station'
 turb_flux_grad_rich_no(weather_station, ...)
@@ -51,14 +63,19 @@ turb_flux_grad_rich_no(weather_station, ...)
 
   Elevation above sea level in m.
 
+- min_shear:
+
+  Minimum absolute wind-speed shear in s-1. Values at or below this
+  threshold return `NA`.
+
 - weather_station:
 
   Object of class weather_station
 
 ## Value
 
-A stability class string: "unstable", "neutral", "stable", or `NA`,
-according to the current Gradient-Richardson-Number thresholds.
+Gradient Richardson number, or `NA` for invalid profile or weak-shear
+cases.
 
 ## References
 

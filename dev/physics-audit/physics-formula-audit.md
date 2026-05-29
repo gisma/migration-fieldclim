@@ -1029,3 +1029,12 @@ Scope: Penman latent heat flux, Monin-Obukhov sensible/latent profile fluxes, st
 
 Do not change code during this audit gate. The next physics decision should separate documentation/sign-convention fixes from implementation questions: first decide the intended Penman pressure units and heat-flux sign convention, then decide whether Monin-Obukhov gradient and zero-wind handling should be made physically stricter or documented as diagnostic and implementation-specific.
 
+
+
+## Optional Bulk Richardson Guard Update
+
+- `sensible_bulk()` now supports optional `stability_method = "ri_guard"`.
+- Default `stability_method = "none"` preserves the neutral bulk-transfer calculation unchanged.
+- The guard computes a gradient Richardson number from two-height temperature and wind-speed profiles, attaches `bulk_Ri_g` and `bulk_stability` attributes, and returns `NA` for invalid or very stable cases.
+- This is diagnostic stability screening only, not a Monin-Obukhov correction and not a stability-corrected flux model.
+- In the Bulk-Residual workflow, an `NA` guarded sensible heat estimate propagates to residual `LE`, preventing algebraic closure from hiding invalid `H_bulk`.

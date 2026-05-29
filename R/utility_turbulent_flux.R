@@ -7,14 +7,16 @@
 #'
 #' @param t Air temperature in °C.
 #'
-#' @returns sc coefficient for Priestley-Taylor calculations.
+#' @returns Foken table-scale slope coefficient for Priestley-Taylor calculations.
+#'   The helper is used commensurably with \code{gam()} in PT ratios; it is not
+#'   documented as Pa/K, hPa/K, or kPa/K.
 #' @noRd
 sc <- function(t) {
   8.5 * 10^(-7) * (t + 273.15)^2 - 0.0004479 * (t + 273.15) + 0.05919
 }
 
 
-#' gamma Priestly-Taylor coefficient
+#' gamma Priestley-Taylor coefficient
 #'
 #' Calculates gamma for latent and sensible Priestley-Taylor-Method.
 #' gamma is the temperature-sensitive psychrometer constant.
@@ -22,7 +24,9 @@ sc <- function(t) {
 #'
 #' @param t Air temperature in °C.
 #'
-#' @returns gamma coefficient for Priestley-Taylor calculations.
+#' @returns Foken table-scale psychrometric coefficient for Priestley-Taylor
+#'   calculations. The helper is used commensurably with \code{sc()} in PT
+#'   ratios; it is not documented as Pa/K, hPa/K, or kPa/K.
 #' @noRd
 gam <- function(t) {
   0.0004 + (0.00041491 - 0.0004) / (1 + (299.44 / (t + 273.15))^383.4)

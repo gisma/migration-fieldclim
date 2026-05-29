@@ -29,11 +29,12 @@ test_that("sensible_priestley_taylor", {
   )
 })
 
-test_that("sensible_monin checks extreme calculated output", {
-  expect_warning(
-    sensible_monin(22, 21, 2, 10, 1, 2.3, 270, surface_type = "field"),
-    "above 600"
+test_that("sensible_monin uses documented vertical temperature gradient", {
+  expect_no_warning(
+    out <- sensible_monin(22, 21, 2, 10, 1, 2.3, 270, surface_type = "field")
   )
+  expect_equal(out, 288.676, tolerance = 1e-3)
+  expect_lt(abs(out), 600)
 })
 
 test_that("sensible_bowen cap limits a near-zero denominator", {

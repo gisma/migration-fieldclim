@@ -61,7 +61,8 @@ Latent heat flux in W m-2.
 \description{
 Calculates the latent heat flux using the Monin-Obukhov length. Positive
 flux signifies flux away from the surface, negative values signify flux
-towards the surface.
+towards the surface. Monin-Obukhov outputs are diagnostic profile/stability
+estimates and are not expected to close \eqn{R_n - G}.
 }
 \details{
 The latent heat flux (\eqn{Q_e}) using the Monin-Obukhov method is calculated as:
@@ -77,9 +78,8 @@ where:
 
 The stability correction function for humidity (\eqn{\phi_q}) is calculated using the gradient Richardson number (\eqn{Ri_g}) and the stability parameter (\eqn{s_1}).
 The stability parameter (\eqn{s_1}) is the ratio of the upper measurement height to the Monin-Obukhov length.
-When the Monin-Obukhov length close to zero, the ratio can become excessively large, leading to unrealistic values.
-To address this, the stability parameter (\eqn{s_1}) is capped to a maximum absolute value.
-The default cap is set to NULL.
+When the Monin-Obukhov length is close to zero, the ratio can become excessively large, leading to unrealistic values.
+To address this, the stability parameter (\eqn{s_1}) can be capped to a maximum absolute value. Invalid heights, invalid wind speeds, and invalid numerical profile states are guarded elementwise and return \code{NA} with a warning. Zero moisture gradient returns zero latent heat flux. The default cap is set to NULL.
 \deqn{\phi_q = \begin{cases}
 0.95 \cdot (1 - 11.6 \cdot s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\
 0.95 + 7.8 \cdot s_1, & \text{if } Ri_g > 0
@@ -87,7 +87,11 @@ The default cap is set to NULL.
 }
 \examples{
 # Calculate latent heat flux using Monin-Obukhov length
-latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "coniferous forest")
+latent_monin(
+  hum1 = 80, hum2 = 60, t1 = 20, t2 = 15,
+  v1 = 3, v2 = 5, z1 = 2, z2 = 10,
+  elev = 100, surface_type = "coniferous forest"
+)
 }
 \references{
 Bendix 2004, p. 77, eq.4.6

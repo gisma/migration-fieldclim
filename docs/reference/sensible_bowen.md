@@ -93,7 +93,8 @@ The implemented Bowen ratio (\\B\\) is calculated from a
 potential-temperature gradient and an absolute-humidity gradient: \$\$B
 = \gamma\_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH /
 \Delta z}\$\$ where: \\\gamma\_{code} = 0.00066 \cdot (1 + 0.000946
-\cdot t_1)\\ is an empirical coefficient, \\\theta\\ is potential
+\cdot t_1)\\ is the empirical implementation coefficient; its exact
+source-form equivalence remains source-open, \\\theta\\ is potential
 temperature, and \\AH\\ is absolute humidity. The inputs `t1` and `t2`
 are converted to potential temperature before the temperature gradient
 is formed. The inputs `hum1` and `hum2` are relative humidity values
@@ -106,7 +107,8 @@ replaces near-zero denominators with `+/- cap`. Exact closure with
 [`latent_bowen()`](https://gisma.github.io/migration-fieldclim/reference/latent_bowen.md)
 is guaranteed only for finite uncapped denominators; capped cases are
 guarded diagnostic outputs and may not close `rad_bal - soil_flux`
-exactly.
+exactly. Non-finite Bowen ratios or denominators return `NA` for
+affected elements with a warning.
 
 ## References
 
@@ -116,6 +118,10 @@ Bendix 2004, p. 221, eq. 9.21
 
 ``` r
 # Calculate sensible heat flux using the Bowen method
-sensible_bowen(t1 = 20, t2 = 15, hum1 = 80, hum2 = 60, z1 = 2, z2 = 10, elev = 100, rad_bal = 200, soil_flux = 50, cap = 1)
+sensible_bowen(
+  t1 = 20, t2 = 15, hum1 = 80, hum2 = 60,
+  z1 = 2, z2 = 10, elev = 100,
+  rad_bal = 200, soil_flux = 50, cap = 1
+)
 #> [1] 52.46608
 ```

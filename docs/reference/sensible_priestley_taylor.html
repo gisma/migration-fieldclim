@@ -31,6 +31,7 @@ towards the surface."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -86,7 +87,7 @@ towards the surface.</p>
 
 
 <dt id="arg-surface-type">surface_type<a class="anchor" aria-label="anchor" href="#arg-surface-type"></a></dt>
-<dd><p>Surface type, for which a Priestley-Taylor coefficient will be selected. Options: <code>surface_type options</code></p></dd>
+<dd><p>Surface type, for which a Priestley-Taylor coefficient will be selected. Options: field, bare soil, coniferous forest, water, wetland, spruce forest</p></dd>
 
 
 <dt id="arg-weather-station">weather_station<a class="anchor" aria-label="anchor" href="#arg-weather-station"></a></dt>
@@ -107,6 +108,12 @@ where:
 \(\gamma\) is the psychrometric constant,
 \(R_n\) is the net radiation, and
 \(G\) is the soil heat flux.</p>
+<p>This formula is algebraically equivalent to \((R_n - G) - Q_e\)
+when <code>sensible_priestley_taylor()</code> and
+<code><a href="latent_priestley_taylor.html">latent_priestley_taylor()</a></code> use the same temperature, surface type,
+radiation balance, and soil heat flux. The helpers <code>sc()</code> and
+<code>gam()</code> are Foken table-scale polynomial coefficients used together in
+the ratio terms; their absolute pressure unit scale remains source-open.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

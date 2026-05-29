@@ -43,6 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul>
@@ -1363,7 +1364,7 @@ deshalb steht die Kontrolle von <span class="math inline">\(Q^{*}\)</span> und <
 <span><span class="co">#&gt; 1 manuelle Bulk-Referenz     -30.82530</span></span>
 <span><span class="co">#&gt; 2       Priestley-Taylor      25.12080</span></span>
 <span><span class="co">#&gt; 3                  Bowen     -21.12343</span></span>
-<span><span class="co">#&gt; 4          Monin-Obukhov     400.83673</span></span>
+<span><span class="co">#&gt; 4          Monin-Obukhov     104.18957</span></span>
 <span><span class="va">V_summary</span></span>
 <span><span class="co">#&gt;              Methode V_Mittel_W_m2</span></span>
 <span><span class="co">#&gt; 1 manuelles Residuum     139.51979</span></span>
@@ -1564,12 +1565,12 @@ Stabilitätsbedingungen sehr große Einzelwerte erzeugen können.</p>
 <span><span class="co">#&gt; 1    Bulk-Residual           108.7                 108.7                 0.0</span></span>
 <span><span class="co">#&gt; 2 Priestley-Taylor           108.7                 108.7                 0.0</span></span>
 <span><span class="co">#&gt; 3            Bowen           108.7                 108.7                 0.0</span></span>
-<span><span class="co">#&gt; 4    Monin-Obukhov           453.5                 108.7               344.8</span></span>
+<span><span class="co">#&gt; 4    Monin-Obukhov           156.9                 108.7                48.2</span></span>
 <span><span class="co">#&gt;   Max_abs_Abweichung</span></span>
 <span><span class="co">#&gt; 1                0.0</span></span>
 <span><span class="co">#&gt; 2                0.0</span></span>
 <span><span class="co">#&gt; 3                0.0</span></span>
-<span><span class="co">#&gt; 4            11334.9</span></span></code></pre></div>
+<span><span class="co">#&gt; 4             5004.3</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Diese Tabelle ist die zentrale
 Konsistenzprüfung. Sie vergleicht nicht nur Mittelwerte einzelner
 Flüsse, sondern prüft, ob die Summe aus fühlbarem und latentem
@@ -1689,7 +1690,7 @@ danach nur die stärksten Fälle.</p>
 <span><span class="va">extreme_count</span></span>
 <span><span class="co">#&gt;         Methode Fluss Anzahl</span></span>
 <span><span class="co">#&gt; 1         Bowen     L      4</span></span>
-<span><span class="co">#&gt; 2 Monin-Obukhov     L     47</span></span>
+<span><span class="co">#&gt; 2 Monin-Obukhov     L     15</span></span>
 <span><span class="co">#&gt; 3         Bowen     V      4</span></span>
 <span><span class="co">#&gt; 4 Monin-Obukhov     V      3</span></span></code></pre></div>
 <div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
@@ -1711,28 +1712,28 @@ danach nur die stärksten Fälle.</p>
 <span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Hinweis <span class="op">=</span> <span class="st">"Keine Werte oberhalb der Diagnosegrenze gefunden."</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt;                datetime       Methode Fluss   Wert dT_2_10 dH_2_10 dU_2_10</span></span>
-<span><span class="co">#&gt; 678 2017-06-30 08:25:00 Monin-Obukhov     L 8554.1    0.08    3.28   0.003</span></span>
-<span><span class="co">#&gt; 721 2017-06-30 12:00:00 Monin-Obukhov     L 7766.6    0.30    0.52  -0.028</span></span>
-<span><span class="co">#&gt; 724 2017-06-30 12:15:00 Monin-Obukhov     L 6951.4    0.21    2.47  -0.022</span></span>
-<span><span class="co">#&gt; 698 2017-06-30 10:05:00 Monin-Obukhov     L 5819.1    0.29    2.66   0.037</span></span>
-<span><span class="co">#&gt; 711 2017-06-30 11:10:00 Monin-Obukhov     L 5633.3    0.42    1.38  -0.094</span></span>
-<span><span class="co">#&gt; 708 2017-06-30 10:55:00 Monin-Obukhov     L 4796.9    0.46    1.48  -0.112</span></span>
-<span><span class="co">#&gt; 682 2017-06-30 08:45:00 Monin-Obukhov     L 4160.1    0.23    2.33  -0.031</span></span>
-<span><span class="co">#&gt; 750 2017-06-30 14:25:00 Monin-Obukhov     L 3921.8    0.23    2.58   0.037</span></span>
-<span><span class="co">#&gt; 700 2017-06-30 10:15:00 Monin-Obukhov     L 3864.1    0.25    2.27   0.051</span></span>
-<span><span class="co">#&gt; 710 2017-06-30 11:05:00 Monin-Obukhov     L 3390.9    0.54    0.04  -0.223</span></span>
+<span><span class="co">#&gt;                datetime       Methode Fluss    Wert dT_2_10 dH_2_10 dU_2_10</span></span>
+<span><span class="co">#&gt; 966 2017-06-30 08:25:00 Monin-Obukhov     V  2988.5    0.08    3.28   0.003</span></span>
+<span><span class="co">#&gt; 232 2017-06-30 19:15:00         Bowen     L -2695.0   -0.84    7.67  -0.137</span></span>
+<span><span class="co">#&gt; 520 2017-06-30 19:15:00         Bowen     V  2646.2   -0.84    7.67  -0.137</span></span>
+<span><span class="co">#&gt; 678 2017-06-30 08:25:00 Monin-Obukhov     L  2223.5    0.08    3.28   0.003</span></span>
+<span><span class="co">#&gt; 721 2017-06-30 12:00:00 Monin-Obukhov     L  2018.8    0.30    0.52  -0.028</span></span>
+<span><span class="co">#&gt; 234 2017-06-30 19:25:00         Bowen     L -1861.2   -0.90    8.35   0.062</span></span>
+<span><span class="co">#&gt; 522 2017-06-30 19:25:00         Bowen     V  1810.2   -0.90    8.35   0.062</span></span>
+<span><span class="co">#&gt; 724 2017-06-30 12:15:00 Monin-Obukhov     L  1806.9    0.21    2.47  -0.022</span></span>
+<span><span class="co">#&gt; 698 2017-06-30 10:05:00 Monin-Obukhov     L  1512.6    0.29    2.66   0.037</span></span>
+<span><span class="co">#&gt; 711 2017-06-30 11:10:00 Monin-Obukhov     L  1464.3    0.42    1.38  -0.094</span></span>
 <span><span class="co">#&gt;     Q_star_minus_B abs_Wert</span></span>
-<span><span class="co">#&gt; 678          207.7   8554.1</span></span>
-<span><span class="co">#&gt; 721          428.4   7766.6</span></span>
-<span><span class="co">#&gt; 724          318.2   6951.4</span></span>
-<span><span class="co">#&gt; 698          498.7   5819.1</span></span>
-<span><span class="co">#&gt; 711          554.5   5633.3</span></span>
-<span><span class="co">#&gt; 708          362.4   4796.9</span></span>
-<span><span class="co">#&gt; 682          275.1   4160.1</span></span>
-<span><span class="co">#&gt; 750          221.3   3921.8</span></span>
-<span><span class="co">#&gt; 700          343.9   3864.1</span></span>
-<span><span class="co">#&gt; 710          698.2   3390.9</span></span></code></pre></div>
+<span><span class="co">#&gt; 966          207.7   2988.5</span></span>
+<span><span class="co">#&gt; 232          -48.8   2695.0</span></span>
+<span><span class="co">#&gt; 520          -48.8   2646.2</span></span>
+<span><span class="co">#&gt; 678          207.7   2223.5</span></span>
+<span><span class="co">#&gt; 721          428.4   2018.8</span></span>
+<span><span class="co">#&gt; 234          -50.9   1861.2</span></span>
+<span><span class="co">#&gt; 522          -50.9   1810.2</span></span>
+<span><span class="co">#&gt; 724          318.2   1806.9</span></span>
+<span><span class="co">#&gt; 698          498.7   1512.6</span></span>
+<span><span class="co">#&gt; 711          554.5   1464.3</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Die Extremwertzählung zeigt, dass
 die auffälligen Werte nicht gleichmäßig über alle Methoden verteilt
 sind. Bowen erzeugt nur wenige Extremwerte: vier bei <span class="math inline">\(L\)</span> und vier bei <span class="math inline">\(V\)</span>. Monin-Obukhov erzeugt dagegen 47

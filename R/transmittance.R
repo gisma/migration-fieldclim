@@ -16,7 +16,10 @@
 #' where \eqn{M_{abs}} is the absolute optical air mass.
 #' @examples
 #' # Calculate transmittance due to gas
-#' trans_gas(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20)
+#' trans_gas(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77, elev = 100, temp = 20
+#' )
 #' @references Bendix 2004, p. 246.
 #' @export
 trans_gas <- function(...) {
@@ -61,7 +64,10 @@ trans_gas.weather_station <- function(weather_station, ...) {
 #' where \eqn{M_{rel}} is the relative optical air mass, \eqn{p} is the local air pressure, and \eqn{p_0} is the standard pressure (1013.25 hPa).
 #' @examples
 #' # Calculate absolute optical air mass
-#' trans_air_mass_abs(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20)
+#' trans_air_mass_abs(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77, elev = 100, temp = 20
+#' )
 #' @references Bendix 2004, p. 247.
 #' @export
 trans_air_mass_abs <- function(...) {
@@ -101,10 +107,15 @@ trans_air_mass_abs.weather_station <- function(weather_station, ...) {
 #' @details
 #' The relative optical air mass is calculated using the formula:
 #' \deqn{M_{rel} = \frac{1}{\sin(elevation) + 1.5 \cdot elevation^{-0.72}}}
-#' where \eqn{elevation} is the solar elevation angle in degrees.
+#' where \eqn{elevation} is the solar elevation angle in degrees. The formula
+#' is only evaluated for positive solar elevation; below-horizon or invalid
+#' elevations return \code{NA} with a warning.
 #' @examples
 #' # Calculate relative optical air mass
-#' trans_air_mass_rel(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77)
+#' trans_air_mass_rel(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77
+#' )
 #' @references Bendix 2004, p. 246.
 #' @export
 trans_air_mass_rel <- function(...) {
@@ -115,7 +126,15 @@ trans_air_mass_rel <- function(...) {
 #' @export
 trans_air_mass_rel.default <- function(datetime, lon, lat, ...) {
   elevation <- sol_elevation(datetime, lon, lat)
-  1 / (sin(deg2rad(elevation)) + 1.5 * elevation^-0.72)
+  valid <- is.finite(elevation) & elevation > 0
+  out <- rep(NA_real_, length(elevation))
+  out[valid] <- 1 / (sin(deg2rad(elevation[valid])) + 1.5 * elevation[valid]^-0.72)
+
+  if (any(!valid, na.rm = TRUE)) {
+    warning("trans_air_mass_rel: solar elevation must be positive; returning NA there.", call. = FALSE)
+  }
+
+  out
 }
 
 #' @rdname trans_air_mass_rel
@@ -146,7 +165,10 @@ trans_air_mass_rel.weather_station <- function(weather_station, ...) {
 #' where \eqn{x} is the product of the ozone column and the relative optical air mass.
 #' @examples
 #' # Calculate transmittance due to ozone
-#' trans_ozone(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, ozone_column = 0.3)
+#' trans_ozone(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77, ozone_column = 0.3
+#' )
 #' @references Bendix 2004, p. 245.
 #' @export
 trans_ozone <- function(...) {
@@ -194,7 +216,10 @@ trans_ozone.weather_station <- function(weather_station, ...) {
 #' where \eqn{M_{abs}} is the absolute optical air mass.
 #' @examples
 #' # Calculate transmittance due to rayleigh scattering
-#' trans_rayleigh(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20)
+#' trans_rayleigh(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77, elev = 100, temp = 20
+#' )
 #' @references Bendix 2004, p. 245.
 #' @export
 trans_rayleigh <- function(...) {
@@ -237,7 +262,10 @@ trans_rayleigh.weather_station <- function(weather_station, ...) {
 #' where \eqn{x} is the product of the precipitable water and the relative optical air mass.
 #' @examples
 #' # Calculate transmittance due to water vapor
-#' trans_vapor(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20)
+#' trans_vapor(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77, elev = 100, temp = 20
+#' )
 #' @references Bendix 2004, p. 245.
 #' @export
 trans_vapor <- function(...) {
@@ -283,7 +311,11 @@ trans_vapor.weather_station <- function(weather_station, ...) {
 #' where \eqn{x} is a function of the visibility and \eqn{M_{abs}} is the absolute optical air mass.
 #' @examples
 #' # Calculate transmittance due to aerosols
-#' trans_aerosol(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20, vis = 50)
+#' trans_aerosol(
+#'   datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+#'   lon = 8.68, lat = 50.77, elev = 100,
+#'   temp = 20, vis = 50
+#' )
 #' @references Bendix 2004, p. 246.
 #' @export
 trans_aerosol <- function(...) {

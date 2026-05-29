@@ -60,6 +60,9 @@ Bendix 2004, p. 245.
 
 ``` r
 # Calculate transmittance due to ozone
-trans_ozone(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, ozone_column = 0.3)
+trans_ozone(
+  datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+  lon = 8.68, lat = 50.77, ozone_column = 0.3
+)
 #> [1] 0.9843997
 ```

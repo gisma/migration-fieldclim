@@ -32,11 +32,16 @@ Calculates the relative optical air mass.
 \details{
 The relative optical air mass is calculated using the formula:
 \deqn{M_{rel} = \frac{1}{\sin(elevation) + 1.5 \cdot elevation^{-0.72}}}
-where \eqn{elevation} is the solar elevation angle in degrees.
+where \eqn{elevation} is the solar elevation angle in degrees. The formula
+is only evaluated for positive solar elevation; below-horizon or invalid
+elevations return \code{NA} with a warning.
 }
 \examples{
 # Calculate relative optical air mass
-trans_air_mass_rel(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77)
+trans_air_mass_rel(
+  datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+  lon = 8.68, lat = 50.77
+)
 }
 \references{
 Bendix 2004, p. 246.

@@ -891,11 +891,11 @@ summary(V_bowen_cap)
 #>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 #> -50.662   8.904  55.312  98.534 171.439 479.809
 summary(L_monin_no_cap)
-#>     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-#>  -46.657   -8.328   -2.361  400.837  299.437 8554.126
+#>      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+#>  -12.1277   -2.1647   -0.6137  104.1896   77.8327 2223.4756
 summary(L_monin_cap)
 #>     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-#>  -46.657   -8.328   -2.361  236.923  276.368 3390.888
+#> -12.1277  -2.1647  -0.6137  61.5833  71.8363 881.3943
 ```
 
 **Interpretation.** Caps verändern nicht die Messdaten. Sie begrenzen

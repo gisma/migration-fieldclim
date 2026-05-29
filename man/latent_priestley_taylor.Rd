@@ -43,7 +43,11 @@ where:
 \eqn{R_n} is the net radiation, and
 \eqn{G} is the soil heat flux.
 
-The Priestley-Taylor coefficient depends on the surface type and can be selected from predefined values.
+The Priestley-Taylor coefficient depends on the surface type and is selected
+from the internal \code{priestley_taylor_coefficient} table. The helpers
+\code{sc()} and \code{gam()} are Foken table-scale polynomial coefficients
+used together in the ratio \eqn{\Delta / (\Delta + \gamma)}; their absolute
+pressure unit scale remains source-open.
 }
 \examples{
 # Calculate latent heat flux using Priestley-Taylor method

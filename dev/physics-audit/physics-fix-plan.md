@@ -65,7 +65,7 @@ The audit findings use these actionable statuses in the completed sections:
 | Bowen denominator cap policy | `open` | Capping `1 + beta` changes exact closure; documentation does not clearly distinguish capped from uncapped closure. | Decide whether cap is a numerical safeguard only and document closure exception. | Rd/vignette/test; code only if policy changes. | Medium | Yes. |
 | Penman pressure/vapour-pressure units | `fixed` | `Delta` and `gamma` are kPa-scale, while `es - ea` previously remained hPa in the aerodynamic term. | Fixed in `R/latent.R` by converting helper hPa values to kPa and using `vpd_kPa`; covered by `tests/testthat/test-penman.R`. | Code/test. | Medium | Done. |
 | Penman vector and warning behavior | `fixed` for local guard/warning mechanics; source edge policy still open | Scalar `max()` guards and logical warning checks were replaced in `latent_penman.default()`. | Keep source-form/aerodynamic edge validation open; current mechanics covered by `tests/testthat/test-penman.R`. | Code/test. | Medium | Done for mechanics. |
-| Monin sensible gradient denominator | `open` / `diagnostic-only` | `sensible_monin()` uses `(theta2 - theta1) / log(z2 - z1)`, but Rd says `Delta theta / Delta z`. | Validate intended Foken formula; if code changes, keep MO diagnostic-only and do not force energy closure. | Audit first; later code/Rd/test. | High | Yes. |
+| Monin sensible gradient denominator | `fixed` / `diagnostic-only` | Previous `sensible_monin()` denominator used `(theta2 - theta1) / log(z2 - z1)`, while Rd/source context says `Delta theta / Delta z`. | Phase MO-2 changed the denominator to `(z2 - z1)` and kept MO diagnostic-only. | Code/Rd/test/audit. | Medium | Done. |
 | Monin stability and zero-gradient behavior | `open` / `diagnostic-only` | `turb_flux_grad_rich_no()` sets `NaN` to zero but can leave `Inf`; low-wind/zero-gradient behavior is not fully controlled. | Define numerical policy for zero wind gradient, zero temperature gradient, and low wind. | Test first; code/Rd later. | High | Yes. |
 
 ## D. Wrapper/Check Hygiene
@@ -82,7 +82,7 @@ The audit findings use these actionable statuses in the completed sections:
 
 | Item | Current audit status | Exact problem | Proposed action | Affected areas | Risk | New test required before fixing? |
 |---|---|---|---|---|---|---|
-| `sensible_monin()` | `diagnostic-only` / `open` | Profile-gradient method is not energy-closing; gradient denominator and low-wind behavior need validation. | Keep diagnostic-only. Do not normalize it to `Rn - G`; validate formula and numerical safeguards separately. | Audit/test first; code/Rd later only if needed. | High | Yes. |
+| `sensible_monin()` | `diagnostic-only`; denominator `fixed`; physical validation `open` | Profile-gradient method is not energy-closing; Phase MO-2 aligned the potential-temperature gradient denominator with documented `Delta z`. | Keep diagnostic-only. Do not normalize it to `Rn - G`; validate broader MOST source constants separately. | Audit/test first; code/Rd later only if needed. | High | Yes for future physical changes. |
 | `latent_monin()` | `diagnostic-only` / `open` | Profile-gradient method is not energy-closing; humidity-gradient and stability behavior need validation. | Keep diagnostic-only. Do not force `H_MO + LE_MO = Rn - G`. | Audit/test first; code/Rd later only if needed. | High | Yes. |
 | `turb_flux_stability()` and `turb_flux_grad_rich_no()` | `diagnostic-only` / `open` | Stability classification is diagnostic; zero-gradient and infinite Richardson cases need defined behavior. | Add classification and edge-case tests; correct documentation return type. | Test/Rd; code if edge policy changes. | Medium | Yes. |
 | Modeled radiation helper physics | `open` | Helper formulas can be valuable but are not the primary measured-energy workflow; edge domains need source validation. | Defer formula changes until radiation contract tests and source checks are complete. | Audit/test first. | Medium | Yes. |
@@ -96,3 +96,12 @@ The audit findings use these actionable statuses in the completed sections:
 3. Resolve high-risk physics questions before code changes: Penman source-form and final magnitude validation, Bowen beta units, Monin sensible-gradient denominator, solar timebase.
 4. Add wrapper hygiene tests, then decide whether `check_availability()` should enforce non-`NULL` values or whether documentation should describe it as a name-presence check only.
 5. Keep Monin-Obukhov diagnostic-only unless the code is explicitly changed in a future scoped task to enforce closure. No current fix should normalize all methods to one result.
+
+
+## Optional Bulk Richardson Guard Update
+
+- `sensible_bulk()` now supports optional `stability_method = "ri_guard"`.
+- Default `stability_method = "none"` preserves the neutral bulk-transfer calculation unchanged.
+- The guard computes a gradient Richardson number from two-height temperature and wind-speed profiles, attaches `bulk_Ri_g` and `bulk_stability` attributes, and returns `NA` for invalid or very stable cases.
+- This is diagnostic stability screening only, not a Monin-Obukhov correction and not a stability-corrected flux model.
+- In the Bulk-Residual workflow, an `NA` guarded sensible heat estimate propagates to residual `LE`, preventing algebraic closure from hiding invalid `H_bulk`.

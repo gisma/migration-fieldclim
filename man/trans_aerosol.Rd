@@ -42,7 +42,11 @@ where \eqn{x} is a function of the visibility and \eqn{M_{abs}} is the absolute 
 }
 \examples{
 # Calculate transmittance due to aerosols
-trans_aerosol(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, elev = 100, temp = 20, vis = 50)
+trans_aerosol(
+  datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+  lon = 8.68, lat = 50.77, elev = 100,
+  temp = 20, vis = 50
+)
 }
 \references{
 Bendix 2004, p. 246.

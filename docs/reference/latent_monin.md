@@ -2,7 +2,8 @@
 
 Calculates the latent heat flux using the Monin-Obukhov length. Positive
 flux signifies flux away from the surface, negative values signify flux
-towards the surface.
+towards the surface. Monin-Obukhov outputs are diagnostic
+profile/stability estimates and are not expected to close \\R_n - G\\.
 
 ## Usage
 
@@ -108,11 +109,14 @@ The stability correction function for humidity (\\\phi_q\\) is
 calculated using the gradient Richardson number (\\Ri_g\\) and the
 stability parameter (\\s_1\\). The stability parameter (\\s_1\\) is the
 ratio of the upper measurement height to the Monin-Obukhov length. When
-the Monin-Obukhov length close to zero, the ratio can become excessively
-large, leading to unrealistic values. To address this, the stability
-parameter (\\s_1\\) is capped to a maximum absolute value. The default
-cap is set to NULL. \$\$\phi_q = \begin{cases} 0.95 \cdot (1 - 11.6
-\cdot s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\ 0.95 + 7.8 \cdot s_1, &
+the Monin-Obukhov length is close to zero, the ratio can become
+excessively large, leading to unrealistic values. To address this, the
+stability parameter (\\s_1\\) can be capped to a maximum absolute value.
+Invalid heights, invalid wind speeds, and invalid numerical profile
+states are guarded elementwise and return `NA` with a warning. Zero
+moisture gradient returns zero latent heat flux. The default cap is set
+to NULL. \$\$\phi_q = \begin{cases} 0.95 \cdot (1 - 11.6 \cdot
+s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\ 0.95 + 7.8 \cdot s_1, &
 \text{if } Ri_g \> 0 \end{cases}\$\$
 
 ## References
@@ -125,7 +129,11 @@ Foken 2016, p. 61, Tab. 2.10
 
 ``` r
 # Calculate latent heat flux using Monin-Obukhov length
-latent_monin(hum1 = 80, hum2 = 60, t1 = 20, t2 = 15, v1 = 3, v2 = 5, z1 = 2, z2 = 10, elev = 100, surface_type = "coniferous forest")
+latent_monin(
+  hum1 = 80, hum2 = 60, t1 = 20, t2 = 15,
+  v1 = 3, v2 = 5, z1 = 2, z2 = 10,
+  elev = 100, surface_type = "coniferous forest"
+)
 #> Warning: There are values above 600 W m-2!
 #> [1] 3221.652
 ```

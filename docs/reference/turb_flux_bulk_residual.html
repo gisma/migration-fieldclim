@@ -5,9 +5,9 @@
       fontURL: "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/output/chtml/fonts/woff-v2"
     }
   };
-</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Bulk-residual turbulent heat flux workflow — turb_flux_bulk_residual"><meta name="description" content="Adds sensible_bulk and latent_bulk_residual to a weather_station
-object."><meta property="og:description" content="Adds sensible_bulk and latent_bulk_residual to a weather_station
-object."></head><body>
+</script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Bulk-residual turbulent heat flux workflow — turb_flux_bulk_residual"><meta name="description" content="Adds sensible_bulk and latent_bulk_residual to a
+weather_station object."><meta property="og:description" content="Adds sensible_bulk and latent_bulk_residual to a
+weather_station object."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -29,6 +29,7 @@ object."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -47,8 +48,8 @@ object."></head><body>
     </div>
 
     <div class="ref-description section level2">
-    <p>Adds <code>sensible_bulk</code> and <code>latent_bulk_residual</code> to a <code>weather_station</code>
-object.</p>
+    <p>Adds <code>sensible_bulk</code> and <code>latent_bulk_residual</code> to a
+<code>weather_station</code> object.</p>
     </div>
 
     <div class="section level2">
@@ -65,13 +66,54 @@ object.</p>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Further arguments passed to <code><a href="sensible_bulk.html">sensible_bulk()</a></code>.</p></dd>
+<dd><p>Further arguments passed to <code><a href="sensible_bulk.html">sensible_bulk()</a></code> and
+<code><a href="latent_bulk_residual.html">latent_bulk_residual()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The input <code>weather_station</code> object with additional fields:
+    <p>The input <code>weather_station</code> object with additional fields
 <code>sensible_bulk</code> and <code>latent_bulk_residual</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>This workflow combines the simple bulk-transfer estimate of sensible heat
+flux with an energy-balance residual for latent heat flux.</p>
+<p>First, sensible heat flux is estimated with:</p>
+<p>$$
+H_{bulk} = \rho c_p \frac{T_1 - T_2}{r_a}
+$$</p>
+<p>with:</p>
+<p>$$
+r_a = \frac{\log(z_2 / z_1)}{k \bar{u}}
+$$</p>
+<p>Then latent heat flux is calculated as:</p>
+<p>$$
+LE_{res} = R_n - G - H_{bulk}
+$$</p>
+<p>The resulting workflow closes the available turbulent energy exactly:</p>
+<p>$$
+H_{bulk} + LE_{res} = R_n - G
+$$</p>
+<p>under the package sign convention. Here \(R_n &gt; 0\) is net radiative
+input at the surface, \(G &gt; 0\) is heat flux into the soil,
+\(H &gt; 0\) is sensible heat flux away from the surface, and
+\(LE &gt; 0\) is latent heat flux away from the surface.</p>
+<p>The workflow is intended as a transparent reference and teaching path. It is
+not a full Monin-Obukhov method and does not apply stability corrections.
+The latent heat flux is a residual and therefore depends directly on the
+quality of <code>rad_bal</code>, <code>soil_flux</code>, and the bulk sensible heat
+estimate.</p>
+<p>Required fields in <code>weather_station</code> are:</p>
+<ul><li><p><code>t1</code>: lower air temperature in degrees C.</p></li>
+<li><p><code>t2</code>: upper air temperature in degrees C.</p></li>
+<li><p><code>v1</code>: lower wind speed in m s-1.</p></li>
+<li><p><code>z1</code>: lower measurement height in m.</p></li>
+<li><p><code>z2</code>: upper measurement height in m.</p></li>
+<li><p><code>rad_bal</code>: net radiation \(R_n\) in W m-2.</p></li>
+<li><p><code>soil_flux</code>: soil heat flux \(G\) in W m-2.</p></li>
+</ul><p>If <code>v2</code> is present, it is used together with <code>v1</code> to compute mean
+wind speed. If <code>v2</code> is missing, <code>v1</code> is used.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

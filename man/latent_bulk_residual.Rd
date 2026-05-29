@@ -22,43 +22,84 @@ latent_bulk_residual(rad_bal, ...)
 )
 }
 \arguments{
-\item{rad_bal}{Net radiation \code{Rn} in W m-2.}
+\item{rad_bal}{Net radiation \eqn{R_n} in W m-2.}
 
 \item{...}{Further arguments passed to methods.}
 
-\item{soil_flux}{Soil heat flux \code{G} in W m-2.}
+\item{soil_flux}{Soil heat flux \eqn{G} in W m-2.}
 
-\item{sensible}{Sensible heat flux \code{H} in W m-2.}
+\item{sensible}{Sensible heat flux \eqn{H} in W m-2.}
 
-\item{warn_threshold}{Absolute flux threshold for diagnostic warnings.}
+\item{warn_threshold}{Absolute flux threshold in W m-2 for diagnostic
+warnings.}
 
-\item{rho}{Air density in kg m-3.}
+\item{rho}{Air density in kg m-3, used by the weather-station method when
+\code{sensible} is not supplied and \code{sensible_bulk()} is calculated
+internally.}
 
-\item{cp}{Specific heat capacity of air in J kg-1 K-1.}
+\item{cp}{Specific heat capacity of air in J kg-1 K-1, used by the
+weather-station method when \code{sensible} is not supplied.}
 
-\item{k}{von Karman constant.}
+\item{k}{von Karman constant, used by the weather-station method when
+\code{sensible} is not supplied.}
 
-\item{min_wind}{Minimum wind speed used by the internal bulk calculation.}
+\item{min_wind}{Minimum wind speed in m s-1 used by the internal bulk
+calculation in the weather-station method.}
 }
 \value{
 Latent heat flux in W m-2.
 }
 \description{
-Calculates latent heat flux as residual from net radiation, soil heat flux
-and sensible heat flux.
+Calculates latent heat flux as the residual of the available turbulent
+energy after subtracting sensible heat flux.
 }
 \details{
+The package energy-balance convention is:
+
+\deqn{
+R_n = G + H + LE
+}
+
+when storage is omitted. Here \eqn{R_n} is net radiation, \eqn{G} is soil
+heat flux, \eqn{H} is sensible heat flux, and \eqn{LE} is latent heat flux.
+
+The implemented residual is:
+
+\deqn{
+LE_{res} = R_n - G - H
+}
+
+where \eqn{LE_{res}} is latent heat flux in W m-2, \eqn{R_n} is net
+radiation in W m-2, \eqn{G} is soil heat flux in W m-2, and \eqn{H} is
+sensible heat flux in W m-2.
+
 The sign convention is:
 
-\code{Rn > 0}: radiative energy input at the surface
+\itemize{
+\item \eqn{R_n > 0}: radiative energy input at the surface.
+\item \eqn{G > 0}: heat flux into the soil.
+\item \eqn{H > 0}: sensible heat flux away from the surface.
+\item \eqn{LE > 0}: latent heat flux away from the surface.
+}
 
-\code{G > 0}: heat flux into the soil
+In the Bulk-Residual workflow, \code{sensible_bulk()} first estimates
+\eqn{H_{bulk}}. The latent heat flux is then calculated as:
 
-\code{H > 0}: sensible heat flux away from the surface
+\deqn{
+LE_{res} = R_n - G - H_{bulk}
+}
 
-\code{LE > 0}: latent heat flux away from the surface
+Therefore the Bulk-Residual workflow closes the available energy by
+construction:
 
-Therefore:
+\deqn{
+H_{bulk} + LE_{res} = R_n - G
+}
 
-\code{LE = Rn - G - H}
+This closure is algebraic. It does not prove that \eqn{H_{bulk}} is a
+physically perfect sensible-heat estimate. Any error in \eqn{R_n}, \eqn{G},
+or \eqn{H_{bulk}} is inherited by the residual latent heat flux.
+
+Large absolute residuals are warned about using \code{warn_threshold}, but
+they are not capped.
 }

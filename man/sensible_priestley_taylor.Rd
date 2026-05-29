@@ -21,7 +21,7 @@ sensible_priestley_taylor(...)
 
 \item{soil_flux}{Soil flux in W/m².}
 
-\item{surface_type}{Surface type, for which a Priestley-Taylor coefficient will be selected. Options: \code{surface_type options}}
+\item{surface_type}{Surface type, for which a Priestley-Taylor coefficient will be selected. Options: field, bare soil, coniferous forest, water, wetland, spruce forest}
 
 \item{weather_station}{A weather_station object.}
 }
@@ -42,6 +42,13 @@ where:
 \eqn{\gamma} is the psychrometric constant,
 \eqn{R_n} is the net radiation, and
 \eqn{G} is the soil heat flux.
+
+This formula is algebraically equivalent to \eqn{(R_n - G) - Q_e}
+when \code{sensible_priestley_taylor()} and
+\code{latent_priestley_taylor()} use the same temperature, surface type,
+radiation balance, and soil heat flux. The helpers \code{sc()} and
+\code{gam()} are Foken table-scale polynomial coefficients used together in
+the ratio terms; their absolute pressure unit scale remains source-open.
 }
 \examples{
 # Calculate sensible heat flux using the Priestley-Taylor method

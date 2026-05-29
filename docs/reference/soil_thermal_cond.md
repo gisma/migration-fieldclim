@@ -2,7 +2,8 @@
 
 Calculates soil thermal conductivity from soil texture and soil
 moisture. Works by linearly interpolating thermal conductivity based on
-measured data.
+measured data. Moisture is supplied as m3 m-3 and converted internally
+to volume percent.
 
 ## Usage
 
@@ -42,7 +43,8 @@ Soil thermal conductivity in W/m/K.
 
 The thermal conductivity (\\\lambda\\) of the soil is determined based
 on its texture and moisture content. The values are interpolated from
-measured data for different soil types.
+measured data for different soil types. Values outside the tabulated
+moisture domain return `NA`.
 
 ## References
 

@@ -29,6 +29,7 @@ wind speed and a simplified aerodynamic resistance."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/fieldclim_additional.html">fieldClim: weitere Use-Case-Workflows</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_check_rad_soil.html">fieldClim: Check radiation and soil heat flux</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_methods.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_update2024.html">FieldClim Package Update Documentation</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_usecase.html">fieldClim: Use-Case-Workflows für Energiebilanz und Wärmeflussmethoden</a></li>
   </ul></li>
@@ -68,6 +69,12 @@ wind speed and a simplified aerodynamic resistance.</p>
 <span>  k <span class="op">=</span> <span class="fl">0.41</span>,</span>
 <span>  min_wind <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  warn_threshold <span class="op">=</span> <span class="fl">600</span>,</span>
+<span>  stability_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"ri_guard"</span><span class="op">)</span>,</span>
+<span>  ri_neutral <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>  ri_critical <span class="op">=</span> <span class="fl">0.25</span>,</span>
+<span>  min_shear <span class="op">=</span> <span class="fl">1e-04</span>,</span>
+<span>  g <span class="op">=</span> <span class="fl">9.81</span>,</span>
+<span>  elev <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -79,6 +86,12 @@ wind speed and a simplified aerodynamic resistance.</p>
 <span>  k <span class="op">=</span> <span class="fl">0.41</span>,</span>
 <span>  min_wind <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  warn_threshold <span class="op">=</span> <span class="fl">600</span>,</span>
+<span>  stability_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"ri_guard"</span><span class="op">)</span>,</span>
+<span>  ri_neutral <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>  ri_critical <span class="op">=</span> <span class="fl">0.25</span>,</span>
+<span>  min_shear <span class="op">=</span> <span class="fl">1e-04</span>,</span>
+<span>  g <span class="op">=</span> <span class="fl">9.81</span>,</span>
+<span>  elev <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -88,7 +101,7 @@ wind speed and a simplified aerodynamic resistance.</p>
 
 
 <dl><dt id="arg-t-">t1<a class="anchor" aria-label="anchor" href="#arg-t-"></a></dt>
-<dd><p>Air temperature at lower measurement height.</p></dd>
+<dd><p>Air temperature at lower measurement height in degrees C.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -96,16 +109,16 @@ wind speed and a simplified aerodynamic resistance.</p>
 
 
 <dt id="arg-t-">t2<a class="anchor" aria-label="anchor" href="#arg-t-"></a></dt>
-<dd><p>Air temperature at upper measurement height.</p></dd>
+<dd><p>Air temperature at upper measurement height in degrees C.</p></dd>
 
 
 <dt id="arg-v-">v1<a class="anchor" aria-label="anchor" href="#arg-v-"></a></dt>
-<dd><p>Wind speed at lower measurement height.</p></dd>
+<dd><p>Wind speed at lower measurement height in m s-1.</p></dd>
 
 
 <dt id="arg-v-">v2<a class="anchor" aria-label="anchor" href="#arg-v-"></a></dt>
-<dd><p>Optional wind speed at upper measurement height. If missing,
-<code>v1</code> is used.</p></dd>
+<dd><p>Optional wind speed at upper measurement height in m s-1. If
+missing, <code>v1</code> is used.</p></dd>
 
 
 <dt id="arg-z-">z1<a class="anchor" aria-label="anchor" href="#arg-z-"></a></dt>
@@ -129,12 +142,43 @@ wind speed and a simplified aerodynamic resistance.</p>
 
 
 <dt id="arg-min-wind">min_wind<a class="anchor" aria-label="anchor" href="#arg-min-wind"></a></dt>
-<dd><p>Minimum wind speed for the resistance calculation.
+<dd><p>Minimum wind speed in m s-1 for the resistance calculation.
 Values at or below this threshold return <code>NA</code>.</p></dd>
 
 
 <dt id="arg-warn-threshold">warn_threshold<a class="anchor" aria-label="anchor" href="#arg-warn-threshold"></a></dt>
-<dd><p>Absolute flux threshold for diagnostic warnings.</p></dd>
+<dd><p>Absolute flux threshold in W m-2 for diagnostic
+warnings.</p></dd>
+
+
+<dt id="arg-stability-method">stability_method<a class="anchor" aria-label="anchor" href="#arg-stability-method"></a></dt>
+<dd><p>Optional stability screening method. <code>"none"</code>
+keeps the neutral bulk estimate unchanged; <code>"ri_guard"</code> attaches a
+gradient Richardson diagnostic and returns <code>NA</code> for invalid or very
+stable cases.</p></dd>
+
+
+<dt id="arg-ri-neutral">ri_neutral<a class="anchor" aria-label="anchor" href="#arg-ri-neutral"></a></dt>
+<dd><p>Absolute Richardson-number threshold for neutral class.</p></dd>
+
+
+<dt id="arg-ri-critical">ri_critical<a class="anchor" aria-label="anchor" href="#arg-ri-critical"></a></dt>
+<dd><p>Critical Richardson number for very stable guarding.</p></dd>
+
+
+<dt id="arg-min-shear">min_shear<a class="anchor" aria-label="anchor" href="#arg-min-shear"></a></dt>
+<dd><p>Minimum absolute wind-speed shear in s-1 for Richardson
+diagnostics.</p></dd>
+
+
+<dt id="arg-g">g<a class="anchor" aria-label="anchor" href="#arg-g"></a></dt>
+<dd><p>Gravitational acceleration in m s-2.</p></dd>
+
+
+<dt id="arg-elev">elev<a class="anchor" aria-label="anchor" href="#arg-elev"></a></dt>
+<dd><p>Optional elevation above sea level in m. If supplied,
+near-surface potential temperature is estimated with <code><a href="temp_pot_temp.html">temp_pot_temp()</a></code>;
+otherwise Kelvin air temperature is used as a near-surface approximation.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -143,10 +187,47 @@ Values at or below this threshold return <code>NA</code>.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The sign convention follows the package energy-balance convention:</p>
-<p><code>H &gt; 0</code> means sensible heat flux away from the surface.</p>
-<p>Therefore, with <code>t1</code> as lower air temperature and <code>t2</code> as upper air
-temperature, positive <code>t1 - t2</code> produces positive sensible heat flux.</p>
+    <p>The implemented sensible heat flux is:</p>
+<p>$$
+H_{bulk} = \rho c_p \frac{T_1 - T_2}{r_a}
+$$</p>
+<p>where \(H_{bulk}\) is the sensible heat flux in W m-2,
+\(\rho\) is air density in kg m-3, \(c_p\) is the specific heat
+capacity of air in J kg-1 K-1, \(T_1\) is the air temperature at the
+lower measurement height, \(T_2\) is the air temperature at the upper
+measurement height, and \(r_a\) is the aerodynamic resistance in s m-1.</p>
+<p>The aerodynamic resistance is calculated as:</p>
+<p>$$
+r_a = \frac{\log(z_2 / z_1)}{k \bar{u}}
+$$</p>
+<p>where \(z_1\) is the lower measurement height in m, \(z_2\) is the
+upper measurement height in m, \(k\) is the von Karman constant, and
+\(\bar{u}\) is the mean wind speed in m s-1. If <code>v2</code> is supplied,
+\(\bar{u}\) is calculated as the mean of <code>v1</code> and <code>v2</code>. If
+<code>v2</code> is not supplied, <code>v1</code> is used as \(\bar{u}\).</p>
+<p>The sign convention follows the package energy-balance convention:</p>
+<p>$$
+H &gt; 0
+$$</p>
+<p>means sensible heat flux away from the surface. Therefore, with
+<code>z1 &lt; z2</code>, a positive lower-minus-upper temperature difference
+<code>t1 - t2</code> produces positive \(H_{bulk}\).</p>
+<p>This is a simplified neutral bulk-transfer reference. It is not a full
+Monin-Obukhov stability-corrected profile method. Stability corrections,
+roughness sublayer effects and explicit surface-layer similarity functions
+are not applied here.</p>
+<p>If <code>stability_method = "ri_guard"</code>, the neutral estimate is screened
+with a gradient Richardson number diagnostic:
+$$
+Ri_g = \frac{g}{\bar{\theta}} \frac{\Delta \theta / \Delta z}{(\Delta u / \Delta z)^2}
+$$
+The guard does not rescale valid neutral fluxes. It only returns <code>NA</code>
+for invalid or very stable Richardson cases and attaches <code>bulk_Ri_g</code>
+and <code>bulk_stability</code> attributes to the returned vector.</p>
+<p>Very low wind speeds make the aerodynamic resistance numerically unstable.
+Values at or below <code>min_wind</code> are therefore returned as <code>NA</code> with
+a warning. Large absolute fluxes are warned about using
+<code>warn_threshold</code>, but they are not capped.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

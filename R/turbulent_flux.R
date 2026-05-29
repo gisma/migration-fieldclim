@@ -92,13 +92,14 @@ turb_flux_monin.weather_station <- function(weather_station, ...) {
 #' Calculation of the Gradient-Richardson-Number. The number represents the
 #' stability of the atmosphere. Negative values signify unstable conditions,
 #' positive values signify stable conditions, whereas values around zero represent
-#' neutral conditions.
+#' neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
+#' cases return \code{NA}; these helpers are diagnostics and do not enforce
+#' turbulent heat-flux closure.
 #'
 #' @rdname turb_flux_grad_rich_no
 #' @param ... Additional arguments.
-#' @returns A stability class string: "unstable", "neutral",
-#'   "stable", or \code{NA}, according to the current
-#'   Gradient-Richardson-Number thresholds.
+#' @returns Gradient Richardson number, or \code{NA} for invalid profile or
+#'   weak-shear cases.
 #' @export
 #' @references Bendix 2004, p. 43, eq. 2.5
 turb_flux_grad_rich_no <- function(...) {
@@ -113,14 +114,60 @@ turb_flux_grad_rich_no <- function(...) {
 #' @param v1 Windspeed at lower height (e.g. height of anemometer) in m/s.
 #' @param v2 Windspeed at upper height in m/s.
 #' @param elev Elevation above sea level in m.
+#' @param min_shear Minimum absolute wind-speed shear in s-1. Values at or
+#'   below this threshold return \code{NA}.
 #' @export
-turb_flux_grad_rich_no.default <- function(t1, t2, z1 = 2, z2 = 10, v1, v2, elev, ...) {
-  pot_temp1 <- temp_pot_temp(t1, elev, ...)
-  pot_temp2 <- temp_pot_temp(t2, elev)
-  pot_temp1 <- c2k(pot_temp1)
-  pot_temp2 <- c2k(pot_temp2)
-  grad_rich_no <- (9.81 / pot_temp1) * ((pot_temp2 - pot_temp1) / (z2 - z1)) * ((v2 - v1) / (z2 - z1))^-2
-  grad_rich_no <- ifelse(is.nan(grad_rich_no), 0, grad_rich_no)
+turb_flux_grad_rich_no.default <- function(t1, t2, z1 = 2, z2 = 10, v1, v2, elev, min_shear = 1e-4, ...) {
+  n <- max(length(t1), length(t2), length(z1), length(z2), length(v1), length(v2), length(elev))
+  t1 <- rep_len(t1, n)
+  t2 <- rep_len(t2, n)
+  z1 <- rep_len(z1, n)
+  z2 <- rep_len(z2, n)
+  v1 <- rep_len(v1, n)
+  v2 <- rep_len(v2, n)
+  elev <- rep_len(elev, n)
+
+  invalid_height <- !is.finite(z1) | !is.finite(z2) | z1 <= 0 | z2 <= 0 | z2 <= z1
+  invalid_wind <- !is.finite(v1) | !is.finite(v2) | v1 <= 0 | v2 <= 0
+
+  safe_t1 <- t1
+  safe_t2 <- t2
+  safe_z1 <- z1
+  safe_z2 <- z2
+  safe_v1 <- v1
+  safe_v2 <- v2
+  safe_elev <- elev
+  invalid_profile <- invalid_height | invalid_wind | !is.finite(t1) | !is.finite(t2) | !is.finite(elev)
+  safe_t1[invalid_profile] <- 20
+  safe_t2[invalid_profile] <- 20
+  safe_z1[invalid_profile] <- 2
+  safe_z2[invalid_profile] <- 10
+  safe_v1[invalid_profile] <- 2
+  safe_v2[invalid_profile] <- 4
+  safe_elev[invalid_profile] <- 0
+
+  pot_temp1 <- c2k(temp_pot_temp(safe_t1, safe_elev, ...))
+  pot_temp2 <- c2k(temp_pot_temp(safe_t2, safe_elev))
+  dz <- safe_z2 - safe_z1
+  dtheta_dz <- (pot_temp2 - pot_temp1) / dz
+  du_dz <- (safe_v2 - safe_v1) / dz
+
+  grad_rich_no <- (9.81 / pot_temp1) * dtheta_dz / (du_dz^2)
+  weak_shear <- abs(du_dz) <= min_shear
+  invalid <- invalid_profile | weak_shear | !is.finite(pot_temp1) | pot_temp1 <= 0 |
+    !is.finite(dtheta_dz) | !is.finite(du_dz) | !is.finite(grad_rich_no)
+
+  if (any(invalid_height, na.rm = TRUE)) {
+    warning("turb_flux_grad_rich_no: invalid heights for some values; returning NA there.", call. = FALSE)
+  }
+  if (any(invalid_wind, na.rm = TRUE)) {
+    warning("turb_flux_grad_rich_no: invalid wind speeds for some values; returning NA there.", call. = FALSE)
+  }
+  if (any(weak_shear & !invalid_profile, na.rm = TRUE)) {
+    warning("turb_flux_grad_rich_no: wind-speed shear is too small for some values; returning NA there.", call. = FALSE)
+  }
+
+  grad_rich_no[invalid] <- NA_real_
   grad_rich_no
 }
 
@@ -141,7 +188,9 @@ turb_flux_grad_rich_no.weather_station <- function(weather_station, ...) {
 
 #' Stability
 #'
-#' Conversion of Gradient-Richardson-Number to stability string.
+#' Conversion of Gradient-Richardson-Number to stability string. Non-finite
+#' Richardson numbers return \code{NA}. This is a diagnostic classification,
+#' not a heat-flux closure check.
 #'
 #' @rdname turb_flux_stability
 #' @param ... Additional arguments.
@@ -158,18 +207,11 @@ turb_flux_stability <- function(...) {
 #' @param grad_rich_no Gradient-Richardson-Number
 #' @export
 turb_flux_stability.default <- function(grad_rich_no, ...) {
-  stability <- rep(NA, length(grad_rich_no))
-  for (i in 1:length(grad_rich_no)) {
-    if (is.na(grad_rich_no[i])) {
-      stability[i] <- NA
-    } else if (grad_rich_no[i] <= -0.005) {
-      stability[i] <- "unstable"
-    } else if (grad_rich_no[i] > -0.005 && grad_rich_no[i] < 0.005) {
-      stability[i] <- "neutral"
-    } else if (grad_rich_no[i] >= 0.005) {
-      stability[i] <- "stable"
-    }
-  }
+  stability <- rep(NA_character_, length(grad_rich_no))
+  valid <- is.finite(grad_rich_no)
+  stability[valid & grad_rich_no <= -0.005] <- "unstable"
+  stability[valid & grad_rich_no > -0.005 & grad_rich_no < 0.005] <- "neutral"
+  stability[valid & grad_rich_no >= 0.005] <- "stable"
   stability
 }
 
@@ -410,16 +452,31 @@ turb_flux_imp_exchange.weather_station <- function(weather_station, ...) {
 
 #' Sensible and latent heat fluxes
 #'
-#' Calculate sensible and latent heat fluxes, using the methods of Priestly-Taylor, Bowen,
-#' Monin and Penman (only latent).
+#' Calculate sensible and latent heat-flux estimates for a
+#' `weather_station` object using the available `fieldClim` method families:
+#' Priestley-Taylor, Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and
+#' Penman-type latent heat flux.
 #'
-#' @param weather_station Object of class weather_station
+#' The methods are not interchangeable measurements. Priestley-Taylor,
+#' Bulk-Residual and Bowen-ratio are energy-partition or residual workflows.
+#' Penman returns latent heat flux only. Monin-Obukhov/profile outputs are
+#' diagnostic and are not forced to close the available energy.
+#'
+#' @param weather_station Object of class `weather_station`.
 #' @param pt_only If `TRUE`, calculate only the Priestley-Taylor sensible and
-#'   latent heat fluxes. This supports the introductory energy balance workflow
-#'   without requiring inputs for the optional additional methods. In the full
-#'   workflow, unavailable Penman inputs result in `NA` values and a warning.
+#'   latent heat fluxes. This supports the introductory or robust available-energy
+#'   workflow without requiring inputs for the optional additional methods.
+#'   If `FALSE`, the full workflow attempts the available additional methods,
+#'   including Bulk-Residual, Bowen-ratio, Monin-Obukhov/profile and Penman-type
+#'   latent heat flux. Unavailable optional inputs produce `NA` values and/or
+#'   warnings according to the respective method.
 #'
-#' @returns Object of class weather_station
+#' @return Object of class `weather_station` with additional heat-flux fields.
+#'   Depending on `pt_only` and on available input fields, these may include:
+#'   `sensible_priestley_taylor`, `latent_priestley_taylor`,
+#'   `sensible_bulk`, `latent_bulk_residual`,
+#'   `sensible_bowen`, `latent_bowen`,
+#'   `sensible_monin`, `latent_monin`, and `latent_penman`.
 #' @export
 turb_flux_calc <- function(weather_station, pt_only = FALSE) {
   if (pt_only) {

@@ -13,11 +13,17 @@
 #' \eqn{\lambda} is the thermal conductivity of the soil (W/m/K),
 #' \eqn{T_1} and \eqn{T_2} are the temperatures at two different depths (°C),
 #' \eqn{z_1} and \eqn{z_2} are the depths at which the temperatures are measured (m).
+#' Depths must be finite non-negative values and must not be equal. Invalid depth
+#' pairs return \code{NA} with a warning; valid vector elements are not changed.
 #'
 #' @references Bendix 2004, p. 71 eq. 4.2.
 #' @examples
 #' # Calculate soil heat flux
-#' soil_heat_flux(texture = "sand", moisture = 0.25, soil_temp1 = 15, soil_temp2 = 10, soil_depth1 = 0.1, soil_depth2 = 0.3)
+#' soil_heat_flux(
+#'   texture = "sand", moisture = 0.25,
+#'   soil_temp1 = 15, soil_temp2 = 10,
+#'   soil_depth1 = 0.1, soil_depth2 = 0.3
+#' )
 #' @export
 soil_heat_flux <- function(...) {
   UseMethod("soil_heat_flux")
@@ -32,8 +38,25 @@ soil_heat_flux <- function(...) {
 #' @param soil_depth2 Depth of the second measurement in m.
 #' @export
 soil_heat_flux.default <- function(texture, moisture, soil_temp1, soil_temp2, soil_depth1, soil_depth2, ...) {
+  n <- max(length(moisture), length(soil_temp1), length(soil_temp2), length(soil_depth1), length(soil_depth2))
+  moisture <- rep_len(moisture, n)
+  soil_temp1 <- rep_len(soil_temp1, n)
+  soil_temp2 <- rep_len(soil_temp2, n)
+  soil_depth1 <- rep_len(soil_depth1, n)
+  soil_depth2 <- rep_len(soil_depth2, n)
+
   thermal_cond <- soil_thermal_cond(texture, moisture)
-  -thermal_cond * (soil_temp1 - soil_temp2) / (soil_depth1 - soil_depth2)
+  out <- -thermal_cond * (soil_temp1 - soil_temp2) / (soil_depth1 - soil_depth2)
+
+  invalid_depth <- !is.finite(soil_depth1) | !is.finite(soil_depth2) |
+    soil_depth1 < 0 | soil_depth2 < 0 | soil_depth1 == soil_depth2
+
+  if (any(invalid_depth, na.rm = TRUE)) {
+    warning("soil_heat_flux: invalid soil depths for some values; returning NA there.", call. = FALSE)
+  }
+
+  out[invalid_depth] <- NA_real_
+  out
 }
 
 #' @rdname soil_heat_flux
@@ -53,6 +76,7 @@ soil_heat_flux.weather_station <- function(weather_station, ...) {
 #'
 #' Calculates soil thermal conductivity from soil texture and soil moisture.
 #' Works by linearly interpolating thermal conductivity based on measured data.
+#' Moisture is supplied as m3 m-3 and converted internally to volume percent.
 #'
 #' @param ... Additional arguments.
 #' @param weather_station A weather_station object.
@@ -60,6 +84,7 @@ soil_heat_flux.weather_station <- function(weather_station, ...) {
 #' @details
 #' The thermal conductivity (\eqn{\lambda}) of the soil is determined based on its texture and moisture content.
 #' The values are interpolated from measured data for different soil types.
+#' Values outside the tabulated moisture domain return \code{NA}.
 #'
 #' @references Bendix 2004, p. 254.
 #' @examples
@@ -110,6 +135,7 @@ soil_thermal_cond.weather_station <- function(weather_station, ...) {
 #'
 #' Calculates soil volumetric heat capacity (MJ / (m³ * K)) from soil moisture and texture.
 #' Works by linearly interpolating volumetric heat capacity based on measured data.
+#' Moisture is supplied as m3 m-3 and converted internally to volume percent.
 #'
 #' @param ... Additional arguments.
 #' @param weather_station A weather_station object.
@@ -117,6 +143,8 @@ soil_thermal_cond.weather_station <- function(weather_station, ...) {
 #' @details
 #' The volumetric heat capacity (\eqn{C_v}) of the soil is determined based on its texture and moisture content.
 #' The values are interpolated from measured data for different soil types.
+#' Values below the tabulated moisture domain return \code{NA}; values above
+#' the tabulated domain use the highest tabulated heat capacity.
 #'
 #' @references Bendix 2004, p. 254.
 #' @examples

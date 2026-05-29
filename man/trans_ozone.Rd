@@ -38,7 +38,10 @@ where \eqn{x} is the product of the ozone column and the relative optical air ma
 }
 \examples{
 # Calculate transmittance due to ozone
-trans_ozone(datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"), lon = 8.68, lat = 50.77, ozone_column = 0.3)
+trans_ozone(
+  datetime = as.POSIXlt("2023-08-06 12:00:00", tz = "UTC"),
+  lon = 8.68, lat = 50.77, ozone_column = 0.3
+)
 }
 \references{
 Bendix 2004, p. 245.
