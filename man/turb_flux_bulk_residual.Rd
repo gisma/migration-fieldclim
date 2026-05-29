@@ -74,3 +74,32 @@ Required fields in \code{weather_station} are:
 If \code{v2} is present, it is used together with \code{v1} to compute mean
 wind speed. If \code{v2} is missing, \code{v1} is used.
 }
+\examples{
+ws <- build_weather_station(
+  datetime = as.POSIXct(
+    c("2023-06-01 12:00:00", "2023-06-01 12:30:00"),
+    tz = "UTC"
+  ),
+  t1 = c(20, 18),
+  t2 = c(18, 19),
+  v1 = c(2, 2),
+  v2 = c(4, 3),
+  z1 = 2,
+  z2 = 10,
+  rad_bal = c(400, 300),
+  soil_flux = c(60, 40),
+  elev = 100
+)
+
+out <- turb_flux_bulk_residual(ws)
+
+names(out)
+
+out_guarded <- turb_flux_bulk_residual(
+  ws,
+  stability_method = "ri_guard"
+)
+
+attr(out_guarded$sensible_bulk, "bulk_stability")
+attr(out_guarded$sensible_bulk, "bulk_Ri_g")
+}

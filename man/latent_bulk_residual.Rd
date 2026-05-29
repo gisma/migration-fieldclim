@@ -103,3 +103,25 @@ or \eqn{H_{bulk}} is inherited by the residual latent heat flux.
 Large absolute residuals are warned about using \code{warn_threshold}, but
 they are not capped.
 }
+\examples{
+latent_bulk_residual(
+  rad_bal = 400,
+  soil_flux = 60,
+  sensible = 120
+)
+
+h_bulk <- sensible_bulk(
+  t1 = 20,
+  t2 = 18,
+  v1 = 2,
+  v2 = 4,
+  z1 = 2,
+  z2 = 10
+)
+
+latent_bulk_residual(
+  rad_bal = 400,
+  soil_flux = 60,
+  sensible = h_bulk
+)
+}

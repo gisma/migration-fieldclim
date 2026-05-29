@@ -19,11 +19,9 @@ Useful links:
 
 ## Author
 
-**Maintainer**: Fabian Mitze <Mitze@students.uni-marburg.de>
+**Maintainer**: Christoph Reudenbach <reudenbach@uni-marburg.de>
 
 Authors:
-
-- Fabian Mitze <Mitze@students.uni-marburg.de>
 
 - Christoph Reudenbach <reudenbach@uni-marburg.de>
 
@@ -32,6 +30,8 @@ Authors:
 - Jonas Viehweger <jonas.viehweger@rwth-aachen.de>
 
 - Jörg Bendix <bendix@geo.uni-marburg.de>
+
+- Fabian Mitze <Mitze@students.uni-marburg.de>
 
 - Hanna Wenzel <wenzel@students.uni-marburg.de>
 

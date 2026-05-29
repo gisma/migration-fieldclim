@@ -85,7 +85,30 @@
 #' @param ... Further arguments passed to methods.
 #'
 #' @return Sensible heat flux in W m-2.
+#' @examples
+#' sensible_bulk(
+#'   t1 = 20,
+#'   t2 = 19.5,
+#'   v1 = 1,
+#'   v2 = 2,
+#'   z1 = 2,
+#'   z2 = 10
+#' )
 #'
+#' h <- sensible_bulk(
+#'   t1 = c(20, 19, 18),
+#'   t2 = c(19.5, 19, 18.1),
+#'   v1 = c(1, 1, 1),
+#'   v2 = c(2, 2, 2),
+#'   z1 = 2,
+#'   z2 = 10,
+#'   stability_method = "ri_guard"
+#' )
+#'
+#' h
+#' attr(h, "bulk_stability")
+#' attr(h, "bulk_Ri_g")
+
 #' @export
 sensible_bulk <- function(t1, ...) {
   UseMethod("sensible_bulk")
@@ -343,7 +366,27 @@ sensible_bulk.weather_station <- function(
 #'
 #' @return Latent heat flux in W m-2.
 #'
+#' @examples
+#' latent_bulk_residual(
+#'   rad_bal = 400,
+#'   soil_flux = 60,
+#'   sensible = 120
+#' )
 #'
+#' h_bulk <- sensible_bulk(
+#'   t1 = 20,
+#'   t2 = 18,
+#'   v1 = 2,
+#'   v2 = 4,
+#'   z1 = 2,
+#'   z2 = 10
+#' )
+#'
+#' latent_bulk_residual(
+#'   rad_bal = 400,
+#'   soil_flux = 60,
+#'   sensible = h_bulk
+#' )
 #' @export
 latent_bulk_residual <- function(rad_bal, ...) {
   UseMethod("latent_bulk_residual")
@@ -476,7 +519,34 @@ latent_bulk_residual.weather_station <- function(
 #'
 #' @return The input \code{weather_station} object with additional fields
 #'   \code{sensible_bulk} and \code{latent_bulk_residual}.
+#' @examples
+#' ws <- build_weather_station(
+#'   datetime = as.POSIXct(
+#'     c("2023-06-01 12:00:00", "2023-06-01 12:30:00"),
+#'     tz = "UTC"
+#'   ),
+#'   t1 = c(20, 18),
+#'   t2 = c(18, 19),
+#'   v1 = c(2, 2),
+#'   v2 = c(4, 3),
+#'   z1 = 2,
+#'   z2 = 10,
+#'   rad_bal = c(400, 300),
+#'   soil_flux = c(60, 40),
+#'   elev = 100
+#' )
 #'
+#' out <- turb_flux_bulk_residual(ws)
+#'
+#' names(out)
+#'
+#' out_guarded <- turb_flux_bulk_residual(
+#'   ws,
+#'   stability_method = "ri_guard"
+#' )
+#'
+#' attr(out_guarded$sensible_bulk, "bulk_stability")
+#' attr(out_guarded$sensible_bulk, "bulk_Ri_g")
 #' @export
 turb_flux_bulk_residual <- function(weather_station, ...) {
   check_availability(

@@ -6,8 +6,26 @@ template:
   bslib:
     code_font: {google: "JetBrains Mono"}
   math-rendering: mathjax
+
 navbar:
   structure:
-    left:  [intro, reference, articles, tutorials, news]
+    left:  [intro, reference, articles, news]
     right: [github]
+
+articles:
+
+- title: Theory
+  navbar: Background
+  contents:
+  - fieldclim_method_background
+
+- title: Core workflows
+  navbar: Workflows (German only)
+  contents:
+  - fieldclim_workflow_steps
+  - fieldclim_additional_workflow_steps
+- title: Deprecated
+  contents:
+  - fieldclim_update2024
+  - fieldclim_check_rad_soil
 

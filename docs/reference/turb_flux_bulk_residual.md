@@ -77,3 +77,46 @@ Required fields in `weather_station` are:
 
 If `v2` is present, it is used together with `v1` to compute mean wind
 speed. If `v2` is missing, `v1` is used.
+
+## Examples
+
+``` r
+ws <- build_weather_station(
+  datetime = as.POSIXct(
+    c("2023-06-01 12:00:00", "2023-06-01 12:30:00"),
+    tz = "UTC"
+  ),
+  t1 = c(20, 18),
+  t2 = c(18, 19),
+  v1 = c(2, 2),
+  v2 = c(4, 3),
+  z1 = 2,
+  z2 = 10,
+  rad_bal = c(400, 300),
+  soil_flux = c(60, 40),
+  elev = 100
+)
+
+out <- turb_flux_bulk_residual(ws)
+#> Warning: sensible_bulk: there are values above the diagnostic threshold of 600 W m-2.
+#> Warning: latent_bulk_residual: there are values above the diagnostic threshold of 600 W m-2.
+
+names(out)
+#>  [1] "datetime"             "t1"                   "t2"                  
+#>  [4] "v1"                   "v2"                   "z1"                  
+#>  [7] "z2"                   "rad_bal"              "soil_flux"           
+#> [10] "elev"                 "sensible_bulk"        "latent_bulk_residual"
+
+out_guarded <- turb_flux_bulk_residual(
+  ws,
+  stability_method = "ri_guard"
+)
+#> Warning: sensible_bulk: there are values above the diagnostic threshold of 600 W m-2.
+#> Warning: sensible_bulk: very stable Richardson cases for some values; returning NA there.
+#> Warning: latent_bulk_residual: there are values above the diagnostic threshold of 600 W m-2.
+
+attr(out_guarded$sensible_bulk, "bulk_stability")
+#> [1] "unstable"    "very_stable"
+attr(out_guarded$sensible_bulk, "bulk_Ri_g")
+#> [1] -0.1338652  0.2681879
+```

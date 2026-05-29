@@ -117,3 +117,32 @@ or \\H\_{bulk}\\ is inherited by the residual latent heat flux.
 
 Large absolute residuals are warned about using `warn_threshold`, but
 they are not capped.
+
+## Examples
+
+``` r
+latent_bulk_residual(
+  rad_bal = 400,
+  soil_flux = 60,
+  sensible = 120
+)
+#> [1] 220
+
+h_bulk <- sensible_bulk(
+  t1 = 20,
+  t2 = 18,
+  v1 = 2,
+  v2 = 4,
+  z1 = 2,
+  z2 = 10
+)
+#> Warning: sensible_bulk: there are values above the diagnostic threshold of 600 W m-2.
+
+latent_bulk_residual(
+  rad_bal = 400,
+  soil_flux = 60,
+  sensible = h_bulk
+)
+#> Warning: latent_bulk_residual: there are values above the diagnostic threshold of 600 W m-2.
+#> [1] -1541.755
+```

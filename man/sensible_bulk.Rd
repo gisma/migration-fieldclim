@@ -152,3 +152,27 @@ Values at or below \code{min_wind} are therefore returned as \code{NA} with
 a warning. Large absolute fluxes are warned about using
 \code{warn_threshold}, but they are not capped.
 }
+\examples{
+sensible_bulk(
+  t1 = 20,
+  t2 = 19.5,
+  v1 = 1,
+  v2 = 2,
+  z1 = 2,
+  z2 = 10
+)
+
+h <- sensible_bulk(
+  t1 = c(20, 19, 18),
+  t2 = c(19.5, 19, 18.1),
+  v1 = c(1, 1, 1),
+  v2 = c(2, 2, 2),
+  z1 = 2,
+  z2 = 10,
+  stability_method = "ri_guard"
+)
+
+h
+attr(h, "bulk_stability")
+attr(h, "bulk_Ri_g")
+}
