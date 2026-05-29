@@ -1,0 +1,21 @@
+/* pkgdown/extra.css */
+
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1500px;
+  }
+
+  .row {
+    flex-wrap: nowrap;
+  }
+
+  main.col-md-9 {
+    flex: 0 0 calc(100% - 320px);
+    max-width: calc(100% - 320px);
+  }
+
+  aside.col-md-3 {
+    flex: 0 0 320px;
+    max-width: 320px;
+  }
+}
