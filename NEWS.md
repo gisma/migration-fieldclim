@@ -75,4 +75,5 @@
 - Added helper equation-contract tests for documented humidity, pressure, temperature, boundary-layer and turbulent-flux helper equations.
 - Added `weather_station` API parity tests for direct calls versus `weather_station` methods.
 - Added workflow tests for `turb_flux_calc()` including `pt_only`, full workflow output, Penman fallback and Bulk-Residual Richardson-guard pass-through.
-- Current validation status: `devtools::test()` passes with 470 tests and one intentional skip; `devtools::check()` passes with 0 errors, 0 warnings and 0 notes.
+- Current validation status: `devtools::test()```: 688 passed, 4 intentional skips
+`devtools::check()`: 0 errors, 0 warnings, 0 notes
