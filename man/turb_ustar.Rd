@@ -41,6 +41,8 @@ The friction velocity is calculated using the formula:
 where \eqn{v} is the windspeed at the height of the anemometer, \eqn{z} is the height of the anemometer, and \eqn{z_0} is the roughness length.
 
 The roughness length (\eqn{z_0}) can be determined based on the obstacle height (\code{obs_height}) or the type of surface (\code{surface_type}).
+Surface-class roughness values are package parameters used with the Bendix
+(2004) roughness-length method background.
 }
 \examples{
 # Calculate friction velocity based on obstacle height

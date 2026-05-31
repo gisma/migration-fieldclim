@@ -53,7 +53,9 @@ Transmittance ratio from 0 to 1, unitless.
 The transmittance due to Rayleigh scattering is calculated using the
 formula: \$\$T\_{rayleigh} = \exp(-0.0903 \cdot M\_{abs}^{0.84} \cdot
 (1 + M\_{abs} - M\_{abs}^{1.01}))\$\$ where \\M\_{abs}\\ is the absolute
-optical air mass.
+optical air mass. This is an Iqbal-style atmospheric transmittance
+approximation as presented in the Bendix (2004) appendix material cited
+for the package.
 
 ## References
 

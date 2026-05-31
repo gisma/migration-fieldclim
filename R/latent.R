@@ -17,10 +17,11 @@
 #' \eqn{G} is the soil heat flux.
 #'
 #' The Priestley-Taylor coefficient depends on the surface type and is selected
-#' from the internal \code{priestley_taylor_coefficient} table. The helpers
-#' \code{sc()} and \code{gam()} are Foken table-scale polynomial coefficients
-#' used together in the ratio \eqn{\Delta / (\Delta + \gamma)}; their absolute
-#' pressure unit scale remains source-open.
+#' from the internal \code{priestley_taylor_coefficient} table. These
+#' surface-specific alpha values are package parameters; the method background
+#' follows Priestley-Taylor as presented in Foken (2016). The helpers
+#' \code{sc()} and \code{gam()} are Foken/Stull table-scale coefficients used
+#' together in the ratio \eqn{\Delta / (\Delta + \gamma)}.
 #' @param temp Air temperature in degrees C.
 #' @param rad_bal Radiation balance in W m-2.
 #' @param soil_flux Soil flux in W m-2.
@@ -165,9 +166,12 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 #'
 #' The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed,
 #' observation height, and surface roughness. The surface resistance (\eqn{r_s})
-#' is selected based on the specified surface type. The function returns latent
-#' heat flux only; it does not return evaporation depth or a paired sensible heat
-#' flux and is not forced to close \eqn{R_n - G}.
+#' is selected based on the specified surface type. The resistance table and
+#' fieldClim surface aliases are package parameters/mappings used with this
+#' Penman-Monteith-type implementation; they are not documented here as a
+#' one-to-one source table. The function returns latent heat flux only; it does
+#' not return evaporation depth or a paired sensible heat flux and is not forced
+#' to close \eqn{R_n - G}.
 #'
 #' For weather-station objects, the method uses \code{hum1} as relative humidity
 #' when present and otherwise uses \code{rh}. Both fields are interpreted as
@@ -197,6 +201,7 @@ latent_priestley_taylor.weather_station <- function(weather_station, ...) {
 #'   surface_type = "Temperate grassland"
 #' )
 #' @references Monteith, John L., Mike H. Unsworth, and Ann Webb. "Principles of environmental physics." Quarterly Journal of the Royal Meteorological Society 120.520 (1994): 1699.
+#' @references Foken 2016, method background for Penman-type combination methods.
 #' @export
 latent_penman <- function(...) {
   UseMethod("latent_penman")
@@ -395,6 +400,8 @@ latent_penman.weather_station <- function(weather_station, ...) {
 #' 0.95 \cdot (1 - 11.6 \cdot s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\
 #' 0.95 + 7.8 \cdot s_1, & \text{if } Ri_g > 0
 #' \end{cases}}
+#' These flux-gradient and Businger-type stability terms use Foken/Bendix
+#' method background. 
 #' @param hum1 Relative humidity at lower height in %.
 #' @param hum2 Relative humidity at upper height in %.
 #' @param t1 Air temperature at lower height in degrees C.
@@ -581,8 +588,9 @@ latent_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 #' where:
 #' \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
-#' is the empirical implementation coefficient; its exact source-form
-#' equivalence remains source-open,
+#' is the fieldClim empirical implementation coefficient; this documentation
+#' does not assert it as a proven one-to-one replacement for the \eqn{C_a/L_v}
+#' formulation,
 #' \eqn{\theta} is potential temperature, and
 #' \eqn{AH} is absolute humidity.
 #' The inputs \code{t1} and \code{t2} are converted to potential temperature

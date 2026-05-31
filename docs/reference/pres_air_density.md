@@ -41,7 +41,15 @@ Air density in kg/m³.
 The air density (\\\rho\\) is calculated using the formula: \$\$\rho =
 \frac{p \cdot 100}{R \cdot T}\$\$ where: \\p\\ is the air pressure in
 hPa, \\R\\ is the specific gas constant for air (287.05 m²/s²/K), and
-\\T\\ is the temperature in Kelvin (K).
+\\T\\ is the temperature in Kelvin (K). This helper uses the package
+pressure and temperature defaults documented in
+[`pres_p()`](https://gisma.github.io/migration-fieldclim/reference/pres_p.md)
+and follows the Bendix (2004) thermodynamic-helper background used
+elsewhere in the package.
+
+## References
+
+Bendix 2004, p. 261-262, thermodynamic-helper background.
 
 ## Examples
 

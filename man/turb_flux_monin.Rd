@@ -53,6 +53,8 @@ Monin-Obhukov-Length in m.
 Calculation of the Monin-Obhukov-Length.
 The calculation depends on the stability of the atmosphere.
 This value will be taken from the Gradient-Richardson-Number.
+The profile and stability parameterization uses Bendix/Foken method
+background.
 }
 \references{
 Bendix 2004, p. 241

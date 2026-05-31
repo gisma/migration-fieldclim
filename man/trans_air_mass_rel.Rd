@@ -35,6 +35,7 @@ The relative optical air mass is calculated using the formula:
 where \eqn{elevation} is the solar elevation angle in degrees. The formula
 is only evaluated for positive solar elevation; below-horizon or invalid
 elevations return \code{NA} with a warning.
+The air-mass approximation is cited to Bendix (2004) appendix material.
 }
 \examples{
 # Calculate relative optical air mass

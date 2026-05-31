@@ -63,6 +63,8 @@ the height of the anemometer, \\z\\ is the height of the anemometer, and
 
 The roughness length (\\z_0\\) can be determined based on the obstacle
 height (`obs_height`) or the type of surface (`surface_type`).
+Surface-class roughness values are package parameters used with the
+Bendix (2004) roughness-length method background.
 
 ## References
 

@@ -35,6 +35,8 @@ Calculates transmittance due to atmospheric ozone.
 The transmittance due to ozone is calculated using the formula:
 \deqn{T_{ozone} = 1 - (0.1611 \cdot x \cdot (1 + 139.48 \cdot x)^{-0.3035} - 0.002715 \cdot x \cdot (1 + 0.044 \cdot x + 0.0003 \cdot x^2)^{-1})}
 where \eqn{x} is the product of the ozone column and the relative optical air mass.
+This is an Iqbal-style atmospheric transmittance approximation as presented
+in the Bendix (2004) appendix material cited for the package.
 }
 \examples{
 # Calculate transmittance due to ozone

@@ -5,7 +5,10 @@ stability of the atmosphere. Negative values signify unstable
 conditions, positive values signify stable conditions, whereas values
 around zero represent neutral conditions. Invalid heights, invalid wind
 speeds, and weak wind-shear cases return `NA`; these helpers are
-diagnostics and do not enforce turbulent heat-flux closure.
+diagnostics and do not enforce turbulent heat-flux closure. The
+Richardson-number formula and stability interpretation are cited to
+Bendix (2004) method background; the numerical guard threshold is a
+package implementation parameter.
 
 ## Usage
 

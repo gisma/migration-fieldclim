@@ -41,7 +41,9 @@ Numeric. Absolute humidity in kg/m³.
 Absolute humidity (\\AH\\) is the mass of water vapor per unit volume of
 air. It is calculated from the vapor pressure and temperature using the
 formula: \$\$AH = \frac{0.21668 \times pvapor}{T}\$\$ where \\pvapor\\
-is the vapor pressure and \\T\\ is the temperature in Kelvin.
+is the vapor pressure and \\T\\ is the temperature in Kelvin. The
+formula and constants follow the Bendix (2004) humidity helper
+background used by the package.
 
 ## References
 

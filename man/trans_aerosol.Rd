@@ -39,6 +39,8 @@ Calculates transmittance due to fine particles in the air.
 The transmittance due to aerosols is calculated using the formula:
 \deqn{T_{aerosol} = \exp(-x^{0.873} \cdot (1 + x - x^{0.7088}) \cdot M_{abs}^{0.9108})}
 where \eqn{x} is a function of the visibility and \eqn{M_{abs}} is the absolute optical air mass.
+The visibility/\eqn{\tau} table and aerosol expression are cited to Bendix
+(2004) appendix material.
 }
 \examples{
 # Calculate transmittance due to aerosols

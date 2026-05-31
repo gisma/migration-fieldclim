@@ -17,6 +17,8 @@
 #' When the obstacle height (`obs_height`) is provided, the roughness length is calculated as 10% of the obstacle height.
 #'
 #' When the surface type (`surface_type`) is provided, the roughness length is looked up from predefined values.
+#' The surface-class lookup values are package parameters. Bendix (2004) is
+#' cited as roughness-length method background.
 #'
 #' @examples
 #' # Calculates roughness length based on obstacle height
@@ -91,6 +93,8 @@ turb_displacement <- function(...) {
 #' For vegetation, the displacement height is calculated as two-thirds of the obstacle height.
 #'
 #' For urban environments (dense housing), the displacement height is calculated as 80% of the obstacle height.
+#' These are package parameterizations cited to Bendix (2004) method
+#' background.
 #'
 #' @examples
 #' # Calculate displacement height for vegetation with a height of 10 meters
@@ -152,6 +156,8 @@ turb_ustar <- function(...) {
 #' where \eqn{v} is the windspeed at the height of the anemometer, \eqn{z} is the height of the anemometer, and \eqn{z_0} is the roughness length.
 #'
 #' The roughness length (\eqn{z_0}) can be determined based on the obstacle height (`obs_height`) or the type of surface (`surface_type`).
+#' Surface-class roughness values are package parameters used with the Bendix
+#' (2004) roughness-length method background.
 #'
 #' @examples
 #' # Calculate friction velocity based on obstacle height
@@ -195,4 +201,3 @@ turb_ustar.weather_station <- function(weather_station, obs_height = NULL, ...) 
     return(turb_ustar(v, z, surface_type = surface_type))
   }
 }
-

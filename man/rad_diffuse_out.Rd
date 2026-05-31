@@ -58,6 +58,8 @@ The reflected diffused incoming radiation (\eqn{D_{out}}) is calculated using th
 where:
 \eqn{D_{in}} is the diffused incoming radiation,
 \eqn{\alpha} is the albedo of the surface.
+Albedo is selected from the package \code{surface_properties} table.
+Bendix/Oke-style surface-property background is used for the method context.
 }
 \examples{
 # Calculate reflected diffused incoming radiation

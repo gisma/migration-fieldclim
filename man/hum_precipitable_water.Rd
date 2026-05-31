@@ -42,6 +42,10 @@ Latitude <= 30 degrees is defined as tropic; <= 60 is temperate; others is subar
 Summer is defined as April to September in the northern hemisphere.
 
 Precipitable water (\eqn{PW}) is the total amount of water vapor in a column of air from the surface to the top of the atmosphere. It is calculated using reference temperature and pressure values based on location and season.
+The internal reference table provides standard-atmosphere \eqn{T_0} and
+\eqn{pwSt} values for broad latitude and season classes. The table and the
+pressure/temperature scaling relation are cited to Bendix (2004) appendix
+material.
 }
 \examples{
 # Calculate precipitable water

@@ -334,6 +334,8 @@ rad_diffuse_in.weather_station <- function(weather_station, ...) {
 #' where:
 #' \eqn{SW_{in}} is the shortwave incoming radiation,
 #' \eqn{\alpha} is the albedo of the surface.
+#' Albedo is selected from the package \code{surface_properties} table.
+#' Bendix/Oke-style surface-property background is used for the method context
 #'
 #' @examples
 #' # Calculate reflected shortwave incoming radiation
@@ -387,6 +389,8 @@ rad_sw_out.weather_station <- function(weather_station, ...) {
 #' where:
 #' \eqn{D_{in}} is the diffused incoming radiation,
 #' \eqn{\alpha} is the albedo of the surface.
+#' Albedo is selected from the package \code{surface_properties} table.
+#' Bendix/Oke-style surface-property background is used for the method context.
 #'
 #' @examples
 #' # Calculate reflected diffused incoming radiation
@@ -576,6 +580,8 @@ rad_emissivity_air.weather_station <- function(weather_station, ...) {
 #' \eqn{\epsilon} is the emissivity of the surface,
 #' \eqn{\sigma} is the Stefan-Boltzmann constant, and
 #' \eqn{T_{surface}} is the surface temperature in Kelvin.
+#' Emissivity is selected from the package \code{surface_properties} table.
+#' Bendix/Oke-style surface-property background is used for the method context.
 #' @param sigma Stefan-Boltzmann constant in W m-2 K-4.
 #' @examples
 #' # Calculate longwave outgoing radiation
@@ -604,4 +610,3 @@ rad_lw_out.weather_station <- function(weather_station, ...) {
   }
   rad_lw_out(surface_type, surface_temp, ...)
 }
-

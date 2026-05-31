@@ -3,6 +3,8 @@
 #' Calculation of the Monin-Obhukov-Length.
 #' The calculation depends on the stability of the atmosphere.
 #' This value will be taken from the Gradient-Richardson-Number.
+#' The profile and stability parameterization uses Bendix/Foken method
+#' background. 
 #'
 #' @rdname turb_flux_monin
 #' @param ... Additional arguments.
@@ -95,6 +97,9 @@ turb_flux_monin.weather_station <- function(weather_station, ...) {
 #' neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
 #' cases return \code{NA}; these helpers are diagnostics and do not enforce
 #' turbulent heat-flux closure.
+#' The Richardson-number formula and stability interpretation are cited to
+#' Bendix (2004) method background; the numerical guard threshold is a package
+#' implementation parameter.
 #'
 #' @rdname turb_flux_grad_rich_no
 #' @param ... Additional arguments.
@@ -191,6 +196,8 @@ turb_flux_grad_rich_no.weather_station <- function(weather_station, ...) {
 #' Conversion of Gradient-Richardson-Number to stability string. Non-finite
 #' Richardson numbers return \code{NA}. This is a diagnostic classification,
 #' not a heat-flux closure check.
+#' The class thresholds follow the current package implementation based on
+#' Bendix (2004) stability-background material.
 #'
 #' @rdname turb_flux_stability
 #' @param ... Additional arguments.
@@ -227,6 +234,8 @@ turb_flux_stability.weather_station <- function(weather_station, ...) {
 #' Exchange quotient for heat transmission
 #'
 #' Calculation of the exchange quotient of the turbulent heat transmission.
+#' The Businger-type constants use Foken (2016) method background and are
+#' documented as the current package implementation.
 #'
 #' @rdname turb_flux_ex_quotient_temp
 #' @param ... Additional arguments.
@@ -310,6 +319,8 @@ turb_flux_ex_quotient_temp.weather_station <- function(weather_station, ...) {
 #' Exchange quotient for impulse transmission
 #'
 #' Calculation of the exchange quotient of the turbulent impulse transmission.
+#' The Businger-type constants use Foken (2016) method background and are
+#' documented as the current package implementation.
 #'
 #' @rdname turb_flux_ex_quotient_imp
 #' @param ... Additional arguments.

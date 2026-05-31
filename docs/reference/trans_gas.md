@@ -52,7 +52,8 @@ Transmittance ratio from 0 to 1, unitless.
 
 The transmittance due to gases is calculated using the formula:
 \$\$T\_{gas} = \exp(-0.0127 \cdot M\_{abs}^{0.26})\$\$ where
-\\M\_{abs}\\ is the absolute optical air mass.
+\\M\_{abs}\\ is the absolute optical air mass. This is an atmospheric
+transmittance approximation cited to Bendix (2004) appendix material.
 
 ## References
 

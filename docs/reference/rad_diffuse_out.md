@@ -80,7 +80,9 @@ Reflected diffused incoming radiation in W/m².
 The reflected diffused incoming radiation (\\D\_{out}\\) is calculated
 using the formula: \$\$D\_{out} = D\_{in} \cdot \alpha\$\$ where:
 \\D\_{in}\\ is the diffused incoming radiation, \\\alpha\\ is the albedo
-of the surface.
+of the surface. Albedo is selected from the package `surface_properties`
+table. Bendix/Oke-style surface-property background is used for the
+method context.
 
 ## References
 

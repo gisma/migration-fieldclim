@@ -33,6 +33,8 @@ Calculates specific humidity from vapor pressure and air pressure.
 Specific humidity (\eqn{q}) is the ratio of the mass of water vapor to the total mass of the air parcel. It is calculated from the vapor pressure and air pressure using the formula:
 \deqn{q = 0.622 \times \frac{pvapor}{p}}
 where \eqn{pvapor} is the vapor pressure and \eqn{p} is the air pressure.
+The formula and constants follow the Bendix (2004) humidity helper
+background used by the package.
 }
 \examples{
 # Calculate specific humidity

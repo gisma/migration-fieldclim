@@ -75,7 +75,9 @@ Reflected shortwave incoming radiation in W/m².
 The reflected shortwave incoming radiation (\\SW\_{out}\\) is calculated
 using the formula: \$\$SW\_{out} = SW\_{in} \cdot \alpha\$\$ where:
 \\SW\_{in}\\ is the shortwave incoming radiation, \\\alpha\\ is the
-albedo of the surface.
+albedo of the surface. Albedo is selected from the package
+`surface_properties` table. Bendix/Oke-style surface-property background
+is used for the method context
 
 ## References
 

@@ -33,6 +33,8 @@ Moisture is supplied as m3 m-3 and converted internally to volume percent.
 The thermal conductivity (\eqn{\lambda}) of the soil is determined based on its texture and moisture content.
 The values are interpolated from measured data for different soil types.
 Values outside the tabulated moisture domain return \code{NA}.
+The sand, clay and peat tables are package lookup values cited to Bendix
+(2004) appendix material.
 }
 \examples{
 # Calculate soil thermal conductivity

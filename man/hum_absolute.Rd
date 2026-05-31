@@ -31,6 +31,8 @@ Calculates absolute humidity from vapor pressure and air temperature.
 Absolute humidity (\eqn{AH}) is the mass of water vapor per unit volume of air. It is calculated from the vapor pressure and temperature using the formula:
 \deqn{AH = \frac{0.21668 \times pvapor}{T}}
 where \eqn{pvapor} is the vapor pressure and \eqn{T} is the temperature in Kelvin.
+The formula and constants follow the Bendix (2004) humidity helper
+background used by the package.
 }
 \examples{
 # Calculate absolute humidity

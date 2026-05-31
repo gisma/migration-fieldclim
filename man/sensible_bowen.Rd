@@ -70,8 +70,9 @@ potential-temperature gradient and an absolute-humidity gradient:
 \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 where:
 \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
-is the empirical implementation coefficient; its exact source-form
-equivalence remains source-open,
+is the fieldClim empirical implementation coefficient; this documentation
+does not assert it as a proven one-to-one replacement for the \eqn{C_a/L_v}
+formulation,
 \eqn{\theta} is potential temperature, and
 \eqn{AH} is absolute humidity.
 The inputs \code{t1} and \code{t2} are converted to potential temperature

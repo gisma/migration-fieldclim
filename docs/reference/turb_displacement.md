@@ -48,7 +48,8 @@ For vegetation, the displacement height is calculated as two-thirds of
 the obstacle height.
 
 For urban environments (dense housing), the displacement height is
-calculated as 80% of the obstacle height.
+calculated as 80% of the obstacle height. These are package
+parameterizations cited to Bendix (2004) method background.
 
 ## References
 

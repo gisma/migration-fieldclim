@@ -9,6 +9,8 @@
 #' Specific humidity (\eqn{q}) is the ratio of the mass of water vapor to the total mass of the air parcel. It is calculated from the vapor pressure and air pressure using the formula:
 #' \deqn{q = 0.622 \times \frac{pvapor}{p}}
 #' where \eqn{pvapor} is the vapor pressure and \eqn{p} is the air pressure.
+#' The formula and constants follow the Bendix (2004) humidity helper
+#' background used by the package.
 #' @examples
 #' # Calculate specific humidity
 #' hum_specific(rh = 70, temp = 25, elev = 100)
@@ -50,6 +52,8 @@ hum_specific.weather_station <- function(weather_station, ...) {
 #' Absolute humidity (\eqn{AH}) is the mass of water vapor per unit volume of air. It is calculated from the vapor pressure and temperature using the formula:
 #' \deqn{AH = \frac{0.21668 \times pvapor}{T}}
 #' where \eqn{pvapor} is the vapor pressure and \eqn{T} is the temperature in Kelvin.
+#' The formula and constants follow the Bendix (2004) humidity helper
+#' background used by the package.
 #' @examples
 #' # Calculate absolute humidity
 #' hum_absolute(rh = 70, temp = 25)
@@ -89,6 +93,8 @@ hum_absolute.weather_station <- function(weather_station, ...) {
 #' The enthalpy of vaporization (\eqn{L}) is the amount of heat required to convert a unit mass of a liquid into vapor without a temperature change. It is calculated using the formula:
 #' \deqn{L = (2.5008 - 0.002372 \times T) \times 10^6}
 #' where \eqn{T} is the temperature in °C.
+#' The temperature-dependent latent-heat formula is documented from Bendix
+#' (2004) appendix material.
 #' @examples
 #' # Calculate enthalpy of vaporization
 #' hum_evap_heat(temp = 25)
@@ -129,6 +135,10 @@ hum_evap_heat.weather_station <- function(weather_station, ...) {
 #' @return Numeric. Precipitable water in cm·grams.
 #' @details
 #' Precipitable water (\eqn{PW}) is the total amount of water vapor in a column of air from the surface to the top of the atmosphere. It is calculated using reference temperature and pressure values based on location and season.
+#' The internal reference table provides standard-atmosphere \eqn{T_0} and
+#' \eqn{pwSt} values for broad latitude and season classes. The table and the
+#' pressure/temperature scaling relation are cited to Bendix (2004) appendix
+#' material.
 #' @examples
 #' # Calculate precipitable water
 #' hum_precipitable_water(datetime = as.POSIXlt("2022-07-15"), lat = 50, elev = 100, temp = 20)

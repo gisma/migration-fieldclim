@@ -46,7 +46,9 @@ The longwave outgoing radiation (\\LW\_{out}\\) is calculated as:
 \$\$LW\_{out} = \epsilon \cdot \sigma \cdot T\_{surface}^4\$\$ where:
 \\\epsilon\\ is the emissivity of the surface, \\\sigma\\ is the
 Stefan-Boltzmann constant, and \\T\_{surface}\\ is the surface
-temperature in Kelvin.
+temperature in Kelvin. Emissivity is selected from the package
+`surface_properties` table. Bendix/Oke-style surface-property background
+is used for the method context.
 
 ## References
 

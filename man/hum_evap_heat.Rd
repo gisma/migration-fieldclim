@@ -29,6 +29,8 @@ Calculates heat of evaporation for water from air temperature.
 The enthalpy of vaporization (\eqn{L}) is the amount of heat required to convert a unit mass of a liquid into vapor without a temperature change. It is calculated using the formula:
 \deqn{L = (2.5008 - 0.002372 \times T) \times 10^6}
 where \eqn{T} is the temperature in °C.
+The temperature-dependent latent-heat formula is documented from Bendix
+(2004) appendix material.
 }
 \examples{
 # Calculate enthalpy of vaporization

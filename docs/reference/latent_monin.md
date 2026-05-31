@@ -117,7 +117,8 @@ states are guarded elementwise and return `NA` with a warning. Zero
 moisture gradient returns zero latent heat flux. The default cap is set
 to NULL. \$\$\phi_q = \begin{cases} 0.95 \cdot (1 - 11.6 \cdot
 s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\ 0.95 + 7.8 \cdot s_1, &
-\text{if } Ri_g \> 0 \end{cases}\$\$
+\text{if } Ri_g \> 0 \end{cases}\$\$ These flux-gradient and
+Businger-type stability terms use Foken/Bendix method background.
 
 ## References
 

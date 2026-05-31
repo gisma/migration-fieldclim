@@ -37,6 +37,7 @@ Calculates the absolute optical air mass.
 The absolute optical air mass is calculated using the formula:
 \deqn{M_{abs} = M_{rel} \cdot \frac{p}{p_0}}
 where \eqn{M_{rel}} is the relative optical air mass, \eqn{p} is the local air pressure, and \eqn{p_0} is the standard pressure (1013.25 hPa).
+The air-mass approximation is cited to Bendix (2004) appendix material.
 }
 \examples{
 # Calculate absolute optical air mass

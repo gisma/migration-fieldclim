@@ -45,7 +45,8 @@ The volumetric heat capacity (\\C_v\\) of the soil is determined based
 on its texture and moisture content. The values are interpolated from
 measured data for different soil types. Values below the tabulated
 moisture domain return `NA`; values above the tabulated domain use the
-highest tabulated heat capacity.
+highest tabulated heat capacity. The sand, clay and peat tables are
+package lookup values cited to Bendix (2004) appendix material.
 
 ## References
 

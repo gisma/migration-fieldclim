@@ -64,7 +64,10 @@ northern hemisphere.
 Precipitable water (\\PW\\) is the total amount of water vapor in a
 column of air from the surface to the top of the atmosphere. It is
 calculated using reference temperature and pressure values based on
-location and season.
+location and season. The internal reference table provides
+standard-atmosphere \\T_0\\ and \\pwSt\\ values for broad latitude and
+season classes. The table and the pressure/temperature scaling relation
+are cited to Bendix (2004) appendix material.
 
 ## References
 

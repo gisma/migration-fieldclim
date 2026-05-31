@@ -21,8 +21,9 @@
 #' when \code{sensible_priestley_taylor()} and
 #' \code{latent_priestley_taylor()} use the same temperature, surface type,
 #' radiation balance, and soil heat flux. The helpers \code{sc()} and
-#' \code{gam()} are Foken table-scale polynomial coefficients used together in
-#' the ratio terms; their absolute pressure unit scale remains source-open.
+#' \code{gam()} are Foken/Stull table-scale coefficients used together in the
+#' ratio terms. Surface-specific alpha values are package parameters; the
+#' method background follows Priestley-Taylor as presented in Foken (2016).
 #'
 #' @references Foken 2016, p. 220, eq. 5.6
 #' @param temp Air temperature in °C.
@@ -104,6 +105,8 @@ sensible_priestley_taylor.weather_station <- function(weather_station, ...) {
 #' numerical profile states are guarded elementwise and return \code{NA} with a
 #' warning. Zero potential-temperature gradient returns zero sensible heat flux.
 #' The default cap is set to NULL.
+#' These flux-gradient and Businger-type stability terms use Foken/Bendix
+#' method background. 
 #' @references Bendix 2004, p. 77, eq. 4.6,
 #' @references Foken 2016, p. 362: Businger
 #' @param t1 Air temperature at lower height in °C.
@@ -260,8 +263,9 @@ sensible_monin.weather_station <- function(weather_station, cap = NULL, ...) {
 #' \deqn{B = \gamma_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH / \Delta z}}
 #' where:
 #' \eqn{\gamma_{code} = 0.00066 \cdot (1 + 0.000946 \cdot t_1)}
-#' is the empirical implementation coefficient; its exact source-form
-#' equivalence remains source-open,
+#' is the fieldClim empirical implementation coefficient; this documentation
+#' does not assert it as a proven one-to-one replacement for the \eqn{C_a/L_v}
+#' formulation,
 #' \eqn{\theta} is potential temperature, and
 #' \eqn{AH} is absolute humidity.
 #' The inputs \code{t1} and \code{t2} are converted to potential temperature

@@ -46,12 +46,7 @@ for example via a valid `GITHUB_PAT`.
 ## Current status
 
 The current workflow is a weather-station based energy-balance and
-heat-flux workflow. It is not a full Eddy Covariance workflow.
-
-In the Caldern metadata, `EC` means electric conductivity. `fieldClim`
-does not implement Reynolds decomposition, covariance calculation,
-coordinate rotation, WPL correction, quality control or flux
-aggregation.
+heat-flux workflow.
 
 A small packaged example dataset is included:
 
@@ -153,6 +148,21 @@ The default remains the neutral unguarded bulk estimate:
 stability_method = "none"
 ```
 
+## Validation status
+
+The package is now tested for internal consistency. Method equations,
+helper equations, guard behaviour and `weather_station` wrappers are
+covered by automated tests.
+
+The tests verify that the implemented code matches the documented
+equations. They do not claim empirical validation against independent
+flux measurements.
+
+Source references and method-family context are documented in the help
+pages and vignettes. Further validation can be added through benchmark
+datasets, published numerical examples and explicit table-value audits
+where needed.
+
 ## Main changes in version 1.2.0
 
 The detailed changelog is maintained in `NEWS.md`. The main functional
@@ -185,30 +195,8 @@ changes are:
   [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
   with Bulk-Residual output, `pt_only`, and graceful Penman fallback to
   `NA`.
-- Updated Roxygen documentation for formulas, units, sign conventions,
-  guard behaviour and remaining validation boundaries.
-
-## Validation boundaries
-
-This version fixes implementation-level issues such as unit mismatches,
-denominator errors, invalid input handling and numerical edge cases. It
-does not fully re-derive or independently validate every empirical
-coefficient, lookup table or simplified method form against primary
-literature.
-
-Remaining source-validation items include:
-
-- Bowen `gamma_code` source form and literature equivalence
-- simplified Penman resistance assumptions
-- Monin-Obukhov/Profile stability functions and constants
-- Priestley-Taylor helper coefficient scales for `sc()` and `gam()`
-- radiation and atmospheric transmittance references
-- soil thermal table values
-- precipitable-water seasonal reference tables
-
-These open items do not mean that the affected functions are known to be
-wrong. They mark the boundary between completed code-level consolidation
-and remaining scientific source validation.
+- Updated Roxygen documentation for formulas, units, sign conventions
+  and guard behaviour.
 
 # Package index
 

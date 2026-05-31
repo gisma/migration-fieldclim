@@ -84,6 +84,8 @@ To address this, the stability parameter (\eqn{s_1}) can be capped to a maximum 
 0.95 \cdot (1 - 11.6 \cdot s_1)^{-0.5}, & \text{if } Ri_g \leq 0 \\
 0.95 + 7.8 \cdot s_1, & \text{if } Ri_g > 0
 \end{cases}}
+These flux-gradient and Businger-type stability terms use Foken/Bendix
+method background.
 }
 \examples{
 # Calculate latent heat flux using Monin-Obukhov length

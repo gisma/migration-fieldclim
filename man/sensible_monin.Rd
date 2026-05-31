@@ -78,6 +78,8 @@ difference \eqn{z_2 - z_1}. Invalid heights, invalid wind speeds, and invalid
 numerical profile states are guarded elementwise and return \code{NA} with a
 warning. Zero potential-temperature gradient returns zero sensible heat flux.
 The default cap is set to NULL.
+These flux-gradient and Businger-type stability terms use Foken/Bendix
+method background.
 }
 \examples{
 # Calculate sensible heat flux using the Monin-Obukhov method

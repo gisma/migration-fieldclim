@@ -1,0 +1,124 @@
+Add generic source references for inherited tables and empirical coefficients.
+
+Goal:
+Update roxygen documentation so hard-coded empirical tables, method coefficients and package-specific parameterizations are cited at the function level. This is documentation only. Do not change formulas, values, behavior, tests or generated documentation by hand.
+
+Context:
+A source-table inventory exists in `dev/source-table-audit/source-table-inventory.md`.
+A summary of the Bendix/Foken source check exists in `dev/source-table-audit/README.md`.
+
+Allowed edits:
+- R/utility.R
+- R/humidity.R
+- R/soil.R
+- R/utility_turbulent_flux.R
+- R/latent.R
+- R/sensible.R
+- R/transmittance.R
+- R/radiation.R
+- R/solar.R
+- R/terrain.R
+- R/turbulence.R
+- R/boundary_layers.R
+- R/bulk.R only if references for bulk constants are currently missing and wording can remain generic
+- generated man/*.Rd via devtools::document()
+
+Do not edit:
+- function bodies
+- tests/*
+- vignettes/*
+- README.md
+- NEWS.md
+- DESCRIPTION
+- NAMESPACE
+- _pkgdown.yml
+- dev/physics-audit/*
+- dev/source-table-audit/*
+
+Core rules:
+1. Documentation only. Do not change any numeric value, formula, default argument, warning, guard or return value.
+2. Add or refine roxygen `@references` and short `@details` text where useful.
+3. Do not claim full independent source validation.
+4. Do not claim one-to-one table validation unless the source summary explicitly says the table was found.
+5. Use generic but honest wording such as "based on", "uses values consistent with", "method background", or "package-specific implementation".
+6. Where only the method family is supported, cite it as method background, not as exact source of the implemented values.
+7. Where a package-specific shortcut remains unresolved, document that explicitly and neutrally.
+8. Keep wording compact. Do not turn function help pages into long audit reports.
+9. Run `devtools::document()`, then `devtools::test()`, then `devtools::check()`.
+
+Documentation targets:
+
+A. `hum_precipitable_water()`
+- Add/keep reference to Bendix (2004) appendix material for standard-atmosphere precipitable-water values.
+- Mention that the reference table provides `T0` and `pwSt` values and the pressure/temperature scaling relation.
+- Do not change the table.
+
+B. Transmittance functions
+- `trans_rayleigh()`, `trans_ozone()`, `trans_vapor()`, `trans_gas()`, `trans_air_mass_rel()`, `trans_air_mass_abs()`, `trans_aerosol()`
+- Cite Bendix (2004) appendix material for atmospheric transmittance approximations.
+- For Rayleigh/ozone/vapor/gas, note that the equations are Iqbal-style approximations as presented by Bendix if already supported in the documentation.
+- For aerosol, cite Bendix (2004) appendix material for the visibility / tau table and aerosol expression.
+- Do not alter formulas.
+
+C. Soil thermal functions
+- `soil_thermal_cond()`, `soil_heat_cap()`, `soil_attenuation()`
+- Cite Bendix (2004) appendix material for soil thermal properties of sand, clay and peat.
+- Mention that `soil_attenuation()` uses conductivity and volumetric heat capacity in the documented attenuation equation.
+- Do not validate or alter interpolation/clamp policy.
+
+D. Humidity and thermodynamic helpers
+- `hum_specific()`, `hum_absolute()`, `hum_evap_heat()`, `temp_pot_temp()`, `pres_*()` if currently incomplete
+- Cite Bendix (2004) appendix material for humidity, vapor pressure, potential temperature and latent heat formulas where already aligned.
+- Add no long discussion.
+
+E. Priestley-Taylor helpers and PT functions
+- `sc()`, `gam()` if roxygen-visible or documented indirectly
+- `latent_priestley_taylor()`, `sensible_priestley_taylor()`
+- Cite Foken (2016) for Priestley-Taylor equations and temperature-dependent `gamma` / `sc` table.
+- For the package alpha lookup table, avoid claiming a one-to-one source match. Use wording:
+  "Surface-specific alpha values are package parameters; the method background follows Priestley-Taylor as presented in Foken (2016)."
+
+F. Bowen
+- `bowen_ratio()` helper if documented
+- `sensible_bowen()`, `latent_bowen()`
+- Cite Bendix (2004) for the Bowen-ratio formulation based on heat-capacity density, latent heat of vaporization, temperature difference and absolute-humidity difference.
+- For exported `gamma_code`, add neutral wording:
+  "The exported Bowen implementation uses the fieldClim coefficient `gamma_code = 0.00066 * (1 + 0.000946 * t1)`; this is documented as the package implementation and not asserted here as a proven one-to-one replacement for the `Ca / Lv` formulation."
+- Do not change beta formula.
+
+G. Penman
+- `latent_penman()`
+- Cite Foken (2016) or existing Monteith/Penman references as method background for Penman-type combination methods.
+- For `surface_resistance` and alias mappings, document them as package parameters/mappings.
+- Do not claim the resistance table is directly sourced from Foken unless a one-to-one table exists in the source summary.
+- Do not change the hPa/kPa fix or any formula.
+
+H. Monin-Obukhov/Profile and turbulent exchange helpers
+- `sensible_monin()`, `latent_monin()`, `turb_flux_*` profile/stability helpers
+- Cite Foken (2016) for flux-gradient similarity / Monin-Obukhov / Businger-type method background where appropriate.
+- If constants or branch logic are package-specific or only partly matched, state method background without claiming full one-to-one validation.
+- Do not change formulas or constants.
+
+I. Surface properties and roughness/displacement
+- `surface_properties`, `rad_sw_out()`, `rad_lw_out()`, `turb_roughness_length()`, `turb_displacement()`, `turb_ustar()`
+- For albedo/emissivity, cite Bendix (2004) / Oke-style surface-property background where already supported.
+- For roughness length and package surface-class mappings, document them as package parameters unless a direct source is present.
+- Do not alter values.
+
+J. Boundary-layer helpers
+- `bound_mech_low()`, `bound_mech_avg()`, `bound_thermal_avg()`
+- Cite Bendix (2004) as current method background.
+- Do not alter coefficients.
+
+After edits:
+- Run `devtools::document()`.
+- Run `devtools::test()`.
+- Run `devtools::check()`.
+
+Report:
+- files changed
+- functions whose references were updated
+- whether any source code changed (must be no)
+- whether any formulas/defaults changed (must be no)
+- test result
+- check result

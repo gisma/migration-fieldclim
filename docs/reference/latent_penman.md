@@ -118,7 +118,10 @@ the same kPa scale.
 
 The aerodynamic resistance (\\r_a\\) is calculated based on wind speed,
 observation height, and surface roughness. The surface resistance
-(\\r_s\\) is selected based on the specified surface type. The function
+(\\r_s\\) is selected based on the specified surface type. The
+resistance table and fieldClim surface aliases are package
+parameters/mappings used with this Penman-Monteith-type implementation;
+they are not documented here as a one-to-one source table. The function
 returns latent heat flux only; it does not return evaporation depth or a
 paired sensible heat flux and is not forced to close \\R_n - G\\.
 
@@ -151,6 +154,8 @@ example, `field` is mapped to `Temperate grassland`.
 Monteith, John L., Mike H. Unsworth, and Ann Webb. "Principles of
 environmental physics." Quarterly Journal of the Royal Meteorological
 Society 120.520 (1994): 1699.
+
+Foken 2016, method background for Penman-type combination methods.
 
 ## Examples
 

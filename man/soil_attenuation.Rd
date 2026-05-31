@@ -35,6 +35,9 @@ where:
 \eqn{C_v} is the volumetric heat capacity of the soil (MJ/(m³ * K));
 \eqn{10^6} converts it to J/(m³ * K) for the calculation,
 \eqn{86400} is the number of seconds in a day.
+The attenuation equation uses the package conductivity and volumetric heat
+capacity lookups and follows the Bendix (2004) soil thermal-property
+background cited for these helpers.
 }
 \examples{
 # Calculate soil attenuation length

@@ -57,7 +57,9 @@ When the obstacle height (`obs_height`) is provided, the roughness
 length is calculated as 10% of the obstacle height.
 
 When the surface type (`surface_type`) is provided, the roughness length
-is looked up from predefined values.
+is looked up from predefined values. The surface-class lookup values are
+package parameters. Bendix (2004) is cited as roughness-length method
+background.
 
 ## References
 

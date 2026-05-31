@@ -55,6 +55,9 @@ positive values signify stable conditions, whereas values around zero represent
 neutral conditions. Invalid heights, invalid wind speeds, and weak wind-shear
 cases return \code{NA}; these helpers are diagnostics and do not enforce
 turbulent heat-flux closure.
+The Richardson-number formula and stability interpretation are cited to
+Bendix (2004) method background; the numerical guard threshold is a package
+implementation parameter.
 }
 \references{
 Bendix 2004, p. 43, eq. 2.5

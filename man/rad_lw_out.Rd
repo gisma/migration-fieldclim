@@ -36,6 +36,8 @@ where:
 \eqn{\epsilon} is the emissivity of the surface,
 \eqn{\sigma} is the Stefan-Boltzmann constant, and
 \eqn{T_{surface}} is the surface temperature in Kelvin.
+Emissivity is selected from the package \code{surface_properties} table.
+Bendix/Oke-style surface-property background is used for the method context.
 }
 \examples{
 # Calculate longwave outgoing radiation

@@ -57,7 +57,9 @@ Transmittance ratio from 0 to 1, unitless.
 The transmittance due to aerosols is calculated using the formula:
 \$\$T\_{aerosol} = \exp(-x^{0.873} \cdot (1 + x - x^{0.7088}) \cdot
 M\_{abs}^{0.9108})\$\$ where \\x\\ is a function of the visibility and
-\\M\_{abs}\\ is the absolute optical air mass.
+\\M\_{abs}\\ is the absolute optical air mass. The visibility/\\\tau\\
+table and aerosol expression are cited to Bendix (2004) appendix
+material.
 
 ## References
 

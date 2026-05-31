@@ -160,7 +160,9 @@ The implemented potential-temperature gradient uses the measurement-height
 difference \(z_2 - z_1\). Invalid heights, invalid wind speeds, and invalid
 numerical profile states are guarded elementwise and return <code>NA</code> with a
 warning. Zero potential-temperature gradient returns zero sensible heat flux.
-The default cap is set to NULL.</p>
+The default cap is set to NULL.
+These flux-gradient and Businger-type stability terms use Foken/Bendix
+method background.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

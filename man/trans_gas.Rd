@@ -37,6 +37,8 @@ Calculates transmittance due to O\eqn{_2} and CO\eqn{_2}.
 The transmittance due to gases is calculated using the formula:
 \deqn{T_{gas} = \exp(-0.0127 \cdot M_{abs}^{0.26})}
 where \eqn{M_{abs}} is the absolute optical air mass.
+This is an atmospheric transmittance approximation cited to Bendix (2004)
+appendix material.
 }
 \examples{
 # Calculate transmittance due to gas

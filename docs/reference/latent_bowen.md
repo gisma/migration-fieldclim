@@ -94,13 +94,13 @@ The implemented Bowen ratio (\\B\\) is calculated from a
 potential-temperature gradient and an absolute-humidity gradient: \$\$B
 = \gamma\_{code} \cdot \frac{\Delta \theta / \Delta z}{\Delta AH /
 \Delta z}\$\$ where: \\\gamma\_{code} = 0.00066 \cdot (1 + 0.000946
-\cdot t_1)\\ is the empirical implementation coefficient; its exact
-source-form equivalence remains source-open, \\\theta\\ is potential
-temperature, and \\AH\\ is absolute humidity. The inputs `t1` and `t2`
-are converted to potential temperature before the temperature gradient
-is formed. The inputs `hum1` and `hum2` are relative humidity values
-that are converted internally to absolute humidity before the humidity
-gradient is formed.
+\cdot t_1)\\ is the fieldClim empirical implementation coefficient; this
+documentation does not assert it as a proven one-to-one replacement for
+the \\C_a/L_v\\ formulation, \\\theta\\ is potential temperature, and
+\\AH\\ is absolute humidity. The inputs `t1` and `t2` are converted to
+potential temperature before the temperature gradient is formed. The
+inputs `hum1` and `hum2` are relative humidity values that are converted
+internally to absolute humidity before the humidity gradient is formed.
 
 When \\1 + B\\ is close to zero, the latent heat flux can become
 unrealistically high. The `cap` parameter is a numerical safeguard that

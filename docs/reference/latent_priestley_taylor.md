@@ -58,10 +58,11 @@ vapor pressure curve, \\\gamma\\ is the psychrometric constant, \\R_n\\
 is the net radiation, and \\G\\ is the soil heat flux.
 
 The Priestley-Taylor coefficient depends on the surface type and is
-selected from the internal `priestley_taylor_coefficient` table. The
-helpers `sc()` and `gam()` are Foken table-scale polynomial coefficients
-used together in the ratio \\\Delta / (\Delta + \gamma)\\; their
-absolute pressure unit scale remains source-open.
+selected from the internal `priestley_taylor_coefficient` table. These
+surface-specific alpha values are package parameters; the method
+background follows Priestley-Taylor as presented in Foken (2016). The
+helpers `sc()` and `gam()` are Foken/Stull table-scale coefficients used
+together in the ratio \\\Delta / (\Delta + \gamma)\\.
 
 ## References
 

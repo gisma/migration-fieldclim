@@ -113,10 +113,11 @@ where:
 \(R_n\) is the net radiation, and
 \(G\) is the soil heat flux.</p>
 <p>The Priestley-Taylor coefficient depends on the surface type and is selected
-from the internal <code>priestley_taylor_coefficient</code> table. The helpers
-<code>sc()</code> and <code>gam()</code> are Foken table-scale polynomial coefficients
-used together in the ratio \(\Delta / (\Delta + \gamma)\); their absolute
-pressure unit scale remains source-open.</p>
+from the internal <code>priestley_taylor_coefficient</code> table. These
+surface-specific alpha values are package parameters; the method background
+follows Priestley-Taylor as presented in Foken (2016). The helpers
+<code>sc()</code> and <code>gam()</code> are Foken/Stull table-scale coefficients used
+together in the ratio \(\Delta / (\Delta + \gamma)\).</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

@@ -44,10 +44,11 @@ where:
 \eqn{G} is the soil heat flux.
 
 The Priestley-Taylor coefficient depends on the surface type and is selected
-from the internal \code{priestley_taylor_coefficient} table. The helpers
-\code{sc()} and \code{gam()} are Foken table-scale polynomial coefficients
-used together in the ratio \eqn{\Delta / (\Delta + \gamma)}; their absolute
-pressure unit scale remains source-open.
+from the internal \code{priestley_taylor_coefficient} table. These
+surface-specific alpha values are package parameters; the method background
+follows Priestley-Taylor as presented in Foken (2016). The helpers
+\code{sc()} and \code{gam()} are Foken/Stull table-scale coefficients used
+together in the ratio \eqn{\Delta / (\Delta + \gamma)}.
 }
 \examples{
 # Calculate latent heat flux using Priestley-Taylor method

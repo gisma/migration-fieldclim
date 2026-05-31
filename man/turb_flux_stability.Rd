@@ -28,6 +28,8 @@ Gradient-Richardson-Number thresholds.
 Conversion of Gradient-Richardson-Number to stability string. Non-finite
 Richardson numbers return \code{NA}. This is a diagnostic classification,
 not a heat-flux closure check.
+The class thresholds follow the current package implementation based on
+Bendix (2004) stability-background material.
 }
 \references{
 Based on Bendix 2004, p.43, picture 2.10

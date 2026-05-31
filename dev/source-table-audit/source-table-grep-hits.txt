@@ -1,0 +1,62 @@
+# Source-table inventory grep hits
+
+This file records compact grep/search targets used for the source-table inventory. It is not exhaustive output from every search; large generated assets and irrelevant numeric SVG paths were excluded.
+
+## Searches used
+
+- `rg -n "data.frame|matrix|row.names|lookup|table|c\(" R`
+- `rg -n "Bendix|Foken|Monteith|Penman|Priestley|Taylor|Bowen|Monin|Obukhov|Stull|Campbell|Oke" R man vignettes dev/physics-audit README.md NEWS.md DESCRIPTION`
+- `rg -n "alpha|gamma_code|0.00066|0.000946|tropic|temperate|subarctic|pwst|t0|sand|clay|peat|surface_type|resistance|roughness|z0|rs|ra|trans_|air_mass|ozone|rayleigh|aerosol|vapor|von Karman|karman|0.41|9.81|273.15|0.622" R tests/testthat man vignettes dev/physics-audit README.md NEWS.md DESCRIPTION`
+
+## Key R-source hits
+
+```text
+R/utility.R:1-9 global constants: p0_default, g_default, rl_default, c2k_default, sigma_default, ozone_column_default, vis_default, sol_const_default
+R/utility.R:12-69 surface_properties table: surface_type, emissivity, roughness_length, albedo
+R/utility.R:72-90 priestley_taylor_coefficient alpha table
+R/utility.R:92-110 surface_resistance rs table
+R/humidity.R:26-29 hum_specific 0.622
+R/humidity.R:66-69 hum_absolute 0.21668
+R/humidity.R:104-105 hum_evap_heat coefficients 2.5008, 0.002372, 10^6
+R/humidity.R:145-149 hum_precipitable_water t0/pwst table
+R/soil.R:105-118 soil_thermal_cond texture tables
+R/soil.R:166-180 soil_heat_cap texture tables and clamp
+R/soil.R:222-226 soil_attenuation 10^6, pi, 86400
+R/utility_turbulent_flux.R:16-18 sc polynomial coefficients
+R/utility_turbulent_flux.R:37-39 gam polynomial coefficients
+R/utility_turbulent_flux.R:54-70 bowen_ratio and heat_capacity coefficients
+R/sensible.R:315-317 exported Bowen gamma_code constants
+R/latent.R:627-629 exported Bowen gamma_code constants
+R/latent.R:93-105 Penman surface aliases
+R/latent.R:237-257 Penman cp/rho/gamma/delta/roughness/k constants
+R/turbulent_flux.R:52-58 Monin length thresholds and constants
+R/turbulent_flux.R:120-155 gradient Richardson constants/defaults
+R/turbulent_flux.R:209-214 stability thresholds
+R/turbulent_flux.R:250-281 exchange quotient heat constants
+R/turbulent_flux.R:334-365 exchange quotient impulse constants
+R/sensible.R:171-189 sensible_monin constants
+R/latent.R:477-494 latent_monin constants
+R/bulk.R:126-135 bulk defaults and Richardson guard thresholds
+R/radiation.R:181 rad_sw_in 0.9751
+R/radiation.R:227-232 rad_sw_toa sol_const default 1361
+R/radiation.R:300-301 diffuse radiation 0.5 and exponents
+R/radiation.R:546-549 air emissivity 1.24 and 1/7
+R/transmittance.R:31-33 gas transmittance constants
+R/transmittance.R:127-132 relative air mass constants
+R/transmittance.R:180-186 ozone transmittance constants
+R/transmittance.R:231-233 Rayleigh constants
+R/transmittance.R:277-281 vapor constants
+R/transmittance.R:327-339 aerosol tau table/constants
+R/solar.R:30-31 eccentricity constants
+R/solar.R:76 day-angle denominator 365
+R/solar.R:207 declination obliquity 23.44
+R/solar.R:256 ecliptic longitude constants
+R/solar.R:300 medium anomaly constants
+R/solar.R:348 hour-angle constants
+R/solar.R:397 medium suntime lon/15
+R/solar.R:446 time formula constants
+R/turbulence.R:40-47 roughness lookup/0.1 obstacle ratio
+R/turbulence.R:106-110 displacement constants
+R/turbulence.R:173 ustar 0.4
+R/boundary_layers.R:27-58 mechanical boundary constants 0.3 and 0.43
+```

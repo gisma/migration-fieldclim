@@ -46,7 +46,8 @@ The relative optical air mass is calculated using the formula:
 \$\$M\_{rel} = \frac{1}{\sin(elevation) + 1.5 \cdot
 elevation^{-0.72}}\$\$ where \\elevation\\ is the solar elevation angle
 in degrees. The formula is only evaluated for positive solar elevation;
-below-horizon or invalid elevations return `NA` with a warning.
+below-horizon or invalid elevations return `NA` with a warning. The
+air-mass approximation is cited to Bendix (2004) appendix material.
 
 ## References
 

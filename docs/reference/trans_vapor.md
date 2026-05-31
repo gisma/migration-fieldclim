@@ -53,7 +53,9 @@ Transmittance ratio from 0 to 1, unitless.
 The transmittance due to water vapor is calculated using the formula:
 \$\$T\_{vapor} = 1 - 2.4959 \cdot x \cdot ((1 + 79.034 \cdot
 x)^{0.6828} + 6.385 \cdot x)^{-1}\$\$ where \\x\\ is the product of the
-precipitable water and the relative optical air mass.
+precipitable water and the relative optical air mass. This is an
+Iqbal-style atmospheric transmittance approximation as presented in the
+Bendix (2004) appendix material cited for the package.
 
 ## References
 

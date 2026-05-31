@@ -55,6 +55,8 @@ The reflected shortwave incoming radiation (\eqn{SW_{out}}) is calculated using 
 where:
 \eqn{SW_{in}} is the shortwave incoming radiation,
 \eqn{\alpha} is the albedo of the surface.
+Albedo is selected from the package \code{surface_properties} table.
+Bendix/Oke-style surface-property background is used for the method context
 }
 \examples{
 # Calculate reflected shortwave incoming radiation

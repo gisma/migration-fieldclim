@@ -42,6 +42,11 @@ gam <- function(t) {
 #' Bowen-ratio
 #'
 #' Calculates Bowen-ratio.
+#' This internal helper follows the Bendix (2004) Bowen-ratio background using
+#' heat-capacity density, latent heat of vaporization, temperature difference
+#' and absolute-humidity difference. It is separate from the exported Bowen
+#' implementation coefficient documented in \code{sensible_bowen()} and
+#' \code{latent_bowen()}.
 #'
 #' @param t Air temperature in °C.
 #' @param dpot Difference in potential temperature between the two measurement

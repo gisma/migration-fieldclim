@@ -85,7 +85,8 @@ soil_heat_flux.weather_station <- function(weather_station, ...) {
 #' The thermal conductivity (\eqn{\lambda}) of the soil is determined based on its texture and moisture content.
 #' The values are interpolated from measured data for different soil types.
 #' Values outside the tabulated moisture domain return \code{NA}.
-#'
+#' The sand, clay and peat tables are package lookup values cited to Bendix
+#' (2004) appendix material.
 #' @references Bendix 2004, p. 254.
 #' @examples
 #' # Calculate soil thermal conductivity
@@ -145,6 +146,8 @@ soil_thermal_cond.weather_station <- function(weather_station, ...) {
 #' The values are interpolated from measured data for different soil types.
 #' Values below the tabulated moisture domain return \code{NA}; values above
 #' the tabulated domain use the highest tabulated heat capacity.
+#' The sand, clay and peat tables are package lookup values cited to Bendix
+#' (2004) appendix material.
 #'
 #' @references Bendix 2004, p. 254.
 #' @examples
@@ -205,6 +208,9 @@ soil_heat_cap.weather_station <- function(weather_station, ...) {
 #' \eqn{C_v} is the volumetric heat capacity of the soil (MJ/(m³ * K));
 #' \eqn{10^6} converts it to J/(m³ * K) for the calculation,
 #' \eqn{86400} is the number of seconds in a day.
+#' The attenuation equation uses the package conductivity and volumetric heat
+#' capacity lookups and follows the Bendix (2004) soil thermal-property
+#' background cited for these helpers.
 #'
 #' @references Bendix 2004, p. 253.
 #' @examples

@@ -47,8 +47,9 @@ This formula is algebraically equivalent to \eqn{(R_n - G) - Q_e}
 when \code{sensible_priestley_taylor()} and
 \code{latent_priestley_taylor()} use the same temperature, surface type,
 radiation balance, and soil heat flux. The helpers \code{sc()} and
-\code{gam()} are Foken table-scale polynomial coefficients used together in
-the ratio terms; their absolute pressure unit scale remains source-open.
+\code{gam()} are Foken/Stull table-scale coefficients used together in the
+ratio terms. Surface-specific alpha values are package parameters; the
+method background follows Priestley-Taylor as presented in Foken (2016).
 }
 \examples{
 # Calculate sensible heat flux using the Priestley-Taylor method

@@ -53,7 +53,8 @@ Absolute optical air mass, unitless.
 The absolute optical air mass is calculated using the formula:
 \$\$M\_{abs} = M\_{rel} \cdot \frac{p}{p_0}\$\$ where \\M\_{rel}\\ is
 the relative optical air mass, \\p\\ is the local air pressure, and
-\\p_0\\ is the standard pressure (1013.25 hPa).
+\\p_0\\ is the standard pressure (1013.25 hPa). The air-mass
+approximation is cited to Bendix (2004) appendix material.
 
 ## References
 

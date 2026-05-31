@@ -159,10 +159,14 @@ pres_sat_vapor_p.weather_station <- function(weather_station, ...) {
 #' \eqn{p} is the air pressure in hPa,
 #' \eqn{R} is the specific gas constant for air (287.05 m²/s²/K), and
 #' \eqn{T} is the temperature in Kelvin (K).
+#' This helper uses the package pressure and temperature defaults documented in
+#' \code{pres_p()} and follows the Bendix (2004) thermodynamic-helper
+#' background used elsewhere in the package.
 #'
 #' @examples
 #' # Calculate air density at an elevation of 500 meters and temperature of 15°C
 #' pres_air_density(elev = 500, temp = 15)
+#' @references Bendix 2004, p. 261-262, thermodynamic-helper background.
 #' @export
 pres_air_density <- function(...) {
   UseMethod("pres_air_density")

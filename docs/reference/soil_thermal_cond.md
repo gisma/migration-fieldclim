@@ -44,7 +44,8 @@ Soil thermal conductivity in W/m/K.
 The thermal conductivity (\\\lambda\\) of the soil is determined based
 on its texture and moisture content. The values are interpolated from
 measured data for different soil types. Values outside the tabulated
-moisture domain return `NA`.
+moisture domain return `NA`. The sand, clay and peat tables are package
+lookup values cited to Bendix (2004) appendix material.
 
 ## References
 

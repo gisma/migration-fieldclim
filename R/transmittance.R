@@ -14,6 +14,8 @@
 #' The transmittance due to gases is calculated using the formula:
 #' \deqn{T_{gas} = \exp(-0.0127 \cdot M_{abs}^{0.26})}
 #' where \eqn{M_{abs}} is the absolute optical air mass.
+#' This is an atmospheric transmittance approximation cited to Bendix (2004)
+#' appendix material.
 #' @examples
 #' # Calculate transmittance due to gas
 #' trans_gas(
@@ -62,6 +64,7 @@ trans_gas.weather_station <- function(weather_station, ...) {
 #' The absolute optical air mass is calculated using the formula:
 #' \deqn{M_{abs} = M_{rel} \cdot \frac{p}{p_0}}
 #' where \eqn{M_{rel}} is the relative optical air mass, \eqn{p} is the local air pressure, and \eqn{p_0} is the standard pressure (1013.25 hPa).
+#' The air-mass approximation is cited to Bendix (2004) appendix material.
 #' @examples
 #' # Calculate absolute optical air mass
 #' trans_air_mass_abs(
@@ -110,6 +113,7 @@ trans_air_mass_abs.weather_station <- function(weather_station, ...) {
 #' where \eqn{elevation} is the solar elevation angle in degrees. The formula
 #' is only evaluated for positive solar elevation; below-horizon or invalid
 #' elevations return \code{NA} with a warning.
+#' The air-mass approximation is cited to Bendix (2004) appendix material.
 #' @examples
 #' # Calculate relative optical air mass
 #' trans_air_mass_rel(
@@ -163,6 +167,8 @@ trans_air_mass_rel.weather_station <- function(weather_station, ...) {
 #' The transmittance due to ozone is calculated using the formula:
 #' \deqn{T_{ozone} = 1 - (0.1611 \cdot x \cdot (1 + 139.48 \cdot x)^{-0.3035} - 0.002715 \cdot x \cdot (1 + 0.044 \cdot x + 0.0003 \cdot x^2)^{-1})}
 #' where \eqn{x} is the product of the ozone column and the relative optical air mass.
+#' This is an Iqbal-style atmospheric transmittance approximation as presented
+#' in the Bendix (2004) appendix material cited for the package.
 #' @examples
 #' # Calculate transmittance due to ozone
 #' trans_ozone(
@@ -214,6 +220,8 @@ trans_ozone.weather_station <- function(weather_station, ...) {
 #' The transmittance due to Rayleigh scattering is calculated using the formula:
 #' \deqn{T_{rayleigh} = \exp(-0.0903 \cdot M_{abs}^{0.84} \cdot (1 + M_{abs} - M_{abs}^{1.01}))}
 #' where \eqn{M_{abs}} is the absolute optical air mass.
+#' This is an Iqbal-style atmospheric transmittance approximation as presented
+#' in the Bendix (2004) appendix material cited for the package.
 #' @examples
 #' # Calculate transmittance due to rayleigh scattering
 #' trans_rayleigh(
@@ -260,6 +268,8 @@ trans_rayleigh.weather_station <- function(weather_station, ...) {
 #' The transmittance due to water vapor is calculated using the formula:
 #' \deqn{T_{vapor} = 1 - 2.4959 \cdot x \cdot ((1 + 79.034 \cdot x)^{0.6828} + 6.385 \cdot x)^{-1}}
 #' where \eqn{x} is the product of the precipitable water and the relative optical air mass.
+#' This is an Iqbal-style atmospheric transmittance approximation as presented
+#' in the Bendix (2004) appendix material cited for the package.
 #' @examples
 #' # Calculate transmittance due to water vapor
 #' trans_vapor(
@@ -309,6 +319,8 @@ trans_vapor.weather_station <- function(weather_station, ...) {
 #' The transmittance due to aerosols is calculated using the formula:
 #' \deqn{T_{aerosol} = \exp(-x^{0.873} \cdot (1 + x - x^{0.7088}) \cdot M_{abs}^{0.9108})}
 #' where \eqn{x} is a function of the visibility and \eqn{M_{abs}} is the absolute optical air mass.
+#' The visibility/\eqn{\tau} table and aerosol expression are cited to Bendix
+#' (2004) appendix material.
 #' @examples
 #' # Calculate transmittance due to aerosols
 #' trans_aerosol(

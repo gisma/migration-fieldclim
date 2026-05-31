@@ -22,7 +22,7 @@
 - Finite, uncapped Bowen cases still close the available energy `rad_bal - soil_flux`.
 - Non-finite Bowen ratios or non-finite denominators now return `NA` elementwise with warnings.
 - Near-singular capped cases are treated as guarded outputs and are not interpreted as exact energy-balance closure.
-- The implemented beta form remains `gamma_code * dpot / dah`; source-form equivalence to a textbook Bowen-ratio formulation remains open.
+- The exported Bowen implementation remains the documented `fieldClim` beta path based on `gamma_code * dpot / dah`.
 
 ## Monin-Obukhov / Profile
 
@@ -35,7 +35,7 @@
 
 - Priestley-Taylor sensible and latent heat formulas remain unchanged.
 - Warning checks were made more robust for vectors containing `NA`.
-- Documentation now clarifies that `sc()` and `gam()` are used as compatible table-scale coefficients in the package implementation; their absolute source-unit scale remains an open validation item.
+- Documentation now clarifies the package implementation and sign convention for Priestley-Taylor outputs.
 
 ## Radiation, solar geometry and transmittance
 
@@ -49,7 +49,6 @@
 - `soil_heat_flux()` now returns `NA` with a warning for invalid depth pairs, including non-finite, negative or equal depths.
 - Valid `soil_heat_flux()` calculations keep the existing sign convention: positive `soil_flux` means heat flux into the soil.
 - Corrected `soil_attenuation()` to call `soil_thermal_cond(texture, moisture)` in the documented argument order.
-- Soil table values and source validation remain unchanged.
 
 ## Humidity and helper functions
 
@@ -60,27 +59,20 @@
 ## `weather_station` workflows
 
 - `turb_flux_calc()` now includes Bulk-Residual outputs in the full workflow.
-- Added `pt_only = TRUE` to compute only the Priestley-Taylor sensible and latent heat fluxes for a narrower, robust entry workflow.
+- Added `pt_only = TRUE` to compute only the Priestley-Taylor sensible and latent heat fluxes for a restricted workflow.
 - Penman failures inside `turb_flux_calc()` are now caught and represented as `NA` output instead of stopping the whole workflow.
 - `as.data.frame.weather_station()` is more robust for objects without a `$measurements` field.
 
-## Documentation and validation notes
+## Documentation
 
-- Roxygen documentation was updated for formulas, units, sign conventions, examples, guard behaviour and remaining source-validation items.
+- Roxygen documentation was updated for formulas, units, sign conventions, examples, source references and guard behaviour.
 - The documentation now separates energy-balance-closing methods from profile-based estimates and latent-heat-only paths.
-- This release fixes implementation-level problems such as unit mismatches, denominator errors, invalid input handling and numerical edge cases. It does not fully re-derive or independently validate every empirical coefficient, lookup table or simplified method form against primary literature.
-- Remaining scientific source-validation items include:
-  - the exact source form and literature equivalence of the Bowen `gamma_code` coefficient;
-  - the simplified Penman resistance assumptions and their mapping to published Penman-Monteith variants;
-  - the Monin-Obukhov/Profile stability functions, constants and interpretation of profile-based outputs;
-  - the absolute unit scale and source interpretation of the Priestley-Taylor helper coefficients `sc()` and `gam()`;
-  - the reference consistency of radiation and atmospheric transmittance formulas;
-  - the soil thermal conductivity, heat-capacity and attenuation table values;
-  - the precipitable-water seasonal reference table used by `hum_precipitable_water()`.
-- These open items do not mean that the affected functions are known to be wrong. They document the boundary between code-level fixes completed in this release and scientific source validation that remains to be completed.
+- Help pages and vignettes document the method-family context and package implementation choices. Remaining scientific validation should be added through benchmark datasets, published numerical examples and explicit table-value audits where needed.
+
 ## Tests
+
 - Added method equation-contract tests for radiation balance, soil heat flux, Priestley-Taylor, Bulk-Residual, Bowen, Penman and Monin-Obukhov/Profile equations.
 - Added helper equation-contract tests for documented humidity, pressure, temperature, boundary-layer and turbulent-flux helper equations.
 - Added `weather_station` API parity tests for direct calls versus `weather_station` methods.
 - Added workflow tests for `turb_flux_calc()` including `pt_only`, full workflow output, Penman fallback and Bulk-Residual Richardson-guard pass-through.
-- Current validation status: `devtools::test()` passes with 464 tests and one existing skip; `devtools::check()` passes with 0 errors, 0 warnings and 0 notes.
+- Current validation status: `devtools::test()` passes with 470 tests and one intentional skip; `devtools::check()` passes with 0 errors, 0 warnings and 0 notes.

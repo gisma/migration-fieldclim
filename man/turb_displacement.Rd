@@ -33,6 +33,8 @@ This function calculates the displacement height (\eqn{d}) caused by an obstacle
 For vegetation, the displacement height is calculated as two-thirds of the obstacle height.
 
 For urban environments (dense housing), the displacement height is calculated as 80\% of the obstacle height.
+These are package parameterizations cited to Bendix (2004) method
+background.
 }
 \examples{
 # Calculate displacement height for vegetation with a height of 10 meters

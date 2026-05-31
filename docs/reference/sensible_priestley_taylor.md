@@ -61,9 +61,10 @@ This formula is algebraically equivalent to \\(R_n - G) - Q_e\\ when
 `sensible_priestley_taylor()` and
 [`latent_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.md)
 use the same temperature, surface type, radiation balance, and soil heat
-flux. The helpers `sc()` and `gam()` are Foken table-scale polynomial
-coefficients used together in the ratio terms; their absolute pressure
-unit scale remains source-open.
+flux. The helpers `sc()` and `gam()` are Foken/Stull table-scale
+coefficients used together in the ratio terms. Surface-specific alpha
+values are package parameters; the method background follows
+Priestley-Taylor as presented in Foken (2016).
 
 ## References
 

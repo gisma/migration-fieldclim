@@ -87,9 +87,12 @@ and \eqn{\gamma} are handled on the same kPa scale.
 
 The aerodynamic resistance (\eqn{r_a}) is calculated based on wind speed,
 observation height, and surface roughness. The surface resistance (\eqn{r_s})
-is selected based on the specified surface type. The function returns latent
-heat flux only; it does not return evaporation depth or a paired sensible heat
-flux and is not forced to close \eqn{R_n - G}.
+is selected based on the specified surface type. The resistance table and
+fieldClim surface aliases are package parameters/mappings used with this
+Penman-Monteith-type implementation; they are not documented here as a
+one-to-one source table. The function returns latent heat flux only; it does
+not return evaporation depth or a paired sensible heat flux and is not forced
+to close \eqn{R_n - G}.
 
 For weather-station objects, the method uses \code{hum1} as relative humidity
 when present and otherwise uses \code{rh}. Both fields are interpreted as
@@ -123,4 +126,6 @@ latent_penman(
 }
 \references{
 Monteith, John L., Mike H. Unsworth, and Ann Webb. "Principles of environmental physics." Quarterly Journal of the Royal Meteorological Society 120.520 (1994): 1699.
+
+Foken 2016, method background for Penman-type combination methods.
 }

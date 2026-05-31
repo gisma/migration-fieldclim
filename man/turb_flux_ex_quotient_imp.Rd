@@ -51,6 +51,8 @@ Exchange quotient for impulse transmission in kg/(m*s).
 }
 \description{
 Calculation of the exchange quotient of the turbulent impulse transmission.
+The Businger-type constants use Foken (2016) method background and are
+documented as the current package implementation.
 }
 \references{
 Foken 2016, p. 361: Businger.
