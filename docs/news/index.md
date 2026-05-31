@@ -155,5 +155,7 @@
   including `pt_only`, full workflow output, Penman fallback and
   Bulk-Residual Richardson-guard pass-through.
 - Current validation status:
-  ```` devtools::test()```: 688 passed, 4 intentional skips ````devtools::check()\`:
+  [`devtools::test()`](https://devtools.r-lib.org/reference/test.html):
+  688 passed, 4 intentional skips
+  [`devtools::check()`](https://devtools.r-lib.org/reference/check.html):
   0 errors, 0 warnings, 0 notes
