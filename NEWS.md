@@ -9,6 +9,14 @@
 - The Richardson guard attaches `bulk_Ri_g` and `bulk_stability` attributes and returns `NA` for invalid, weak-shear or very stable profile cases.
 - The default Bulk-Residual behaviour remains the neutral, unguarded estimate with `stability_method = "none"`.
 
+## Energy-balance closure diagnostics
+
+- Added `energy_balance_closure()` to inspect how existing heat-flux output fields relate to available energy, `rad_bal - soil_flux`.
+- For paired sensible/latent heat methods, the diagnostic reports `closure_residual = rad_bal - soil_flux - sensible - latent` and `closure_ratio = (sensible + latent) / (rad_bal - soil_flux)`.
+- For Penman, the diagnostic reports `unresolved_complement = rad_bal - soil_flux - latent_penman`; this complement is not a paired sensible heat flux.
+- Monin-Obukhov/Profile residuals are reported as diagnostic differences and are not treated as automatic errors or forced to close the balance.
+- Added `plot_energy_balance_closure()` to plot diagnostic residuals, Penman unresolved complements and closure ratios. Formal closure is not presented as physical validation.
+
 ## Penman latent heat
 
 - Corrected the Penman vapour-pressure-deficit term by converting saturation and actual vapour pressure from hPa to kPa before use.
