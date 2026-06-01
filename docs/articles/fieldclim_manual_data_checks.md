@@ -91,7 +91,7 @@ Tabelle ausgeben.
 | Wärmeflüsse | fühlbare und latente Wärmeflüsse schätzen | `sensible_*`, `latent_*` |
 | Sammelworkflow | mehrere Wärmeflussmethoden in einem Schritt berechnen | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md) |
 
-![](figures/wf-fieldclim-package.png)
+![](figures/fieldclim-package.png)
 
 Die Workflow-Schritte behandeln nicht jede der verfügbaren
 Einzelfunktion isoliert. Vielmehr soll die Abfolge die vorhandenen

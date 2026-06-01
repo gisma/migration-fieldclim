@@ -98,7 +98,7 @@ Mit dem Ausdruck **Kontrolle aus Einzelkomponenten** wird eine arithmetische Pr�
 | Sammelworkflow | mehrere W채rmeflussmethoden in einem Schritt berechnen | `turb_flux_calc()` |
 
 ```{r fieldClim-concept-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
-knitr::include_graphics("figures/wf-fieldclim-package.png")
+knitr::include_graphics("figures/fieldclim-package.png")
 ```
 
 Die Workflow-Schritte behandeln nicht jede der verf체gbaren Einzelfunktion isoliert. Vielmehr soll die Abfolge die vorhandenen Funktionsgruppen in einen Arbeitsablauf gebracht werden: vom Stationsdatensatz 체ber visuelle Plausibilit채tskontrolle,  Strahlung und Bodenw채rmestrom bis zum Vergleich mehrerer W채rmeflussmethoden.
