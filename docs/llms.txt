@@ -439,7 +439,7 @@ changes are:
 ### Tutorials & Workflows (EN)
 
 - [fieldClim: Missing-data inspection and input
-  checks](https://gisma.github.io/migration-fieldclim/articles/fieldclim_missing_data.md):
+  checks](https://gisma.github.io/migration-fieldclim/articles/fieldclim_missing_data_en.md):
 - [fieldClim: Heat-flux workflow with package
   methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_flux_workflow_en.md):
 - [fieldClim: Follow-up workflows and additional package
@@ -448,7 +448,7 @@ changes are:
 ### Tutorials & Workflows (DE)
 
 - [fieldClim: Manuelle Datenprüfung für Energiebilanz und
-  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_manual_data_checks.md):
+  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_missing_data.md):
 - [fieldClim: fieldClim-Workflow für
   Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_flux_workflow.md):
 - [fieldClim: Anschlussworkflows und weitere

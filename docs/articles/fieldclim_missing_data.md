@@ -1,441 +1,676 @@
-# fieldClim: Missing-data inspection and input checks
+# fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden
 
-## Purpose
+## Ziel dieser Vignette
 
-This tutorial shows how to inspect station data before heat-flux
-calculations. The goal is to learn the inspection workflow, not to
-repair the dataset.
+Diese Vignette ist der erste Teil des `fieldClim`-Workflows. Sie bleibt
+bewusst vor der Paketmethodik stehen und prüft den regulären
+Caldern-Stationsdatensatz manuell: Zeitstruktur, Strahlungskomponenten,
+Netto-Strahlung, Bodenwärmestrom und verfügbare Energie.
 
-`fieldClim` does not repair, fill, impute, interpolate or complete the
-data. It reports missingness, gap blocks, variable classes,
-quality-control flags and method readiness. The first decision is the
-variable type and the gap length, because method suitability depends on
-what is missing and how the gap is structured. Quality control comes
-before any external gap-filling workflow.
+Ziel ist nicht, bereits Wärmeflussmethoden zu vergleichen. Ziel ist, die
+Messspalten und die Energiebilanz-Terme so zu verstehen, dass der
+anschließende `fieldClim`-Workflow auf einer geprüften Datenbasis
+aufsetzt.
 
-The sections below repeat the same tutorial pattern: run a command,
-inspect a compact original output, then read a cleaned table and
-interpretation.
+Diese Vignette umfasst die manuellen Schritte 0 bis 4:
 
-## Example dataset
+| Schritt | Leitfrage | Charakter |
+|----|----|----|
+| 0 | Was ist das Arbeitsmodell von `fieldClim`? | Orientierung |
+| 1 | Wie wird der Stationsdatensatz geladen und zeitlich geprüft? | Datenprüfung |
+| 2 | Wie werden kurzwellige Strahlung und Albedo gelesen und kontrolliert? | manuelle Strahlungsprüfung |
+| 3 | Wie werden langwellige Bilanz und Netto-Strahlung geprüft? | manuelle Bilanzprüfung |
+| 4 | Wie entsteht aus Strahlung und Bodenwärmestrom verfügbare Energie? | manuelle Energiebilanzprüfung |
 
-The example is based on the packaged Caldern one-day dataset. It
-contains one five-minute day. Artificial gaps and obvious sensor
-problems were inserted only to demonstrate inspection behavior. The file
-is not a meteorological benchmark; it is a controlled tutorial dataset.
-The original package dataset is unchanged.
+Der eigentliche Paketworkflow mit
+[`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md),
+[`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md)
+und den Wärmeflussmethoden wird in der zweiten Vignette fortgesetzt.
 
-First load the file. The robust file lookup is handled before this
-chunk; the visible command is the part users normally need.
+## Notation
+
+Die Vorlesungsfolien verwenden für die bodennahe Energiebilanz die
+Größen `Q*`, `B`, `L` und `V`. Diese Vignette behält diese Notation im
+Erklärungsteil bei. Erst an der Schnittstelle zum Datensatz und zu
+`fieldClim` wird auf die spezifischen Paket- und Spaltennamen des
+`fieldClim` Pakets gemappt.
+
+![](figures/anchor_mesoklima_p45.png)![](figures/anchor_mesoklima_p46.png)
+
+| Theoriegröße | Bedeutung | Code-Variable in dieser Vignette | Feld im Datensatz oder Paket |
+|----|----|----|----|
+| `Q*` | Strahlungsbilanz / Netto-Strahlung | `Q_star` | `rad_net`, `rad_bal` |
+| `B` | Bodenwärmestrom | `B` | `heatflux_soil`, `soil_flux` |
+| `L` | fühlbarer Wärmestrom | `L` | `sensible_*` |
+| `V` | latenter Wärmestrom | `V` | `latent_*` |
+| `S` | Speicherterm | `S` | hier nicht separat gemessen |
+
+Die Arbeitsbilanz lautet in der Theorie-Notation:
+
+\\ Q^{\*} = B + L + V + S \\
+
+Der Speicherterm `S` wird in diesem Beispieldatensatz nicht separat
+berechnet. Das bedeutet nicht, dass Speicherung nicht existiert. Es
+bedeutet nur, dass die Datengrundlage keine vollständige Auflösung von
+Wärmespeicherung in Luftvolumen, Vegetation, Wasserfilmen,
+oberflächennahem Boden und Messumgebung erlaubt. Für die transparente
+Referenzrechnung wird deshalb gesetzt:
+
+\\ S \approx 0 \\
+
+Damit wird:
+
+\\ Q^{\*} - B = L + V \\
+
+und für die Residualrechnung:
+
+\\ V = Q^{\*} - B - L \\
+
+Mit dem Ausdruck **Kontrolle aus Einzelkomponenten** wird eine
+arithmetische Prüfung bezeichnet: Aus kurzwelliger und langwelliger
+Bilanz wird eine zweite Zeitreihe für `Q*` berechnet und mit der
+gemessenen Spalte `rad_net` verglichen.
+
+## Schritt 0: Was soll das Paket leisten?
+
+`fieldClim` ist kein einzelnes Skript, sondern ein R-Paket mit mehreren
+Ebenen. Für die Arbeit mit mikroklimatischen Stationsdaten ist die
+zentrale Idee das `weather_station`-Objekt. Dieses Objekt bündelt
+Zeitachse, Standort, Messgrößen und Modellparameter. Paketfunktionen
+können damit dieselbe Datenstruktur weiterreichen, ergänzen und als
+Tabelle ausgeben.
+
+| Paketebene | Zweck | Beispiele |
+|----|----|----|
+| Objektstruktur | Messdaten und Parameter bündeln | [`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md), [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) |
+| Strahlung | kurzwellige, langwellige und Netto-Strahlung berechnen oder prüfen | [`rad_sw_bal()`](https://gisma.github.io/migration-fieldclim/reference/rad_sw_bal.md), [`rad_lw_bal()`](https://gisma.github.io/migration-fieldclim/reference/rad_lw_bal.md), [`rad_bal()`](https://gisma.github.io/migration-fieldclim/reference/rad_bal.md) |
+| Solar- und Geländegeometrie | Sonnenstand, Gelände- und Sichtfaktoren vorbereiten | `sol_*`, `terr_*` |
+| Transmission | atmosphärische Dämpfung der Strahlung beschreiben | `trans_*` |
+| Boden | Wärmeleitfähigkeit, Dämpfung und Bodenwärmestrom behandeln | `soil_*` |
+| Feuchte, Druck, Temperatur | Hilfsgrößen für weitere Berechnungen bereitstellen | `hum_*`, `pres_*`, `temp_*` |
+| Wärmeflüsse | fühlbare und latente Wärmeflüsse schätzen | `sensible_*`, `latent_*` |
+| Sammelworkflow | mehrere Wärmeflussmethoden in einem Schritt berechnen | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md) |
+
+![](figures/fieldclim-package.png)
+
+Die Workflow-Schritte behandeln nicht jede der verfügbaren
+Einzelfunktion isoliert. Vielmehr soll die Abfolge die vorhandenen
+Funktionsgruppen in einen Arbeitsablauf gebracht werden: vom
+Stationsdatensatz über visuelle Plausibilitätskontrolle, Strahlung und
+Bodenwärmestrom bis zum Vergleich mehrerer Wärmeflussmethoden.
+
+## Schritt 1: Stationsdaten laden und Zeitstruktur prüfen
+
+Der Beispieldatensatz enthält einen vollständigen 5-Minuten-Tag der
+Caldern-Wiese. Ein vollständiger Tag mit 5-Minuten-Zeitschritten hat 288
+Messzeitpunkte.
 
 ``` r
 
+# Das Paket laden.
+# Die Vignette setzt voraus, dass fieldClim installiert oder im Paketprojekt verfügbar ist.
 library(fieldClim)
 
-caldern <- read.csv(
-  gap_file,
-  na.strings = c("NA", "NULL", ""),
-  stringsAsFactors = FALSE
+# Pfad zur Paket-Beispieldatei.
+# Für eine Paketvignette ist system.file() der passende Weg, weil die Datei
+# nach Installation unter inst/extdata/ ausgeliefert wird.
+caldern_file <- system.file(
+  "extdata",
+  "caldern_wiese_2017-06-30.csv",
+  package = "fieldClim"
 )
+
+# CSV-Datei einlesen.
+# Leere Felder, "NULL" und "NA" werden als fehlende Werte behandelt.
+caldern <- read.csv(
+  caldern_file,
+  na.strings = c("NULL", "NA", "")
+)
+
+# Zeitstempel explizit als Datum-Zeit-Werte interpretieren.
+# Die Zeitzone ist wichtig, weil Strahlungs- und Tagesganginterpretationen
+# zeitabhängig sind.
 caldern$datetime <- as.POSIXct(
   caldern$datetime,
+  format = "%Y-%m-%d %H:%M:%S",
   tz = "Europe/Berlin"
 )
+
+# Anzahl der Zeilen prüfen.
+nrow(caldern)
+#> [1] 288
+
+# Zeitbereich prüfen.
+range(caldern$datetime)
+#> [1] "2017-06-30 00:00:00 CEST" "2017-06-30 23:55:00 CEST"
+
+# Zeitschritt prüfen.
+summary(diff(caldern$datetime))
+#> Time differences in mins
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>       5       5       5       5       5       5
+
+# Spaltennamen anzeigen.
+names(caldern)
+#>  [1] "record"         "datetime"       "Ta_2m"          "Huma_2m"       
+#>  [5] "Ta_10m"         "Huma_10m"       "Windspeed_2m"   "Windspeed_10m" 
+#>  [9] "rad_sw_in"      "rad_sw_out"     "RsNet"          "RlNet"         
+#> [13] "rad_net"        "LUpCo"          "LDnCo"          "water_vol_soil"
+#> [17] "Ts"             "heatflux_soil"  "PCP"
 ```
 
-A compact original view is enough to understand the logger columns used
-in the tutorial. It shows time, air temperature, humidity, net
-radiation, wind speed and soil heat flux.
+**Interpretation.** Der Datensatz ist für den folgenden Workflow gut
+geeignet: Er enthält 288 Messzeitpunkte und deckt damit genau einen
+vollständigen 5-Minuten-Tag ab. Das ist wichtig, weil die späteren
+Wärmeflüsse nicht aus Einzelwerten entstehen, sondern aus einem
+Tagesverlauf. Erst die gleichmäßige Zeitachse macht sichtbar, wann
+Strahlung, Bodenwärmestrom, Temperaturgradienten und Wind
+zusammenwirken. Für Nicht-Meteorolog:innen ist die wichtigste Botschaft:
+Wenn hier schon Zeitstempel, Zeitschritt oder fehlende Werte nicht
+stimmen, sieht eine spätere Flusskurve zwar rechnerisch aus, hat aber
+keine belastbare Bedeutung.
+
+## Schritt 2: Kurzwellige Strahlung und Albedo manuell prüfen
+
+Die Folien zur Strahlung zeigen, dass einfallende kurzwellige Strahlung
+durch Sonnenstand, optische Weglänge und Transmission bestimmt wird. Die
+Albedo-Folie definiert den reflektierten Anteil als Verhältnis von
+ausgehender zu einfallender kurzwelliger Strahlung.
+
+![](figures/anchor_mesoklima_p18.png)![](figures/anchor_mesoklima_p20.png)![](figures/anchor_mesoklima_p33.png)![](figures/anchor_mesoklima_p34.png)
+
+Die kurzwellige Bilanz lautet:
+
+\\ K^{\*} = K\_{down} - K\_{up} \\
+
+Die Albedo lautet:
+
+\\ \alpha = \frac{K\_{up}}{K\_{down}} \\
 
 ``` r
 
-head(caldern[, c(
-  "datetime", "Ta_2m", "Huma_2m", "rad_net",
-  "Windspeed_2m", "heatflux_soil"
-)])
-#>              datetime Ta_2m Huma_2m rad_net Windspeed_2m heatflux_soil
-#> 1 2017-06-30 00:00:00 13.09   100.0 -15.200        0.448      1.551533
-#> 2 2017-06-30 00:05:00 13.01   100.0  -8.920        0.380      1.492695
-#> 3 2017-06-30 00:10:00 13.02   100.0  -1.965        0.548      1.448708
-#> 4 2017-06-30 00:15:00 13.16   100.0  -1.790        0.581      1.390439
-#> 5 2017-06-30 00:20:00 13.27   100.0  -2.469        0.764      1.325316
-#> 6 2017-06-30 00:25:00 13.69    98.1  -3.857        0.589      1.268762
-```
+# Einfallende kurzwellige Strahlung aus der Messspalte übernehmen.
+caldern$K_down <- caldern$rad_sw_in
 
-The overview table summarizes the dataset without printing all rows.
+# Reflektierte kurzwellige Strahlung aus der Messspalte übernehmen.
+caldern$K_up <- caldern$rad_sw_out
 
-| Item                          | Value                    |
-|:------------------------------|:-------------------------|
-| Rows                          | 288                      |
-| First timestamp               | 2017-06-30 00:00:00 CEST |
-| Last timestamp                | 2017-06-30 23:55:00 CEST |
-| Median timestep               | 300 seconds              |
-| Number of variables           | 19                       |
-| Variables with missing values | 6                        |
+# Kurzwellige Bilanz berechnen.
+# Das ist der kurzwellige Anteil, der nach Reflexion an der Oberfläche bleibt.
+caldern$K_star <- caldern$K_down - caldern$K_up
 
-The row count is still the expected 288 records for a five-minute day.
-The inspection problem is therefore not a missing file or an incomplete
-day. It is that specific variables contain gaps or suspicious values
-inside an otherwise regular teaching example.
-
-## Build the weather_station object
-
-[`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md)
-is only a container step. It stores station variables under names
-expected by `fieldClim` functions. It does not check physics, repair
-missing values or calculate replacement fields.
-
-``` r
-
-ws <- build_weather_station(
-  datetime = caldern$datetime,
-  temp = caldern$Ta_2m,
-  rh = caldern$Huma_2m,
-  t1 = caldern$Ta_2m,
-  t2 = caldern$Ta_10m,
-  hum1 = caldern$Huma_2m,
-  hum2 = caldern$Huma_10m,
-  v1 = caldern$Windspeed_2m,
-  v2 = caldern$Windspeed_10m,
-  rad_bal = caldern$rad_net,
-  soil_flux = caldern$heatflux_soil,
-  lat = 50.8405,
-  lon = 8.6832,
-  elev = 270,
-  z1 = 2,
-  z2 = 10,
-  surface_type = "field"
+# Albedo berechnen.
+# Bei sehr kleiner Einstrahlung ist der Quotient instabil; deshalb wird
+# erst ab 50 W/m² gerechnet.
+caldern$alpha <- ifelse(
+  caldern$K_down > 50,
+  caldern$K_up / caldern$K_down,
+  NA
 )
 ```
 
-The compact object structure shows that `ws` is a named weather-station
-object. The vector lengths identify which fields are time series and
-which are station metadata.
+### Einzelplots
 
 ``` r
 
-names(ws)
-#>  [1] "datetime"     "temp"         "rh"           "t1"           "t2"          
-#>  [6] "hum1"         "hum2"         "v1"           "v2"           "rad_bal"     
-#> [11] "soil_flux"    "lat"          "lon"          "elev"         "z1"          
-#> [16] "z2"           "surface_type"
-sapply(ws, length)
-#>     datetime         temp           rh           t1           t2         hum1 
-#>          288          288          288          288          288          288 
-#>         hum2           v1           v2      rad_bal    soil_flux          lat 
-#>          288          288          288          288          288            1 
-#>          lon         elev           z1           z2 surface_type 
-#>            1            1            1            1            1
+# Drei Einzelplots übereinander: einfallend, reflektiert, kurzwellige Bilanz.
+op <- par(mfrow = c(3, 1), mar = c(3.5, 4, 2, 1))
+
+plot(caldern$datetime, caldern$K_down, type = "l", col = "#D55E00", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "K_down: einfallende kurzwellige Strahlung")
+
+plot(caldern$datetime, caldern$K_up, type = "l", col = "#7A7A7A", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "K_up: reflektierte kurzwellige Strahlung")
+
+plot(caldern$datetime, caldern$K_star, type = "l", col = "#000000", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "K*: kurzwellige Bilanz")
 ```
 
-The important names for later checks are `temp`, `rh`, `rad_bal`,
-`soil_flux`, `v1`, `v2`, `t1`, `t2`, `hum1` and `hum2`. Those are the
-names downstream functions use, regardless of the original logger column
-names.
-
-## Run the inspection
-
-Now run the inspection function. It returns a structured report, not
-modified station data.
+![](fieldclim_missing_data_files/figure-html/shortwave-single-plots-1.png)
 
 ``` r
 
-inspection <- inspect_weather_station_inputs(ws)
+
+par(op)
 ```
 
-The first compact original output is simply the object structure: the
-returned list contains field-level status, gap blocks, method readiness,
-quality-control flags, guidance text and a summary.
+**Interpretation.** Die einfallende kurzwellige Strahlung ist der
+sichtbare Tagesmotor der Energiebilanz: nachts nahezu null, tagsüber
+stark ansteigend, bei Bewölkung oder wechselnder Abschattung unruhiger.
+Die reflektierte kurzwellige Strahlung folgt diesem Verlauf, bleibt aber
+deutlich kleiner, weil die Wiesenoberfläche nur einen Teil der
+Sonneneinstrahlung zurückwirft. Die kurzwellige Bilanz `K_star` ist
+deshalb der Teil der Sonnenenergie, der nach der Reflexion tatsächlich
+im System Oberfläche-Atmosphäre verbleibt. Dieser Schritt erklärt
+anschaulich, warum Albedo keine Nebengröße ist: Schon kleine Änderungen
+der Reflexion verändern die verfügbare Energie für Erwärmung,
+Bodenwärmestrom und Verdunstung.
 
 ``` r
 
-names(inspection)
-#> [1] "fields"           "gaps"             "method_readiness" "qc_flags"        
-#> [5] "guidance"         "summary"
-sapply(inspection, function(x) {
-  if (is.data.frame(x)) {
-    paste(nrow(x), "rows x", ncol(x), "columns")
-  } else {
-    paste(class(x), collapse = ", ")
-  }
-})
-#>                 fields                   gaps       method_readiness 
-#> "42 rows x 10 columns"   "7 rows x 9 columns"   "6 rows x 7 columns" 
-#>               qc_flags               guidance                summary 
-#>   "6 rows x 5 columns"   "5 rows x 2 columns"                 "list"
+plot(caldern$datetime, caldern$alpha, type = "l", col = "#005AB5", lwd = 2,
+     xlab = "Zeit", ylab = "Albedo [-]", main = "Effektive Albedo")
+abline(h = median(caldern$alpha, na.rm = TRUE), lty = 2, col = "grey50")
 ```
 
-Read these components as follows. `fields` has one row per expected
-station field. `gaps` reports consecutive missing blocks, not just total
-`NA` counts. `qc_flags` identifies existing values that are suspicious
-or physically impossible. `method_readiness` reports which heat-flux
-methods have their required input fields.
+![](fieldclim_missing_data_files/figure-html/albedo-plot-1.png)
 
-## Inspect variable-level missingness
+**Interpretation.** Die Albedo wird hier nicht als Tabellenwert für
+„Wiese“ eingesetzt, sondern aus den gemessenen Strahlungskomponenten
+berechnet. Dadurch ist sie ein Diagnosewert der konkreten Messsituation.
+Sie kann sich ändern, obwohl das Material gleich bleibt: flacher
+Sonnenstand, diffuse Bewölkung, feuchte Vegetation oder Sensorrauschen
+verändern das Verhältnis von ausgehender zu einfallender Strahlung. Der
+Filter bei niedriger Einstrahlung ist deshalb fachlich nötig. Bei sehr
+kleinen `K_down`-Werten kann ein kleiner Messfehler im Zähler oder
+Nenner den Quotienten stark verzerren; dann würde die Albedo mehr
+Rechenartefakt als Oberflächeneigenschaft zeigen.
 
-This step asks: which station fields contain missing values, and which
-variable classes do those fields represent?
-
-The compact original output below is a filtered view of
-`inspection$fields`. It shows only fields that are present and have at
-least one missing value.
+### Zusammengesetzter Plot
 
 ``` r
 
-subset(
-  inspection$fields,
-  present & n_missing > 0,
-  select = c(field, variable_type, group, n_missing, n_total, missing_fraction)
+cols_sw <- c("#D55E00", "#7A7A7A", "#000000")
+op <- par(mar = c(6, 4, 3, 1), xpd = NA)
+
+plot(caldern$datetime, caldern$K_down, type = "l", col = cols_sw[1], lwd = 2,
+     ylim = range(caldern$K_down, caldern$K_up, caldern$K_star, na.rm = TRUE),
+     xlab = "Zeit", ylab = "W/m²", main = "Kurzwellige Strahlung")
+lines(caldern$datetime, caldern$K_up, col = cols_sw[2], lwd = 2)
+lines(caldern$datetime, caldern$K_star, col = cols_sw[3], lwd = 2)
+legend("bottom", inset = c(0, -0.35), horiz = TRUE, bty = "n",
+       legend = c("K_down", "K_up", "K*"), col = cols_sw, lty = 1, lwd = 2)
+```
+
+![](fieldclim_missing_data_files/figure-html/shortwave-combined-plot-1.png)
+
+``` r
+
+
+par(op)
+```
+
+**Interpretation.** Der zusammengesetzte Plot zeigt die Bilanzlogik in
+einer einzigen Grafik: Aus der einfallenden kurzwelligen Strahlung wird
+die reflektierte kurzwellige Strahlung abgezogen. Die schwarze Linie ist
+deshalb keine neue Messgröße, sondern die rechnerische Nettowirkung der
+kurzwelligen Strahlung. Für die spätere Energiebilanz ist genau diese
+Restgröße relevant: Nicht die gesamte Sonneneinstrahlung steht zur
+Verfügung, sondern nur der Anteil, der nach Reflexion an der Oberfläche
+verbleibt.
+
+## Schritt 3: Langwellige Bilanz und Netto-Strahlung Q\* manuell prüfen
+
+Die Folien zur langwelligen Aus- und Gegenstrahlung beziehen sich auf
+Stefan-Boltzmann-Logik, Emissionsvermögen und atmosphärische
+Gegenstrahlung. Für die Stationsdaten wird daraus die langwellige
+Bilanz.
+
+![](figures/anchor_mesoklima_p39.png)![](figures/anchor_mesoklima_p41.png)
+
+\\ L^{\*} = L\_{down} - L\_{up} \\
+
+\\ Q^{\*} = K^{\*} + L^{\*} \\
+
+``` r
+
+# Langwellige Gegenstrahlung aus der Atmosphäre.
+caldern$L_down <- caldern$LDnCo
+
+# Langwellige Ausstrahlung der Oberfläche.
+caldern$L_up <- caldern$LUpCo
+
+# Langwellige Bilanz.
+caldern$L_star <- caldern$L_down - caldern$L_up
+
+# Netto-Strahlung aus Einzelkomponenten.
+# Das ist eine Kontrollrechnung, keine neue Messung.
+caldern$Q_star_components <- caldern$K_star + caldern$L_star
+
+# Gemessene Netto-Strahlung aus der Datei.
+caldern$Q_star_measured <- caldern$rad_net
+```
+
+### Einzelplots
+
+``` r
+
+op <- par(mfrow = c(3, 1), mar = c(3.5, 4, 2, 1))
+
+plot(caldern$datetime, caldern$L_down, type = "l", col = "#0072B2", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "L_down: langwellige Gegenstrahlung")
+
+plot(caldern$datetime, caldern$L_up, type = "l", col = "#CC79A7", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "L_up: langwellige Ausstrahlung")
+
+plot(caldern$datetime, caldern$L_star, type = "l", col = "#000000", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "L*: langwellige Bilanz")
+```
+
+![](fieldclim_missing_data_files/figure-html/longwave-single-plots-1.png)
+
+``` r
+
+
+par(op)
+```
+
+**Interpretation.** Die langwellige Strahlung verhält sich anders als
+die kurzwellige Sonnenstrahlung. Sie verschwindet nachts nicht, weil
+Atmosphäre und Oberfläche auch ohne Sonne Wärme abstrahlen. `L_down`
+beschreibt die atmosphärische Gegenstrahlung, `L_up` die Ausstrahlung
+der Oberfläche. Die Differenz `L_star` zeigt, ob die Oberfläche
+langwellig Energie gewinnt oder verliert. Für Nicht-Meteorolog:innen ist
+der zentrale Punkt: Kurzwellige Strahlung erklärt vor allem den
+Tagesantrieb durch die Sonne; langwellige Strahlung erklärt, warum die
+Oberfläche auch nachts energetisch aktiv bleibt.
+
+### Kontrolle von Q\* aus Einzelkomponenten
+
+Die Netto-Strahlung `Q*` ist der zentrale Eingang in die Energiebilanz.
+In der Theorie steht `Q*` als Strahlungsbilanz auf der linken Seite der
+bodennahen Energiebilanz:
+
+\\ 0 = Q^{\*} - B - L - V \\
+
+In dieser Vignette entspricht:
+
+| Theorie | Datensatz / Paket                | Bedeutung            |
+|---------|----------------------------------|----------------------|
+| `Q*`    | `rad_net` bzw. `rad_bal`         | Netto-Strahlung      |
+| `B`     | `heatflux_soil` bzw. `soil_flux` | Bodenwärmestrom      |
+| `L`     | `H`, `sensible_*`                | fühlbarer Wärmestrom |
+| `V`     | `LE`, `latent_*`                 | latenter Wärmestrom  |
+
+Theoretisch kann `Q*` aus kurzwelligen und langwelligen
+Einzelkomponenten gebildet werden:
+
+\\ K^{\*} = K\_\downarrow - K\_\uparrow \\
+
+\\ L^{\*} = L\_\downarrow - L\_\uparrow \\
+
+\\ Q^{\*} = K^{\*} + L^{\*} \\
+
+Im Datensatz liegt aber zusätzlich bereits eine Spalte `rad_net` vor.
+Deshalb wird hier nicht einfach eine neue Netto-Strahlung
+“rekonstruiert”, sondern geprüft, ob die vorhandene Spalte `rad_net` und
+die Summe aus Einzelkomponenten dieselbe Bilanzebene beschreiben.
+
+``` r
+
+# Kurzwellige Komponenten:
+# K_down ist die einfallende kurzwellige Strahlung.
+# K_up ist die reflektierte kurzwellige Strahlung.
+caldern$K_down <- caldern$rad_sw_in
+caldern$K_up <- caldern$rad_sw_out
+
+# Kurzwellige Bilanz.
+caldern$K_star <- caldern$K_down - caldern$K_up
+
+# Langwellige Komponenten:
+# L_down ist die atmosphärische Gegenstrahlung.
+# L_up ist die langwellige Ausstrahlung der Oberfläche.
+caldern$L_down <- caldern$LDnCo
+caldern$L_up <- caldern$LUpCo
+
+# Langwellige Bilanz.
+caldern$L_star <- caldern$L_down - caldern$L_up
+
+# Vorhandene Netto-Strahlung aus dem Datensatz.
+caldern$Q_star_measured <- caldern$rad_net
+
+# Kontrollgröße aus Einzelkomponenten.
+# Diese Größe wird hier nur diagnostisch verwendet.
+caldern$Q_star_components <- caldern$K_star + caldern$L_star
+
+# Differenz zwischen Komponentensumme und vorhandener Netto-Strahlung.
+# Positive Werte bedeuten:
+# K* + L* ist größer als rad_net.
+caldern$Q_star_difference <- caldern$Q_star_components - caldern$Q_star_measured
+
+summary(caldern$Q_star_difference)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>   3.595  32.331  78.013  74.078 100.515 187.700
+```
+
+``` r
+
+cols_q <- c("#000000", "#0072B2")
+
+op <- par(mar = c(6, 4, 3, 1), xpd = NA)
+
+plot(
+  caldern$datetime,
+  caldern$Q_star_measured,
+  type = "l",
+  col = cols_q[1],
+  lwd = 2,
+  ylim = range(caldern$Q_star_measured, caldern$Q_star_components, na.rm = TRUE),
+  xlab = "Zeit",
+  ylab = "W/m²",
+  main = "Q*: vorhandene Netto-Strahlung und Komponentensumme"
 )
-#>        field  variable_type     group n_missing n_total missing_fraction
-#> 5    rad_bal      radiation radiation        12     288      0.041666667
-#> 17 soil_flux soil heat flux      soil        72     288      0.250000000
-#> 25        rh       humidity  humidity         5     288      0.017361111
-#> 26      hum1       humidity  humidity         5     288      0.017361111
-#> 33      temp    temperature  profiles         1     288      0.003472222
-#> 34        t1    temperature  profiles         1     288      0.003472222
-#> 37        v1     wind speed  profiles        12     288      0.041666667
+
+lines(
+  caldern$datetime,
+  caldern$Q_star_components,
+  col = cols_q[2],
+  lwd = 2
+)
+
+legend(
+  "bottom",
+  inset = c(0, -0.35),
+  horiz = TRUE,
+  bty = "n",
+  legend = c("Q* vorhanden: rad_net", "Kontrolle: K* + L*"),
+  col = cols_q,
+  lty = 1,
+  lwd = 2
+)
 ```
 
-The same result is easier to read as a compact interpretation table.
-
-|  | Field | Variable class | Group | Missing values | Missing fraction | First missing row | Largest gap (steps) |
-|:---|:---|:---|:---|---:|---:|---:|---:|
-| 1 | hum1 | humidity | humidity | 5 | 1.7% | 40 | 5 |
-| 3 | rh | humidity | humidity | 5 | 1.7% | 40 | 5 |
-| 5 | t1 | temperature | profiles | 1 | 0.3% | 20 | 1 |
-| 6 | temp | temperature | profiles | 1 | 0.3% | 20 | 1 |
-| 7 | v1 | wind speed | profiles | 12 | 4.2% | 130 | 12 |
-| 2 | rad_bal | radiation | radiation | 12 | 4.2% | 100 | 12 |
-| 4 | soil_flux | soil heat flux | soil | 72 | 25.0% | 180 | 72 |
-
-In this dataset, the affected fields are `temp`, `t1`, `rh`, `hum1`,
-`rad_bal`, `v1` and `soil_flux`. The most consequential fields for
-heat-flux calculations are `rad_bal` and `soil_flux`, because together
-they define available energy as `Rn - G`. Missing `v1` affects
-aerodynamic and profile-related methods. Missing `hum1` affects
-humidity-gradient and Penman-type calculations. Missing `t1` affects
-profile methods and Bulk-Residual sensible heat.
-
-## Inspect gap blocks
-
-Total missing counts are not enough. This step asks whether the missing
-values are isolated or form continuous blocks.
-
-The compact original output sorts the gap table by length and shows the
-most important gaps first.
+![](fieldclim_missing_data_files/figure-html/qstar-check-plot-1.png)
 
 ``` r
 
-inspection$gaps[order(-inspection$gaps$n_timesteps), ][1:10, ]
-#>          field  variable_type gap_start_index gap_end_index n_timesteps
-#> 2    soil_flux soil heat flux             180           251          72
-#> 1      rad_bal      radiation             100           111          12
-#> 7           v1     wind speed             130           141          12
-#> 3           rh       humidity              40            44           5
-#> 4         hum1       humidity              40            44           5
-#> 5         temp    temperature              20            20           1
-#> 6           t1    temperature              20            20           1
-#> NA        <NA>           <NA>              NA            NA          NA
-#> NA.1      <NA>           <NA>              NA            NA          NA
-#> NA.2      <NA>           <NA>              NA            NA          NA
-#>               start_time            end_time duration_seconds gap_class
-#> 2    2017-06-30 14:55:00 2017-06-30 20:50:00            21600      long
-#> 1    2017-06-30 08:15:00 2017-06-30 09:10:00             3600    medium
-#> 7    2017-06-30 10:45:00 2017-06-30 11:40:00             3600    medium
-#> 3    2017-06-30 03:15:00 2017-06-30 03:35:00             1500    medium
-#> 4    2017-06-30 03:15:00 2017-06-30 03:35:00             1500    medium
-#> 5    2017-06-30 01:35:00 2017-06-30 01:35:00              300     short
-#> 6    2017-06-30 01:35:00 2017-06-30 01:35:00              300     short
-#> NA                  <NA>                <NA>               NA      <NA>
-#> NA.1                <NA>                <NA>               NA      <NA>
-#> NA.2                <NA>                <NA>               NA      <NA>
+
+par(op)
 ```
 
-The interpreted table keeps the same information but formats timestamps
-and duration for reading.
+**Interpretation.** Die beiden Linien sind nicht deckungsgleich. Die
+Differenz zwischen Komponentensumme und vorhandener Netto-Strahlung ist
+durchgehend positiv und reicht in diesem Tag von etwa 3.6 bis 187.7
+W/m²; im Mittel liegt sie bei 74.1 W/m². Das ist kein kleiner
+Rundungsfehler, sondern eine eigene Datendiagnose. Für die weitere
+Rechnung heißt das: `rad_net` und `K_down - K_up + L_down - L_up` dürfen
+in diesem Datensatz nicht unbesehen als dieselbe Netto-Strahlung
+behandelt werden.
 
-|     | Field     | Variable class | Gap start | Gap end | Steps | Duration | Gap class |
-|:----|:----------|:---------------|:----------|:--------|------:|---------:|:----------|
-| 2   | soil_flux | soil heat flux | 14:55     | 20:50   |    72 |      6 h | long      |
-| 1   | rad_bal   | radiation      | 08:15     | 09:10   |    12 |      1 h | medium    |
-| 7   | v1        | wind speed     | 10:45     | 11:40   |    12 |      1 h | medium    |
-| 4   | hum1      | humidity       | 03:15     | 03:35   |     5 |   25 min | medium    |
-| 3   | rh        | humidity       | 03:15     | 03:35   |     5 |   25 min | medium    |
-| 6   | t1        | temperature    | 01:35     | 01:35   |     1 |    5 min | short     |
-| 5   | temp      | temperature    | 01:35     | 01:35   |     1 |    5 min | short     |
-
-A single missing five-minute value is a row-level interruption. A 30-60
-minute gap starts to affect subdaily interpretation. The multi-hour
-`soil_flux` gap is more serious because it affects available energy
-`Rn - G`. Wind gaps can affect Bulk-Residual, Penman and profile-based
-methods. Humidity gaps affect Bowen, Monin-Obukhov/Profile and
-Penman-type paths.
-
-## Entry matrix: variable type and gap length
-
-The inspection table tells us where values are missing. The entry matrix
-explains why the consequence differs by variable type.
-
-| Variable type | Fields in this example | What the inspection shows | Why this matters | What fieldClim does |
-|:---|:---|:---|:---|:---|
-| Temperature | `temp`, `t1` | An isolated missing air-temperature value. | Temperature enters profile gradients and helper calculations. | Reports this gap and affected methods. It does not repair the value. |
-| Humidity | `rh`, `hum1` | A short humidity gap and one invalid relative-humidity value. | Humidity affects Bowen, Monin-Obukhov/Profile and Penman-type inputs. | Reports the gap and QC flag. It does not correct humidity values. |
-| Radiation | `rad_bal` | A medium net-radiation gap and a suspicious shortwave value in the source data. | Radiation controls available energy for energy-balance methods. | Reports affected radiation fields. It does not substitute modeled radiation. |
-| Wind speed | `v1` | A medium wind-speed gap and one negative wind-speed value. | Wind controls aerodynamic and profile-based methods. | Reports the gap and negative-wind flag. It does not invent wind speed. |
-| Soil heat flux | `soil_flux` | A long continuous soil heat-flux gap. | Soil heat flux is subtracted from net radiation in `Rn - G`. | Reports the long gap and affected energy-balance methods. It does not replace soil heat flux. |
-
-This table is not a ranking of filling methods. It is a reading guide
-for the inspection output. The key research-based point is that variable
-type, gap length and QC status determine the next external decision more
-than any universal method ranking.
-
-## Quality-control flags
-
-Missing values are not the only problem. Some values are present but
-should not be accepted without review.
-
-The compact original output below is the actual `qc_flags` table
-returned by
-[`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md).
+Das ist zentral, weil die meisten Wärmeflussmethoden direkt an der
+verfügbaren Energie hängen. Wenn `Q_star` um mehrere zehn W/m²
+verschoben ist, verschieben sich auch Priestley-Taylor, Bowen,
+Bulk-Residual und der Energieanteil von Penman. Monin-Obukhov/Profile
+nutzt `Q_star` zwar nicht als direkten Energieterm, braucht `Q_star - B`
+aber als Plausibilitätsmaßstab. Eine unklare Netto-Strahlung macht
+deshalb nicht nur eine Kurve unsicher, sondern den gesamten
+Methodenvergleich schwerer interpretierbar.
 
 ``` r
 
-inspection$qc_flags
-#>       field row_index                   flag severity
-#> 1        rh        60 humidity_outside_0_100    error
-#> 2      hum1        60 humidity_outside_0_100    error
-#> 3        v1        70    negative_wind_speed    error
-#> 4  datetime        80   duplicated_timestamp  warning
-#> 5  datetime        NA     irregular_timestep  warning
-#> 6 soil_flux       180               long_gap  warning
-#>                                                                                    message
-#> 1                 Relative humidity should be within 0..100 percent before downstream use.
-#> 2                 Relative humidity should be within 0..100 percent before downstream use.
-#> 3                                                       Wind speed should not be negative.
-#> 4             Duplicated timestamps can invalidate gap-length and workflow interpretation.
-#> 5           Datetime spacing is irregular; inspect timebase before external gap treatment.
-#> 6 Long missing-data run; variable type and gap length should guide any external treatment.
+plot(
+  caldern$Q_star_measured,
+  caldern$Q_star_components,
+  pch = 16,
+  col = rgb(0, 0, 0, 0.35),
+  xlab = "Q* vorhanden: rad_net [W/m²]",
+  ylab = "Kontrolle: K* + L* [W/m²]",
+  main = "Q*: rad_net gegen Komponentensumme"
+)
+
+abline(0, 1, lty = 2, col = "grey40")
 ```
 
-The formatted table adds timestamps and values where they are available.
+![](fieldclim_missing_data_files/figure-html/qstar-scatter-1.png)
 
-| Field | Timestamp | Value | Flag type | Explanation |
-|:---|:---|---:|:---|:---|
-| rh | 2017-06-30 04:55 | 105.0 | humidity_outside_0_100 | Relative humidity should be within 0..100 percent before downstream use. |
-| hum1 | 2017-06-30 04:55 | 105.0 | humidity_outside_0_100 | Relative humidity should be within 0..100 percent before downstream use. |
-| v1 | 2017-06-30 05:45 | -0.5 | negative_wind_speed | Wind speed should not be negative. |
-| datetime | 2017-06-30 06:30 | NA | duplicated_timestamp | Duplicated timestamps can invalidate gap-length and workflow interpretation. |
-| datetime | NA | NA | irregular_timestep | Datetime spacing is irregular; inspect timebase before external gap treatment. |
-| soil_flux | 2017-06-30 14:55 | NA | long_gap | Long missing-data run; variable type and gap length should guide any external treatment. |
-
-In this dataset, relative humidity above 100 percent is invalid.
-Negative wind speed is invalid. Duplicated or irregular timestamps
-affect gap-length interpretation. A suspicious radiation value should be
-checked against time of day and expected physical range. The value is
-still present in the data; the inspection warns that it should not be
-accepted without review.
-
-The synthetic source data also include two intentionally obvious spike
-examples that are useful for manual review.
-
-| Field | Timestamp | Value | Interpretation |
-|:---|:---|---:|:---|
-| rad_sw_in | 2017-06-30 15:45 | 5000 | Check shortwave radiation against time of day and expected range. |
-| Ta_2m | 2017-06-30 16:35 | 45 | Check whether the temperature spike is a sensor artefact. |
-
-## Method readiness
-
-This step connects the inspection to downstream heat-flux workflows. It
-asks which methods have their required fields and which required fields
-contain missing values.
-
-The compact original output keeps the relevant readiness columns
-visible.
+**Interpretation.** Der Scatterplot macht sichtbar, dass es sich nicht
+um zufälliges Hin-und-Her-Rauschen handelt. Die Punkte liegen
+systematisch oberhalb der 1:1-Linie. Die aus Einzelkomponenten
+berechnete Netto-Strahlung ist also fast durchgehend größer als
+`rad_net`. Praktisch bedeutet das: Die Komponentensumme kann nicht
+einfach als Ersatz für `rad_net` verwendet werden, ohne vorher zu
+klären, ob beide Größen dieselbe Korrektur, dieselbe Mittelung, dieselbe
+Vorzeichenkonvention und dieselbe Sensorverarbeitung repräsentieren.
 
 ``` r
 
-inspection$method_readiness[, c(
-  "method", "missing_fields", "partial_fields", "ready"
-)]
-#>                   method missing_fields                     partial_fields
-#> 1       priestley_taylor                          temp, rad_bal, soil_flux
-#> 2          bulk_residual                        t1, v1, rad_bal, soil_flux
-#> 3 bulk_residual_ri_guard                        t1, v1, rad_bal, soil_flux
-#> 4                  bowen                      t1, hum1, rad_bal, soil_flux
-#> 5          monin_profile                                      t1, hum1, v1
-#> 6                 penman     obs_height v1, temp, rad_bal, soil_flux, hum1
-#>   ready
-#> 1  TRUE
-#> 2  TRUE
-#> 3  TRUE
-#> 4  TRUE
-#> 5  TRUE
-#> 6 FALSE
+plot(
+  caldern$datetime,
+  caldern$Q_star_difference,
+  type = "l",
+  col = "#D55E00",
+  lwd = 2,
+  xlab = "Zeit",
+  ylab = "K* + L* - rad_net [W/m²]",
+  main = "Differenz zwischen Komponentensumme und rad_net"
+)
+
+abline(h = 0, lty = 2, col = "grey40")
 ```
 
-The interpreted method table translates that result into method-level
-consequences for this dataset.
+![](fieldclim_missing_data_files/figure-html/qstar-difference-time-1.png)
 
-| Method | Required field groups | Structurally available? | Fields with gaps | What this means for this dataset |
-|:---|:---|:---|:---|:---|
-| Bowen-ratio | temperature and humidity gradients, heights, `rad_bal`, `soil_flux` | Yes | t1, hum1, rad_bal, soil_flux | If `rad_bal`, `soil_flux` or `temp` is missing at a timestep, `Rn - G` or temperature input is unavailable. |
-| Bulk-Residual | temperature difference, wind, heights, `rad_bal`, `soil_flux` | Yes | t1, v1, rad_bal, soil_flux | Gaps in `t1`, `v1`, `rad_bal` or `soil_flux` affect `H_bulk` or residual `LE` at those rows. |
-| Bulk-Residual with Richardson guard | Bulk-Residual inputs plus two wind heights | Yes | t1, v1, rad_bal, soil_flux | Two wind heights exist, but the same wind and energy-input gaps still matter row by row. |
-| Monin-Obukhov/Profile | temperature, humidity and wind profiles plus site metadata | Yes | t1, hum1, v1 | Missing or invalid humidity affects the gradient ratio; energy-input gaps also affect partitioning. |
-| Penman-type latent heat | radiation, soil heat flux, temperature, humidity, wind and site metadata | No | v1, temp, rad_bal, soil_flux, hum1 | Missing or invalid profile values directly affect the diagnostic profile calculation. |
-| Priestley-Taylor | `rad_bal`, `soil_flux`, `temp`, `surface_type` | Yes | temp, rad_bal, soil_flux | Penman uses radiation, soil heat flux, temperature, humidity, wind and site metadata; it returns latent heat only. |
+**Interpretation.** Die Zeitreihe zeigt, wann die Abweichung besonders
+groß wird. Wenn sie im Tagesverlauf mit der Strahlung anwächst, ist sie
+nicht als zufälliger Messpunktfehler zu lesen. Dann liegt näher, dass
+die beiden Netto-Strahlungsgrößen auf unterschiedlichen
+Verarbeitungsschritten beruhen: zum Beispiel anderer Loggerkanal, andere
+Korrektur der langwelligen Komponenten, unterschiedliche
+Mittelungsfenster oder nicht identische Vorzeichenlogik. Für den
+Workflow reicht hier eine klare Entscheidung: Weitergerechnet wird mit
+der vorhandenen Arbeitsgröße `rad_net`; die Komponentensumme bleibt eine
+Qualitäts- und Plausibilitätskontrolle.
 
-Priestley-Taylor uses `rad_bal`, `soil_flux`, `temp` and `surface_type`.
-If `rad_bal` or `soil_flux` is missing at a timestep, `Rn - G` is
-unavailable.
+``` r
 
-Bulk-Residual uses temperature difference, wind and heights for
-`H_bulk`, plus `rad_bal` and `soil_flux` for residual `LE`. With the
-optional Richardson guard, two wind heights are needed.
+plot(
+  caldern$K_down,
+  caldern$Q_star_difference,
+  pch = 16,
+  col = rgb(0, 0, 0, 0.35),
+  xlab = "K_down [W/m²]",
+  ylab = "K* + L* - rad_net [W/m²]",
+  main = "Abweichung in Abhängigkeit vom solaren Antrieb"
+)
 
-Bowen uses temperature and humidity gradients. Missing or invalid
-humidity affects the gradient ratio.
+abline(h = 0, lty = 2, col = "grey40")
+```
 
-Monin-Obukhov/Profile uses temperature, humidity and wind profiles.
-Missing or invalid profile values directly affect the profile
-calculation.
+![](fieldclim_missing_data_files/figure-html/qstar-difference-solar-1.png)
 
-Penman uses radiation, soil heat flux, temperature, humidity, wind and
-site metadata. It returns latent heat only.
+**Interpretation.** Die Kopplung an `K_down` zeigt, dass die Abweichung
+mit dem solaren Tagesgang zusammenhängt. Das spricht gegen eine reine
+Zufallsstreuung. Für die weitere Auswertung ist die Konsequenz wichtiger
+als die exakte Ursache: Die Netto-Strahlung muss als bewusste
+Arbeitsgröße gewählt werden. In dieser Vignette wird `rad_net` als
+`Q_star` verwendet, während `K_star + L_star` als Kontrollgröße stehen
+bleibt.
 
-## External continuation boundary
+> Diese Prüfung ist der methodische Drehpunkt der Vignette. Ohne eine
+> klare Arbeitsgröße für `Q_star` wäre der spätere Methodenvergleich
+> uneindeutig: Unterschiede zwischen PT, Bulk-Residual, Bowen oder
+> Penman könnten dann teilweise aus einer verschobenen Strahlungsbilanz
+> stammen und nicht aus der eigentlichen Methode. Monin-Obukhov/Profile
+> ist davon weniger direkt betroffen, weil dieser Pfad aus Profilen
+> rechnet; zur Plausibilitätsprüfung gegen die verfügbare Energie
+> braucht man aber auch dort eine verlässliche Vergleichsgröße.
 
-If gaps or suspicious values are found, the next step depends on the
-variable type, gap length and analysis goal. A short temperature gap, a
-radiation gap during changing cloud conditions and a missing wind
-profile do not have the same meaning for later heat-flux calculations.
-This is why the inspection first reports variable classes, gap blocks,
-QC flags and method readiness instead of ranking algorithms.
+## Schritt 4: Bodenwärmestrom und verfügbare Energie manuell prüfen
 
-| Package | Main_focus | Strength_for_this_task | Limitation_for_this_task | Best_fit_in_this_vignette |
-|:---|:---|:---|:---|:---|
-| [climatol](https://cran.r-project.org/package=climatol) | Climatological station series: quality control, homogenization, missing-data workflows and derived climate products. | Most relevant when a station series is longer than the one-day example and the problem is not only a short local gap, but consistency of a climatological record. It can support QC, homogenization and documented reconstruction of standard climate variables. | Not designed as an automatic row-level repair step inside a heat-flux calculation. Its assumptions, homogenization choices and reconstructed values would have to be documented before re-importing data into fieldClim. | Longer temperature, humidity, radiation or other climate-station series after fieldClim has shown where the gaps and QC problems are. |
-| [dataresqc](https://cran.r-project.org/package=dataresqc) | Quality control and formatting of historical daily and sub-daily climate observations. | Most relevant before any later reconstruction step when the main question is whether the observed series is technically and physically trustworthy. It is useful for systematic QC, formatting and flagging of daily or sub-daily climate observations. | Primarily a QC and data-rescue tool, not a heat-flux or microclimate modelling package. It helps decide whether observations are trustworthy; it does not make fieldClim methods run on missing inputs. | Checking whether suspicious values such as impossible humidity, negative wind speed or inconsistent time structure should be flagged before any further processing. |
-| [meteo](https://cran.r-project.org/package=meteo) | Spatial and spatio-temporal prediction for meteorological and environmental station variables. | Most relevant when local inspection shows that gaps cannot be interpreted from the target station alone. It can use neighbouring stations, coordinates, time and covariates for spatial or spatio-temporal prediction. | Requires a spatial prediction setup with stations, coordinates and validation. It is not a replacement for measured radiation, wind or soil-flux inputs unless that external modelling decision is explicitly justified. | Situations where fieldClim inspection shows that a variable is missing for too long to interpret locally and neighbouring stations or spatial covariates are available. |
+Die Bodenwärme-Folien zeigen den Bodenwärmestrom als
+Wärmeleitungsproblem. In den Caldern-Daten wird `B` direkt als
+`heatflux_soil` verwendet.
 
-## Summary
+![](figures/anchor_mesoklima_p47.png)![](figures/anchor_mesoklima_p50.png)
 
-This tutorial demonstrated how
-[`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md)
-can be used before running `fieldClim` heat-flux methods. The function
-returns a structured inspection report with variable-level availability,
-missing-value runs, quality-control flags and method-readiness
-information.
+Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:
 
-The example shows why missing data must be interpreted by variable type
-and gap length. A short temperature gap, a radiation gap, a missing wind
-profile and a long soil-flux gap do not have the same consequences for
-later calculations. The inspection output therefore helps identify which
-variables require review and which method families are affected.
+\\ Q^{\*} - B \\
 
-`fieldClim` does not fill, impute, interpolate, complete or replace
-missing values. It reports the problem. Any decision to repair or
-reconstruct data must be made outside `fieldClim`, documented
-separately, and followed by a new inspection before heat-flux
-calculations are interpreted.
+``` r
+
+# Theoriegröße Q*: gemessene Netto-Strahlung.
+caldern$Q_star <- caldern$Q_star_measured
+
+# Theoriegröße B: gemessener Bodenwärmestrom.
+caldern$B <- caldern$heatflux_soil
+
+# Energie, die für L und V verfügbar bleibt.
+caldern$Q_minus_B <- caldern$Q_star - caldern$B
+```
+
+### Einzelplots
+
+``` r
+
+op <- par(mfrow = c(3, 1), mar = c(3.5, 4, 2, 1))
+
+plot(caldern$datetime, caldern$Q_star, type = "l", col = "#000000", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "Q*: Netto-Strahlung")
+
+plot(caldern$datetime, caldern$B, type = "l", col = "#009E73", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "B: Bodenwärmestrom")
+
+plot(caldern$datetime, caldern$Q_minus_B, type = "l", col = "#D55E00", lwd = 2,
+     xlab = "Zeit", ylab = "W/m²", main = "Q* - B: verfügbare Energie")
+```
+
+![](fieldclim_missing_data_files/figure-html/energy-single-plots-1.png)
+
+``` r
+
+
+par(op)
+```
+
+**Interpretation.** `Q_star` ist der radiative Nettoantrieb des Tages:
+tagsüber positiv durch die Sonne, nachts häufig negativ oder schwach,
+weil langwellige Verluste dominieren. `B` beschreibt den
+Bodenwärmestrom. In der hier verwendeten Vorzeichenkonvention bedeutet
+ein positiver Bodenwärmestrom, dass Energie in den Boden geht und damit
+nicht mehr für die turbulenten Flüsse in die Luft zur Verfügung steht.
+`Q_star - B` ist deshalb die eigentliche Arbeitsgröße für die
+energiegebundenen Methoden. Sie sagt: So viel Energie bleibt nach Abzug
+des Bodenanteils für fühlbaren und latenten Wärmestrom übrig.
+
+### Zusammengesetzter Plot
+
+``` r
+
+cols_energy <- c("#000000", "#009E73", "#D55E00")
+op <- par(mar = c(6, 4, 3, 1), xpd = NA)
+
+plot(caldern$datetime, caldern$Q_star, type = "l", col = cols_energy[1], lwd = 2,
+     ylim = range(caldern$Q_star, caldern$B, caldern$Q_minus_B, na.rm = TRUE),
+     xlab = "Zeit", ylab = "W/m²", main = "Q*, B und Q* - B")
+lines(caldern$datetime, caldern$B, col = cols_energy[2], lwd = 2)
+lines(caldern$datetime, caldern$Q_minus_B, col = cols_energy[3], lwd = 2)
+legend("bottom", inset = c(0, -0.35), horiz = TRUE, bty = "n",
+       legend = c("Q*", "B", "Q* - B"), col = cols_energy, lty = 1, lwd = 2)
+```
+
+![](fieldclim_missing_data_files/figure-html/energy-combined-plot-1.png)
+
+``` r
+
+
+par(op)
+```
+
+## Übergang zur zweiten Vignette
+
+Bis hierher wurden die Messdaten und die zentralen Energiebilanzgrößen
+geprüft. Die Größen `Q_star` und `B` sind damit als Arbeitsterme
+vorbereitet. Die zweite Vignette überführt denselben Datensatz in ein
+`weather_station`-Objekt und nutzt darauf die Paketmethoden für
+Wärmeflüsse.

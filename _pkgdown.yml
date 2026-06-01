@@ -23,14 +23,14 @@ articles:
 - title: Tutorials & Workflows (EN)
   navbar: Tutorials & Workflows (EN)
   contents:
-  - fieldclim_missing_data
+  - fieldclim_missing_data_en
   - fieldclim_flux_workflow_en
   - fieldclim_workflow_steps_en
 
 - title: Tutorials & Workflows (DE)
   navbar: Tutorials & Workflows (DE)
   contents:
-  - fieldclim_manual_data_checks
+  - fieldclim_missing_data
   - fieldclim_flux_workflow
   - fieldclim_workflow_steps
 
