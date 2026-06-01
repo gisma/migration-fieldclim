@@ -63,6 +63,12 @@
 - Penman failures inside `turb_flux_calc()` are now caught and represented as `NA` output instead of stopping the whole workflow.
 - `as.data.frame.weather_station()` is more robust for objects without a `$measurements` field.
 
+## Missing-data inspection boundary
+
+- Removed/disabled weather-station missing-data completion behavior from the package API. `fieldClim` no longer creates replacement time-series columns or performs internal gap treatment.
+- `inspect_weather_station_inputs()` remains as a read-only inspection and quality-control helper. It reports missingness, gap runs, variable classes, selected QC flags and heat-flux method input availability.
+- Missing-data treatment must be performed outside `fieldClim` with documented provenance; package heat-flux methods continue to require their actual measured/input fields.
+
 ## Documentation
 
 - Roxygen documentation was updated for formulas, units, sign conventions, examples, source references and guard behaviour.

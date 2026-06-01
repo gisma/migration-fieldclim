@@ -1,9 +1,15 @@
 #' Inspect weather-station inputs for fieldClim workflows
 #'
 #' Reports available, missing and partially missing inputs for common
-#' `fieldClim` method families. This function is read-only: it does not fill,
-#' derive, model, overwrite or mutate any field in the supplied
+#' `fieldClim` method families. This function is read-only: it does not alter,
+#' complete, impute, interpolate, model or replace any value in the supplied
 #' `weather_station` object.
+#'
+#' The inspection classifies variable groups, missing-value runs and selected
+#' quality-control issues. It is intended to help users decide which downstream
+#' methods cannot run because inputs are missing and which variables need
+#' external quality-control review. Any treatment of missing meteorological
+#' time-series values must happen outside `fieldClim` in a documented workflow.
 #'
 #' @param weather_station Object of class `weather_station`.
 #' @param targets Character vector selecting input groups to inspect. Use
@@ -12,7 +18,8 @@
 #'   `"all"` to include all known methods.
 #'
 #' @return A list of class `fieldclim_input_inspection` with fields:
-#'   `fields`, `method_readiness`, `possible_actions`, and `summary`.
+#'   `fields`, `gaps`, `method_readiness`, `qc_flags`, `guidance`, and
+#'   `summary`.
 #' @export
 inspect_weather_station_inputs <- function(
     weather_station,
@@ -36,9 +43,10 @@ inspect_weather_station_inputs <- function(
   known_fields <- known_fields[known_fields$group %in% target_groups, , drop = FALSE]
 
   fields <- .fieldclim_field_status(weather_station, known_fields)
-  method_readiness <- .fieldclim_method_readiness(weather_station, methods)
-  possible_actions <- .fieldclim_possible_actions()
-  possible_actions <- possible_actions[possible_actions$group %in% target_groups, names(possible_actions) != "group", drop = FALSE]
+  gaps <- .fieldclim_gap_status(weather_station, fields)
+  method_readiness <- .fieldclim_method_readiness(weather_station, fields, methods)
+  qc_flags <- .fieldclim_qc_flags(weather_station, fields, gaps)
+  guidance <- .fieldclim_inspection_guidance()
 
   unsafe_missing_fields <- fields$field[
     fields$source_status == "missing" &
@@ -49,6 +57,8 @@ inspect_weather_station_inputs <- function(
     n_fields = nrow(fields),
     n_missing_fields = sum(fields$source_status == "missing"),
     n_partial_fields = sum(fields$source_status == "partial"),
+    n_gaps = nrow(gaps),
+    n_qc_flags = nrow(qc_flags),
     ready_methods = method_readiness$method[method_readiness$ready],
     blocked_methods = method_readiness$method[!method_readiness$ready],
     unsafe_missing_fields = unsafe_missing_fields
@@ -56,8 +66,10 @@ inspect_weather_station_inputs <- function(
 
   out <- list(
     fields = fields,
+    gaps = gaps,
     method_readiness = method_readiness,
-    possible_actions = possible_actions,
+    qc_flags = qc_flags,
+    guidance = guidance,
     summary = summary
   )
   class(out) <- "fieldclim_input_inspection"
@@ -95,7 +107,7 @@ inspect_weather_station_inputs <- function(
       "absolute_humidity", "specific_humidity",
       "pressure",
       "temp", "t1", "t2", "potential_temperature",
-      "v1", "v2", "z1", "z2", "obs_height"
+      "v1", "v2", "wind_dir", "z1", "z2", "obs_height"
     ),
     group = c(
       "metadata", "metadata", "metadata", "metadata",
@@ -106,7 +118,19 @@ inspect_weather_station_inputs <- function(
       "humidity", "humidity",
       "pressure",
       "profiles", "profiles", "profiles", "profiles",
-      "profiles", "profiles", "profiles", "profiles", "profiles"
+      "profiles", "profiles", "profiles", "profiles", "profiles", "profiles"
+    ),
+    variable_type = c(
+      "metadata", "metadata", "metadata", "metadata",
+      "radiation", "radiation", "radiation", "radiation", "radiation", "radiation",
+      "radiation", "surface", "temperature", "metadata", "metadata", "metadata",
+      "soil heat flux", "soil temperature", "soil temperature", "metadata", "metadata",
+      "soil thermal property", "soil texture", "soil moisture",
+      "humidity", "humidity", "humidity", "humidity", "humidity",
+      "humidity", "humidity",
+      "pressure",
+      "temperature", "temperature", "temperature", "temperature",
+      "wind speed", "wind speed", "wind direction", "metadata", "metadata", "metadata"
     ),
     stringsAsFactors = FALSE
   )
@@ -137,12 +161,114 @@ inspect_weather_station_inputs <- function(
       any_missing = any_missing,
       n_missing = n_missing,
       n_total = n_total,
+      missing_fraction = if (n_total > 0L) n_missing / n_total else NA_real_,
       source_status = source_status,
       group = known_fields$group[i],
+      variable_type = known_fields$variable_type[i],
       stringsAsFactors = FALSE
     )
   })
   do.call(rbind, rows)
+}
+
+.fieldclim_gap_status <- function(weather_station, fields) {
+  present_fields <- fields$field[fields$present & fields$n_total > 0L]
+  if (length(present_fields) == 0L) {
+    return(.fieldclim_empty_gaps())
+  }
+
+  datetime <- if ("datetime" %in% names(weather_station) && inherits(weather_station$datetime, "POSIXt")) {
+    weather_station$datetime
+  } else {
+    NULL
+  }
+
+  out <- lapply(present_fields, function(field) {
+    value <- weather_station[[field]]
+    missing <- is.na(value)
+    if (!any(missing)) {
+      return(.fieldclim_empty_gaps())
+    }
+
+    runs <- rle(missing)
+    ends <- cumsum(runs$lengths)
+    starts <- ends - runs$lengths + 1L
+    missing_runs <- which(runs$values)
+
+    rows <- lapply(missing_runs, function(i) {
+      start_i <- starts[i]
+      end_i <- ends[i]
+      n_steps <- runs$lengths[i]
+      start_time <- .fieldclim_datetime_at(datetime, start_i)
+      end_time <- .fieldclim_datetime_at(datetime, end_i)
+      duration_seconds <- .fieldclim_gap_duration(datetime, start_i, end_i, n_steps)
+
+      data.frame(
+        field = field,
+        variable_type = fields$variable_type[fields$field == field][1],
+        gap_start_index = start_i,
+        gap_end_index = end_i,
+        n_timesteps = n_steps,
+        start_time = start_time,
+        end_time = end_time,
+        duration_seconds = duration_seconds,
+        gap_class = .fieldclim_gap_class(n_steps),
+        stringsAsFactors = FALSE
+      )
+    })
+    do.call(rbind, rows)
+  })
+
+  gaps <- do.call(rbind, out)
+  rownames(gaps) <- NULL
+  gaps
+}
+
+.fieldclim_empty_gaps <- function() {
+  data.frame(
+    field = character(),
+    variable_type = character(),
+    gap_start_index = integer(),
+    gap_end_index = integer(),
+    n_timesteps = integer(),
+    start_time = as.POSIXct(character()),
+    end_time = as.POSIXct(character()),
+    duration_seconds = numeric(),
+    gap_class = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+.fieldclim_datetime_at <- function(datetime, index) {
+  if (is.null(datetime) || index > length(datetime)) {
+    return(as.POSIXct(NA))
+  }
+  as.POSIXct(datetime[index])
+}
+
+.fieldclim_gap_duration <- function(datetime, start_i, end_i, n_steps) {
+  if (is.null(datetime) || length(datetime) < 2L || end_i > length(datetime)) {
+    return(NA_real_)
+  }
+  dt <- diff(as.numeric(as.POSIXct(datetime)))
+  step <- stats::median(dt[is.finite(dt) & dt > 0], na.rm = TRUE)
+  if (!is.finite(step)) {
+    return(NA_real_)
+  }
+  n_steps * step
+}
+
+.fieldclim_gap_class <- function(n_steps) {
+  if (is.na(n_steps)) {
+    return(NA_character_)
+  }
+  if (n_steps <= 2L) {
+    "short"
+  } else if (n_steps <= 12L) {
+    "medium"
+  } else {
+    "long"
+  }
 }
 
 .fieldclim_method_specs <- function() {
@@ -150,7 +276,7 @@ inspect_weather_station_inputs <- function(
     priestley_taylor = list(
       required = c("temp", "rad_bal", "soil_flux", "surface_type"),
       alternatives = list(),
-      notes = "Requires measured or explicitly prepared available-energy inputs."
+      notes = "Requires available measured input fields for temperature, net radiation, soil heat flux and surface type."
     ),
     bulk_residual = list(
       required = c("t1", "t2", "v1", "z1", "z2", "rad_bal", "soil_flux"),
@@ -180,7 +306,7 @@ inspect_weather_station_inputs <- function(
   )
 }
 
-.fieldclim_method_readiness <- function(weather_station, methods) {
+.fieldclim_method_readiness <- function(weather_station, fields, methods) {
   selected <- if ("all" %in% methods) {
     c("priestley_taylor", "bulk_residual", "bulk_residual_ri_guard", "bowen", "monin_profile", "penman")
   } else {
@@ -195,17 +321,24 @@ inspect_weather_station_inputs <- function(
   rows <- lapply(selected, function(method) {
     spec <- specs[[method]]
     required <- spec$required
-    present_required <- required[required %in% names(weather_station)]
-    missing_required <- setdiff(required, names(weather_station))
+    field_status <- fields[match(required, fields$field), ]
+    present_required <- required[!is.na(field_status$field) & field_status$present]
+    missing_required <- required[is.na(field_status$field) | field_status$source_status == "missing"]
+    partial_required <- required[!is.na(field_status$field) & field_status$source_status == "partial"]
 
     present_alt <- character()
     missing_alt <- character()
+    partial_alt <- character()
     if (length(spec$alternatives) > 0) {
       for (alt_name in names(spec$alternatives)) {
         choices <- spec$alternatives[[alt_name]]
-        found <- choices[choices %in% names(weather_station)]
-        if (length(found) > 0) {
-          present_alt <- c(present_alt, found)
+        choice_status <- fields[match(choices, fields$field), ]
+        available <- choices[!is.na(choice_status$field) & choice_status$source_status != "missing"]
+        if (length(available) > 0) {
+          present_alt <- c(present_alt, available[1])
+          if (choice_status$source_status[match(available[1], choices)] == "partial") {
+            partial_alt <- c(partial_alt, available[1])
+          }
         } else {
           missing_alt <- c(missing_alt, alt_name)
         }
@@ -213,6 +346,7 @@ inspect_weather_station_inputs <- function(
     }
 
     missing_fields <- c(missing_required, missing_alt)
+    partial_fields <- c(partial_required, partial_alt)
     present_fields <- c(present_required, present_alt)
 
     data.frame(
@@ -220,6 +354,7 @@ inspect_weather_station_inputs <- function(
       required_fields = paste(c(required, names(spec$alternatives)), collapse = ", "),
       present_fields = paste(present_fields, collapse = ", "),
       missing_fields = paste(missing_fields, collapse = ", "),
+      partial_fields = paste(partial_fields, collapse = ", "),
       ready = length(missing_fields) == 0,
       notes = spec$notes,
       stringsAsFactors = FALSE
@@ -228,75 +363,98 @@ inspect_weather_station_inputs <- function(
   do.call(rbind, rows)
 }
 
-.fieldclim_possible_actions <- function() {
+.fieldclim_qc_flags <- function(weather_station, fields, gaps) {
+  rows <- list()
+  add_flag <- function(field, row_index, flag, severity, message) {
+    rows[[length(rows) + 1L]] <<- data.frame(
+      field = field,
+      row_index = row_index,
+      flag = flag,
+      severity = severity,
+      message = message,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  for (field in intersect(c("rh", "hum1", "hum2"), names(weather_station))) {
+    value <- weather_station[[field]]
+    bad <- which(!is.na(value) & (value < 0 | value > 100))
+    if (length(bad) > 0L) {
+      add_flag(field, bad, "humidity_outside_0_100", "error", "Relative humidity should be within 0..100 percent before downstream use.")
+    }
+  }
+
+  for (field in intersect(c("v1", "v2"), names(weather_station))) {
+    value <- weather_station[[field]]
+    bad <- which(!is.na(value) & value < 0)
+    if (length(bad) > 0L) {
+      add_flag(field, bad, "negative_wind_speed", "error", "Wind speed should not be negative.")
+    }
+  }
+
+  if ("moisture" %in% names(weather_station)) {
+    value <- weather_station$moisture
+    bad <- which(!is.na(value) & (value < 0 | value > 1))
+    if (length(bad) > 0L) {
+      add_flag("moisture", bad, "soil_moisture_outside_0_1", "warning", "Soil moisture is expected as m3 m-3 and should usually be within 0..1.")
+    }
+  }
+
+  if ("datetime" %in% names(weather_station) && inherits(weather_station$datetime, "POSIXt")) {
+    duplicated_time <- which(duplicated(weather_station$datetime))
+    if (length(duplicated_time) > 0L) {
+      add_flag("datetime", duplicated_time, "duplicated_timestamp", "warning", "Duplicated timestamps can invalidate gap-length and workflow interpretation.")
+    }
+
+    dt <- diff(as.numeric(as.POSIXct(weather_station$datetime)))
+    finite_dt <- dt[is.finite(dt)]
+    if (length(finite_dt) > 1L && length(unique(finite_dt)) > 1L) {
+      add_flag("datetime", NA_integer_, "irregular_timestep", "warning", "Datetime spacing is irregular; inspect timebase before external gap treatment.")
+    }
+  }
+
+  long_gaps <- gaps[gaps$gap_class == "long", , drop = FALSE]
+  if (nrow(long_gaps) > 0L) {
+    for (i in seq_len(nrow(long_gaps))) {
+      add_flag(long_gaps$field[i], long_gaps$gap_start_index[i], "long_gap", "warning", "Long missing-data run; variable type and gap length should guide any external treatment.")
+    }
+  }
+
+  if (length(rows) == 0L) {
+    return(.fieldclim_empty_qc_flags())
+  }
+
+  flags <- do.call(rbind, rows)
+  rownames(flags) <- NULL
+  flags
+}
+
+.fieldclim_empty_qc_flags <- function() {
   data.frame(
-    target_field = c(
-      "rad_bal", "rad_sw_in", "rad_sw_out", "soil_flux", "thermal_cond",
-      "vapour_pressure", "absolute_humidity", "specific_humidity", "pressure",
-      "v2", "z1", "z2", "surface_type", "hum1", "hum2", "t1", "t2", "profile_gradients"
+    field = character(),
+    row_index = integer(),
+    flag = character(),
+    severity = character(),
+    message = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
+.fieldclim_inspection_guidance <- function() {
+  data.frame(
+    topic = c(
+      "variable_type",
+      "gap_length",
+      "quality_control",
+      "method_availability",
+      "external_workflow"
     ),
-    possible_action = c(
-      "Derive net radiation from measured shortwave and longwave components.",
-      "Model incoming shortwave from solar geometry and transmittance.",
-      "Model reflected shortwave from surface-type albedo.",
-      "Derive soil heat flux from soil temperature gradient and conductivity.",
-      "Model or table-derive thermal conductivity from texture and moisture.",
-      "Derive vapour pressure from relative humidity and temperature.",
-      "Derive absolute humidity from relative humidity and temperature.",
-      "Derive specific humidity from relative humidity, temperature and elevation.",
-      "Model pressure from elevation and temperature.",
-      "No filling recommended.",
-      "Only explicit user-supplied height; no automatic filling.",
-      "Only explicit user-supplied height; no automatic filling.",
-      "Only explicit user-supplied surface type; no automatic default.",
-      "Only explicit user mapping/default from profile information.",
-      "Only explicit user mapping/default from profile information.",
-      "Only explicit user mapping/default from profile information.",
-      "Only explicit user mapping/default from profile information.",
-      "No reconstruction from single-height data."
-    ),
-    required_inputs = c(
-      "rad_sw_in, rad_sw_out, rad_lw_in, rad_lw_out",
-      "datetime, lon, lat, elev, slope, exposition, temp/rh as needed",
-      "rad_sw_in, surface_type or albedo",
-      "soil_temp1, soil_temp2, soil_depth1, soil_depth2, thermal_cond",
-      "texture, moisture",
-      "rh, temp",
-      "rh, temp",
-      "rh, temp, elev",
-      "elev, temp",
-      "",
-      "user supplied z1",
-      "user supplied z2",
-      "user supplied surface_type",
-      "explicit user mapping",
-      "explicit user mapping",
-      "explicit user mapping",
-      "explicit user mapping",
-      ""
-    ),
-    source_type = c(
-      "derived_from_measured", "modeled", "modeled", "derived_from_measured", "modeled",
-      "derived_from_measured", "derived_from_measured", "derived_from_measured", "modeled",
-      "not_recommended", "user_default", "user_default", "user_default", "user_default", "user_default",
-      "user_default", "user_default", "not_recommended"
-    ),
-    risk_level = c(
-      "low", "high", "high", "low/medium", "medium",
-      "medium", "medium", "medium", "medium",
-      "not_recommended", "high", "high", "high", "high", "high", "high", "high", "not_recommended"
-    ),
-    allowed_strategy = c(
-      "derive_from_measured", "allow_modeled", "allow_modeled", "derive_from_measured", "allow_modeled",
-      "derive_from_measured", "derive_from_measured", "derive_from_measured", "allow_modeled",
-      "no filling", "allow_user_defaults", "allow_user_defaults", "allow_user_defaults",
-      "allow_user_defaults", "allow_user_defaults", "allow_user_defaults", "allow_user_defaults", "no filling"
-    ),
-    default_action = rep("inspect_only", 18),
-    group = c(
-      "radiation", "radiation", "radiation", "soil", "soil",
-      "humidity", "humidity", "humidity", "pressure",
-      "profiles", "profiles", "profiles", "radiation", "humidity", "humidity", "profiles", "profiles", "profiles"
+    guidance = c(
+      "Classify the variable first; temperature, humidity, wind, radiation, soil and pressure variables have different treatment risks.",
+      "Classify gap length before choosing an external data workflow; short and long gaps are not equivalent.",
+      "Apply quality control before external missing-data treatment; flag physically impossible values, spikes and sensor failures first.",
+      "fieldClim reports which heat-flux methods lack required inputs; it does not make missing inputs usable.",
+      "Any missing-data treatment must be performed outside fieldClim with documented provenance."
     ),
     stringsAsFactors = FALSE
   )

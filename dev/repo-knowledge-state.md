@@ -747,3 +747,9 @@ It lists R source files, test files, dev reports, vignettes and root metadata co
 - `vignettes/fieldclim_update2024.Rmd` and `vignettes/fieldclim_check_rad_soil.Rmd`: listed as Deprecated in `_pkgdown.yml`.
 - `dev/physics-formula-audit.md`: appears to be an older root-level audit path alongside the current `dev/physics-audit/physics-formula-audit.md`; use the latter for current physics audit history.
 - `NEWS.md`: current conceptually, but test counts are stale relative to the latest observed local test run.
+
+## Update note: missing-data completion removed
+
+After this knowledge-state report was first created, the repository policy changed: `fieldClim` must not fill, impute, interpolate, model, complete or replace missing meteorological time-series data. The previous strict convenience-layer completion actions described above are historical context only and should not be treated as current package behavior.
+
+Current intended behavior is inspection only. `inspect_weather_station_inputs()` may report available variables, missing counts, gap runs, variable classes, selected quality-control flags and heat-flux method input availability. The package must not create `*_filled` replacement columns or silently substitute modeled values for measured values. Any missing-data treatment belongs outside `fieldClim` in a documented external workflow.

@@ -127,6 +127,13 @@ The default remains the neutral unguarded bulk estimate:
 stability_method = "none"
 ```
 
+
+## Missing-data inspection and quality-control boundary
+
+`fieldClim` does not fill, impute, interpolate, model, complete or replace missing meteorological time-series data. The package can inspect `weather_station` objects with `inspect_weather_station_inputs()` to report available variables, missingness, gap runs, variable classes, simple quality-control flags and heat-flux method input availability.
+
+Any treatment of missing data must be performed outside `fieldClim` in a documented external workflow. The package does not create `*_filled` replacement columns and heat-flux methods require their actual input fields.
+
 ## Validation status
 
 The package is now tested for internal consistency. Method equations, helper equations, guard behaviour and `weather_station` wrappers are covered by automated tests.

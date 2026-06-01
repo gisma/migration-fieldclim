@@ -23,11 +23,19 @@ inspect_weather_station_inputs(
 }
 \value{
 A list of class \code{fieldclim_input_inspection} with fields:
-\code{fields}, \code{method_readiness}, \code{possible_actions}, and \code{summary}.
+\code{fields}, \code{gaps}, \code{method_readiness}, \code{qc_flags}, \code{guidance}, and
+\code{summary}.
 }
 \description{
 Reports available, missing and partially missing inputs for common
-\code{fieldClim} method families. This function is read-only: it does not fill,
-derive, model, overwrite or mutate any field in the supplied
+\code{fieldClim} method families. This function is read-only: it does not alter,
+complete, impute, interpolate, model or replace any value in the supplied
 \code{weather_station} object.
+}
+\details{
+The inspection classifies variable groups, missing-value runs and selected
+quality-control issues. It is intended to help users decide which downstream
+methods cannot run because inputs are missing and which variables need
+external quality-control review. Any treatment of missing meteorological
+time-series values must happen outside \code{fieldClim} in a documented workflow.
 }
