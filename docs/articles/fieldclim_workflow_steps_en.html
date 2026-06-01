@@ -43,7 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_method.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -53,7 +53,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (DE)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_manual_data_checks.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_flux_workflow.html">fieldClim: fieldClim-Workflow für Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps+.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -81,8 +81,8 @@ Chris Reudenbach</h4>
             
             <h4 data-toc-skip class="date">2026-05-28</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/vignettes/fieldclim_workflow_steps_en.rmd" class="external-link"><code>vignettes/fieldclim_workflow_steps_en.rmd</code></a></small>
-      <div class="d-none name"><code>fieldclim_workflow_steps_en.rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/vignettes/fieldclim_workflow_steps_en.Rmd" class="external-link"><code>vignettes/fieldclim_workflow_steps_en.Rmd</code></a></small>
+      <div class="d-none name"><code>fieldclim_workflow_steps_en.Rmd</code></div>
     </div>
 
     
@@ -166,9 +166,9 @@ exported?</td>
 </tbody>
 </table>
 <p>This vignette is a package map with executable mini examples. It does
-not replace a complete physical derivation, nor does it provide
-validation against independent flux measurements. Its purpose is to show
-which package functions fit which workflow steps.</p>
+not replace a complete physical derivation, nor does it provide testing
+against independent flux measurements. Its purpose is to show which
+package functions fit which workflow steps.</p>
 </div>
 <div class="section level2">
 <h2 id="shared-data-and-object-setup">Shared data and object setup<a class="anchor" aria-label="anchor" href="#shared-data-and-object-setup"></a>
@@ -477,7 +477,7 @@ components<a class="anchor" aria-label="anchor" href="#check-net-radiation-from-
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> This module is a data-validation
+<p><strong>Interpretation.</strong> This module is a data-check
 workflow. The package functions can only be used meaningfully when it is
 clear which radiation variable is used as the working variable. If
 <code>rad_net</code>, <code>RsNet + RlNet</code>, and
@@ -1042,9 +1042,9 @@ non-finite, or profile conditions are extremely sensitive.</p>
 <p><strong>Interpretation.</strong> Caps and protection rules do not
 change the measurements. They prevent individual denominators close to
 zero or non-finite intermediate values from producing uncontrolled
-outliers. This is neither scientific validation nor a repair of the time
-step. A capped value or a value treated as <code>NA</code> remains an
-indication that the respective profile or gradient situation is
+outliers. This is neither scientific confirmation nor a repair of the
+time step. A capped value or a value treated as <code>NA</code> remains
+an indication that the respective profile or gradient situation is
 critical.</p>
 </div>
 <div class="section level3">
@@ -1167,6 +1167,77 @@ for further analyses.</p>
 is a fast control route for object contents. Custom plots remain useful
 for scientific figures, but for debugging, teaching, and initial data
 checks the function is practical.</p>
+<div class="section level3">
+<h3 id="energy-balance-closure-diagnostics">Energy-balance closure diagnostics<a class="anchor" aria-label="anchor" href="#energy-balance-closure-diagnostics"></a>
+</h3>
+<p><code><a href="../reference/energy_balance_closure.html">energy_balance_closure()</a></code> is not an additional flux
+model. It summarizes existing output fields of a
+<code>weather_station</code> object as energy-balance diagnostics. The
+starting point is available energy, defined as
+<code>rad_bal - soil_flux</code>. For methods with paired sensible and
+latent heat fluxes, the function calculates
+<code>available_energy - sensible - latent</code> as the closure
+residual. For Penman, no artificial sensible heat flux is created;
+instead, the function reports an <code>unresolved_complement</code>.
+Monin-Obukhov/Profile outputs are treated diagnostically and are not
+forced to close the energy balance.</p>
+<p>In this workflow, <code>ws_pt</code> is the existing Priestley-Taylor
+result object. The diagnostic call is therefore restricted to
+<code>priestley_taylor</code>.</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">closure_diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">ws_pt</span>, methods <span class="op">=</span> <span class="st">"priestley_taylor"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">closure_diag</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              datetime           method      closure_type rad_bal soil_flux</span></span>
+<span><span class="co">#&gt; 1 2017-06-30 00:00:00 priestley_taylor partition_closure -15.200  1.551533</span></span>
+<span><span class="co">#&gt; 2 2017-06-30 00:05:00 priestley_taylor partition_closure  -8.920  1.492695</span></span>
+<span><span class="co">#&gt; 3 2017-06-30 00:10:00 priestley_taylor partition_closure  -1.965  1.448708</span></span>
+<span><span class="co">#&gt; 4 2017-06-30 00:15:00 priestley_taylor partition_closure  -1.790  1.390439</span></span>
+<span><span class="co">#&gt; 5 2017-06-30 00:20:00 priestley_taylor partition_closure  -2.469  1.325316</span></span>
+<span><span class="co">#&gt; 6 2017-06-30 00:25:00 priestley_taylor partition_closure  -3.857  1.268762</span></span>
+<span><span class="co">#&gt;   available_energy  sensible     latent turbulent_sum closure_residual</span></span>
+<span><span class="co">#&gt; 1       -16.751533 -5.301183 -11.450350    -16.751533    -3.552714e-15</span></span>
+<span><span class="co">#&gt; 2       -10.412695 -3.308925  -7.103770    -10.412695    -1.776357e-15</span></span>
+<span><span class="co">#&gt; 3        -3.413708 -1.084238  -2.329470     -3.413708     0.000000e+00</span></span>
+<span><span class="co">#&gt; 4        -3.180439 -1.002820  -2.177619     -3.180439     0.000000e+00</span></span>
+<span><span class="co">#&gt; 5        -3.794316 -1.189538  -2.604778     -3.794316     4.440892e-16</span></span>
+<span><span class="co">#&gt; 6        -5.125762 -1.571959  -3.553803     -5.125762    -8.881784e-16</span></span>
+<span><span class="co">#&gt;   closure_ratio unresolved_complement               status</span></span>
+<span><span class="co">#&gt; 1            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 2            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 3            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 4            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 5            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 6            NA                    NA low_available_energy</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_diag</span>, type <span class="op">=</span> <span class="st">"residual"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-residual-en-1.png" class="r-plt" alt="" width="768"></p>
+<p>The residual plot shows an energy difference in W m^-2. For paired
+methods, this is <code>rad_bal - soil_flux - sensible - latent</code>.
+In the Priestley-Taylor path shown here, values close to zero are
+expected because sensible and latent heat are partitioned from available
+energy. A zero residual therefore indicates formal closure, not physical
+confirmation. For Penman, the plotted value would not be a paired
+closure residual but the unresolved complement after subtracting
+<code>latent_penman</code>; it must not be interpreted as sensible heat.
+For Monin-Obukhov/Profile, non-zero residuals would show the difference
+between profile-derived turbulent fluxes and available energy. This
+difference is diagnostically useful and should not be removed by
+rescaling.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_diag</span>, type <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-ratio-en-1.png" class="r-plt" alt="" width="768"></p>
+<p>The ratio plot shows
+<code>(sensible + latent) / (rad_bal - soil_flux)</code>. A value of 1
+indicates formal closure. Values below 1 mean that the paired turbulent
+fluxes are smaller than available energy; values above 1 mean that they
+exceed available energy. In the Priestley-Taylor path shown here, values
+close to 1 are expected because available energy is partitioned. For
+Monin-Obukhov/Profile, deviations from 1 would show the difference
+between profile-based flux estimates and the energy-balance reference.
+Penman is not shown in the ratio plot because <code>fieldClim</code>
+does not return a paired sensible heat flux for Penman.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="result">Result<a class="anchor" aria-label="anchor" href="#result"></a>
@@ -1185,7 +1256,7 @@ parameters.</li>
 intermediate variables.</li>
 <li>Turbulence and stability functions are diagnostic tools.</li>
 <li>Caps and fallbacks are protection mechanisms, not automatic
-scientific validation.</li>
+scientific confirmation.</li>
 <li>
 <code><a href="../reference/plot_weather_station.html">plot_weather_station()</a></code> and <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>
 make the object accessible for checking and further processing.</li>

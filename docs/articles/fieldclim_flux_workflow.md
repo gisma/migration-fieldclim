@@ -51,7 +51,7 @@ Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren
 greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
 unterschiedliche Teilinformationen.
 
-![](figures/wf-method_overview_meadow_station.png)
+![](figures/clos_wf-method_overview_meadow_station.png)
 
 Die Verfahren sind nicht als gleichartige Messverfahren zu lesen. Sie
 sind unterschiedliche Rechenpfade mit unterschiedlicher Nähe zur
@@ -70,7 +70,7 @@ verwendet.
 
 #### 1. Priestley-Taylor
 
-![](figures/wf-method_priestley_taylor.png)
+![](figures/clos_wf-method_priestley_taylor.png)
 
 Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad. Der
 Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
@@ -89,7 +89,7 @@ verfügbaren Energie.
 
 #### 2. Bulk-Residual mit optionalem Richardson-Guard
 
-![](figures/wf-method_bulk_residual.png)
+![](figures/clos_wf-method_bulk_residual.png)
 
 Der Paketpfad
 [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
@@ -125,7 +125,7 @@ den Paketpfad mit optionalem Richardson-Guard umgestellt.
 
 #### 3. Bowen-Verhältnis
 
-![](figures/wf-method_bowen.png)
+![](figures/clos_wf-method_bowen.png)
 
 Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
@@ -154,7 +154,7 @@ Bowen-Zeitschritte behandelt und nicht als exakte Aufteilung von
 
 #### 4. Monin-Obukhov/Profile
 
-![](figures/wf-method_monin_obukhov.png)
+![](figures/clos_wf-method_monin_obukhov.png)
 
 Der Monin-Obukhov/Profile-Pfad ist in `fieldClim` kein Verfahren, das
 die verfügbare Energie automatisch auf \\L\\ und \\V\\ verteilt. Er
@@ -200,7 +200,7 @@ Partitionierungsansatz gelesen werden darf.
 
 #### 5. Penman
 
-![](figures/wf-method_penman.png)
+![](figures/clos_wf-method_penman.png)
 
 Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
 verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
@@ -1194,6 +1194,80 @@ sagt nicht „*so viel Energie wurde bilanziert*“, sondern „*so reagiert
 eine profil- und stabilitätsabhängige Methode auf diese Messprofile*“.
 Wenn diese Reaktion stark von `Q_star - B` abweicht, ist das eine
 Diagnose über Gradienten, Windschere und Stabilitätsannahmen.
+
+### Zusätzliche Energiebilanzdiagnostik
+
+Nach der Berechnung der turbulenten Flüsse zeigt die
+Energiebilanzdiagnostik, ob ein Ergebnis formal geschlossen ist, einen
+offenen Ergänzungsterm enthält oder als Profil-/Stabilitätsdiagnose
+gelesen werden muss. Diese Diagnose verändert keine Flüsse. Sie macht
+sichtbar, wie die vorhandenen Ergebnisfelder im Verhältnis zu
+`rad_bal - soil_flux` stehen.
+
+``` r
+
+closure_flux <- energy_balance_closure(flux_all)
+
+head(closure_flux)
+#>              datetime           method      closure_type rad_bal soil_flux
+#> 1 2017-06-30 00:00:00 priestley_taylor partition_closure -15.200  1.551533
+#> 2 2017-06-30 00:05:00 priestley_taylor partition_closure  -8.920  1.492695
+#> 3 2017-06-30 00:10:00 priestley_taylor partition_closure  -1.965  1.448708
+#> 4 2017-06-30 00:15:00 priestley_taylor partition_closure  -1.790  1.390439
+#> 5 2017-06-30 00:20:00 priestley_taylor partition_closure  -2.469  1.325316
+#> 6 2017-06-30 00:25:00 priestley_taylor partition_closure  -3.857  1.268762
+#>   available_energy  sensible     latent turbulent_sum closure_residual
+#> 1       -16.751533 -5.301183 -11.450350    -16.751533    -3.552714e-15
+#> 2       -10.412695 -3.308925  -7.103770    -10.412695    -1.776357e-15
+#> 3        -3.413708 -1.084238  -2.329470     -3.413708     0.000000e+00
+#> 4        -3.180439 -1.002820  -2.177619     -3.180439     0.000000e+00
+#> 5        -3.794316 -1.189538  -2.604778     -3.794316     4.440892e-16
+#> 6        -5.125762 -1.571959  -3.553803     -5.125762    -8.881784e-16
+#>   closure_ratio unresolved_complement               status
+#> 1            NA                    NA low_available_energy
+#> 2            NA                    NA low_available_energy
+#> 3            NA                    NA low_available_energy
+#> 4            NA                    NA low_available_energy
+#> 5            NA                    NA low_available_energy
+#> 6            NA                    NA low_available_energy
+```
+
+``` r
+
+plot_energy_balance_closure(closure_flux, type = "residual")
+```
+
+![](fieldclim_flux_workflow_files/figure-html/closure-flux-residual-de-1.png)
+
+Der Residualplot zeigt eine Energiedifferenz in W m^-2. Bei
+Bulk-Residual ist ein Residuum nahe null zu erwarten, weil
+`latent_bulk_residual` als `rad_bal - soil_flux - sensible_bulk`
+berechnet wird. Bei Priestley-Taylor und Bowen entsteht formaler
+Bilanzschluss ebenfalls durch die jeweilige Partitionslogik, sofern die
+benötigten Ergebnisfelder vorhanden und die Werte gültig sind. Penman
+bleibt offen: Der Plot zeigt den nicht aufgelösten Ergänzungsterm nach
+Abzug von `latent_penman`; dieser Term ist nicht automatisch sensibler
+Wärmefluss. Monin-Obukhov/Profile darf deutlich von null abweichen.
+Diese Abweichung ist die Differenz zwischen profilbasierten turbulenten
+Flüssen und verfügbarer Energie und soll nicht durch Skalierung entfernt
+werden.
+
+``` r
+
+plot_energy_balance_closure(closure_flux, type = "ratio")
+```
+
+![](fieldclim_flux_workflow_files/figure-html/closure-flux-ratio-de-1.png)
+
+Der Schließungsquotient vergleicht `sensible + latent` mit
+`rad_bal - soil_flux`. Werte nahe 1 bedeuten formalen Bilanzschluss. Bei
+konstruktiv schließenden Verfahren ist das erwartbar und kein Beleg für
+physikalische Richtigkeit. Werte unter 1 zeigen, dass die gepaarten
+turbulenten Flüsse kleiner sind als die verfügbare Energie; Werte über 1
+zeigen, dass sie größer sind. Bei Monin-Obukhov/Profile sind
+Abweichungen diagnostisch. Werte bei sehr kleiner verfügbarer Energie
+sind nicht belastbar. Penman erscheint hier nicht, weil kein gepaarter
+sensibler Wärmefluss ausgegeben wird.
 
 ### Konsequenz für den Methodenvergleich
 

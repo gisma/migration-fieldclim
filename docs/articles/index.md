@@ -3,7 +3,7 @@
 ### Concepts
 
 - [Scientific background for fieldClim heat-flux
-  methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_method.md):
+  methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_theory.md):
 
 ### Tutorials & Workflows (EN)
 
@@ -21,7 +21,7 @@
 - [fieldClim: fieldClim-Workflow für
   Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_flux_workflow.md):
 - [fieldClim: Anschlussworkflows und weitere
-  Paketfunktionen](https://gisma.github.io/migration-fieldclim/articles/fieldclim_workflow_steps+.md):
+  Paketfunktionen](https://gisma.github.io/migration-fieldclim/articles/fieldclim_workflow_steps.md):
 
 ### Deprecated
 

@@ -12,6 +12,8 @@
   : Thermal internal boundary layer.
 - [`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md)
   : Build a weather station object
+- [`energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/energy_balance_closure.md)
+  : Diagnose surface-energy-balance closure from existing flux fields
 - [`hum_absolute()`](https://gisma.github.io/migration-fieldclim/reference/hum_absolute.md)
   : Absolute humidity
 - [`hum_evap_heat()`](https://gisma.github.io/migration-fieldclim/reference/hum_evap_heat.md)
@@ -34,6 +36,8 @@
   : Latent Heat Penman-Monteith-Type Method
 - [`latent_priestley_taylor()`](https://gisma.github.io/migration-fieldclim/reference/latent_priestley_taylor.md)
   : Latent Heat Priestley-Taylor Method
+- [`plot_energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/plot_energy_balance_closure.md)
+  : Plot energy-balance closure diagnostics
 - [`plot_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/plot_weather_station.md)
   : Plot Weather Station Data
 - [`pos_anemometer_height()`](https://gisma.github.io/migration-fieldclim/reference/pos_anemometer_height.md)

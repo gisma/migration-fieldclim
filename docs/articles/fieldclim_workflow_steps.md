@@ -330,7 +330,7 @@ plot(
 abline(0, 1, lty = 2, col = "grey40")
 ```
 
-![](fieldclim_workflow_steps+_files/figure-html/radiation-diagnostic-plots-1.png)
+![](fieldclim_workflow_steps_files/figure-html/radiation-diagnostic-plots-1.png)
 
 ``` r
 
@@ -587,7 +587,7 @@ plot(
 abline(0, 1, lty = 2, col = "grey40")
 ```
 
-![](fieldclim_workflow_steps+_files/figure-html/modeled-radiation-plot-1.png)
+![](fieldclim_workflow_steps_files/figure-html/modeled-radiation-plot-1.png)
 
 ``` r
 
@@ -661,7 +661,7 @@ plot(
 )
 ```
 
-![](fieldclim_workflow_steps+_files/figure-html/soil-workflow-plots-1.png)
+![](fieldclim_workflow_steps_files/figure-html/soil-workflow-plots-1.png)
 
 ``` r
 
@@ -754,7 +754,7 @@ plot(
 )
 ```
 
-![](fieldclim_workflow_steps+_files/figure-html/helper-functions-plot-1.png)
+![](fieldclim_workflow_steps_files/figure-html/helper-functions-plot-1.png)
 
 ``` r
 
@@ -857,7 +857,7 @@ plot(
 )
 ```
 
-![](fieldclim_workflow_steps+_files/figure-html/turbulence-diagnostics-plot-1.png)
+![](fieldclim_workflow_steps_files/figure-html/turbulence-diagnostics-plot-1.png)
 
 ``` r
 
@@ -971,6 +971,93 @@ Analysen exportiert werden.
 
 # PT-Pfad als Beispielrechnung.
 ws_pt <- turb_flux_calc(ws, pt_only = TRUE)
+```
+
+### Energiebilanz-Schließungsdiagnostik
+
+Die Funktion
+[`energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/energy_balance_closure.md)
+ist kein weiteres Flussmodell. Sie fasst bereits berechnete
+Ergebnisfelder eines `weather_station`-Objekts als
+Energiebilanzdiagnostik zusammen. Ausgangspunkt ist die verfügbare
+Energie `rad_bal - soil_flux`. Für Verfahren mit gepaarten sensiblen und
+latenten Wärmeflüssen berechnet sie den Schließungsrest
+`available_energy - sensible - latent`. Für Penman wird kein künstlicher
+sensibler Wärmefluss erzeugt; stattdessen wird der offene Ergänzungsterm
+`unresolved_complement` ausgegeben. Monin-Obukhov/Profile-Ergebnisse
+werden diagnostisch gelesen und nicht auf Bilanzschluss gezwungen.
+
+In diesem Workflow liegt mit `ws_pt` der bereits berechnete
+Priestley-Taylor-Pfad vor. Deshalb wird die Diagnose hier nur für
+`priestley_taylor` aufgerufen.
+
+``` r
+
+closure_diag <- energy_balance_closure(ws_pt, methods = "priestley_taylor")
+
+head(closure_diag)
+#>              datetime           method      closure_type rad_bal soil_flux
+#> 1 2017-06-30 00:00:00 priestley_taylor partition_closure -15.200  1.551533
+#> 2 2017-06-30 00:05:00 priestley_taylor partition_closure  -8.920  1.492695
+#> 3 2017-06-30 00:10:00 priestley_taylor partition_closure  -1.965  1.448708
+#> 4 2017-06-30 00:15:00 priestley_taylor partition_closure  -1.790  1.390439
+#> 5 2017-06-30 00:20:00 priestley_taylor partition_closure  -2.469  1.325316
+#> 6 2017-06-30 00:25:00 priestley_taylor partition_closure  -3.857  1.268762
+#>   available_energy  sensible     latent turbulent_sum closure_residual
+#> 1       -16.751533 -5.301183 -11.450350    -16.751533    -3.552714e-15
+#> 2       -10.412695 -3.308925  -7.103770    -10.412695    -1.776357e-15
+#> 3        -3.413708 -1.084238  -2.329470     -3.413708     0.000000e+00
+#> 4        -3.180439 -1.002820  -2.177619     -3.180439     0.000000e+00
+#> 5        -3.794316 -1.189538  -2.604778     -3.794316     4.440892e-16
+#> 6        -5.125762 -1.571959  -3.553803     -5.125762    -8.881784e-16
+#>   closure_ratio unresolved_complement               status
+#> 1            NA                    NA low_available_energy
+#> 2            NA                    NA low_available_energy
+#> 3            NA                    NA low_available_energy
+#> 4            NA                    NA low_available_energy
+#> 5            NA                    NA low_available_energy
+#> 6            NA                    NA low_available_energy
+```
+
+``` r
+
+plot_energy_balance_closure(closure_diag, type = "residual")
+```
+
+![](fieldclim_workflow_steps_files/figure-html/closure-diagnostics-residual-de-1.png)
+
+Der Residualplot zeigt eine Energiedifferenz in W m^-2. Für gepaarte
+Verfahren ist dies `rad_bal - soil_flux - sensible - latent`. Im hier
+gezeigten Priestley-Taylor-Pfad sollte dieser Wert nahe null liegen,
+weil sensible und latente Wärme gemeinsam aus der verfügbaren Energie
+partitioniert werden. Ein Nullwert bedeutet hier formalen Bilanzschluss,
+nicht physikalische Bestätigung. Bei Penman würde die Funktion keinen
+gepaarten Schließungsrest zeigen, sondern den offenen Ergänzungsterm
+nach Abzug von `latent_penman`; dieser Term darf nicht einfach als
+sensibler Wärmefluss gelesen werden. Bei Monin-Obukhov/Profile würde ein
+nicht-nulliger Wert die Differenz zwischen profilbasierten turbulenten
+Flüssen und verfügbarer Energie zeigen. Genau diese Differenz ist
+diagnostisch interessant und soll nicht wegskaliert werden.
+
+``` r
+
+plot_energy_balance_closure(closure_diag, type = "ratio")
+```
+
+![](fieldclim_workflow_steps_files/figure-html/closure-diagnostics-ratio-de-1.png)
+
+Der Quotientenplot zeigt `(sensible + latent) / (rad_bal - soil_flux)`.
+Ein Wert von 1 bedeutet formalen Bilanzschluss. Werte unter 1 bedeuten,
+dass die gepaarten turbulenten Flüsse kleiner sind als die verfügbare
+Energie; Werte über 1 bedeuten, dass sie größer sind. Im hier gezeigten
+Priestley-Taylor-Pfad ist ein Wert nahe 1 erwartbar, weil die verfügbare
+Energie partitioniert wird. Bei Monin-Obukhov/Profile wären Abweichungen
+von 1 keine automatische Fehlermeldung, sondern die Differenz zwischen
+Profilfluss-Schätzung und Energiebilanz. Penman wird im Quotientenplot
+nicht dargestellt, weil `fieldClim` für Penman keinen gepaarten
+sensiblen Wärmefluss ausgibt.
+
+``` r
 
 # Ergebnisobjekt in eine Tabelle überführen.
 ws_table <- as.data.frame(ws_pt)
@@ -1034,7 +1121,7 @@ if ("plot_weather_station" %in% getNamespaceExports("fieldClim")) {
 }
 ```
 
-![](fieldclim_workflow_steps+_files/figure-html/plot-weather-station-1.png)
+![](fieldclim_workflow_steps_files/figure-html/plot-weather-station-1.png)
 
 ``` r
 

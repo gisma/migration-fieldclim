@@ -709,7 +709,34 @@ Nach Berechnungen enthält das `weather_station`-Objekt zusätzliche Felder. Die
 ```{r object-output}
 # PT-Pfad als Beispielrechnung.
 ws_pt <- turb_flux_calc(ws, pt_only = TRUE)
+```
 
+
+## Energiebilanz-Schließungsdiagnostik
+
+Die Funktion `energy_balance_closure()` ist kein weiteres Flussmodell. Sie fasst bereits berechnete Ergebnisfelder eines `weather_station`-Objekts als Energiebilanzdiagnostik zusammen. Ausgangspunkt ist die verfügbare Energie `rad_bal - soil_flux`. Für Verfahren mit gepaarten sensiblen und latenten Wärmeflüssen berechnet sie den Schließungsrest `available_energy - sensible - latent`. Für Penman wird kein künstlicher sensibler Wärmefluss erzeugt; stattdessen wird der offene Ergänzungsterm `unresolved_complement` ausgegeben. Monin-Obukhov/Profile-Ergebnisse werden diagnostisch gelesen und nicht auf Bilanzschluss gezwungen.
+
+In diesem Workflow liegt mit `ws_pt` der bereits berechnete Priestley-Taylor-Pfad vor. Deshalb wird die Diagnose hier nur für `priestley_taylor` aufgerufen.
+
+```{r closure-diagnostics-pt-de}
+closure_diag <- energy_balance_closure(ws_pt, methods = "priestley_taylor")
+
+head(closure_diag)
+```
+
+```{r closure-diagnostics-residual-de, fig.width=8, fig.height=4}
+plot_energy_balance_closure(closure_diag, type = "residual")
+```
+
+Der Residualplot zeigt eine Energiedifferenz in W m^-2. Für gepaarte Verfahren ist dies `rad_bal - soil_flux - sensible - latent`. Im hier gezeigten Priestley-Taylor-Pfad sollte dieser Wert nahe null liegen, weil sensible und latente Wärme gemeinsam aus der verfügbaren Energie partitioniert werden. Ein Nullwert bedeutet hier formalen Bilanzschluss, nicht physikalische Bestätigung. Bei Penman würde die Funktion keinen gepaarten Schließungsrest zeigen, sondern den offenen Ergänzungsterm nach Abzug von `latent_penman`; dieser Term darf nicht einfach als sensibler Wärmefluss gelesen werden. Bei Monin-Obukhov/Profile würde ein nicht-nulliger Wert die Differenz zwischen profilbasierten turbulenten Flüssen und verfügbarer Energie zeigen. Genau diese Differenz ist diagnostisch interessant und soll nicht wegskaliert werden.
+
+```{r closure-diagnostics-ratio-de, fig.width=8, fig.height=4}
+plot_energy_balance_closure(closure_diag, type = "ratio")
+```
+
+Der Quotientenplot zeigt `(sensible + latent) / (rad_bal - soil_flux)`. Ein Wert von 1 bedeutet formalen Bilanzschluss. Werte unter 1 bedeuten, dass die gepaarten turbulenten Flüsse kleiner sind als die verfügbare Energie; Werte über 1 bedeuten, dass sie größer sind. Im hier gezeigten Priestley-Taylor-Pfad ist ein Wert nahe 1 erwartbar, weil die verfügbare Energie partitioniert wird. Bei Monin-Obukhov/Profile wären Abweichungen von 1 keine automatische Fehlermeldung, sondern die Differenz zwischen Profilfluss-Schätzung und Energiebilanz. Penman wird im Quotientenplot nicht dargestellt, weil `fieldClim` für Penman keinen gepaarten sensiblen Wärmefluss ausgibt.
+
+```{r object-output-table}
 # Ergebnisobjekt in eine Tabelle überführen.
 ws_table <- as.data.frame(ws_pt)
 

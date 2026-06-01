@@ -32,7 +32,7 @@ articles:
   contents:
   - fieldclim_manual_data_checks
   - fieldclim_flux_workflow
-  - "fieldclim_workflow_steps+"
+  - fieldclim_workflow_steps
 
 - title: Deprecated
   contents:

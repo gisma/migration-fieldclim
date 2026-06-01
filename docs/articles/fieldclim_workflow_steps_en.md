@@ -25,9 +25,9 @@ considered when applying them?
 | 6 | How is a `weather_station` object checked, plotted, and exported? | [`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md), [`plot_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/plot_weather_station.md), [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html) |
 
 This vignette is a package map with executable mini examples. It does
-not replace a complete physical derivation, nor does it provide
-validation against independent flux measurements. Its purpose is to show
-which package functions fit which workflow steps.
+not replace a complete physical derivation, nor does it provide testing
+against independent flux measurements. Its purpose is to show which
+package functions fit which workflow steps.
 
 ## Shared data and object setup
 
@@ -337,12 +337,12 @@ abline(0, 1, lty = 2, col = "grey40")
 par(op)
 ```
 
-**Interpretation.** This module is a data-validation workflow. The
-package functions can only be used meaningfully when it is clear which
-radiation variable is used as the working variable. If `rad_net`,
-`RsNet + RlNet`, and `K* + L*` diverge, a new net radiation series is
-not created automatically. Instead, the first step is to document which
-column represents which balance level.
+**Interpretation.** This module is a data-check workflow. The package
+functions can only be used meaningfully when it is clear which radiation
+variable is used as the working variable. If `rad_net`, `RsNet + RlNet`,
+and `K* + L*` diverge, a new net radiation series is not created
+automatically. Instead, the first step is to document which column
+represents which balance level.
 
 ### 1.3 Define the radiation time series for further calculations
 
@@ -906,7 +906,7 @@ summary(L_monin_cap)
 **Interpretation.** Caps and protection rules do not change the
 measurements. They prevent individual denominators close to zero or
 non-finite intermediate values from producing uncontrolled outliers.
-This is neither scientific validation nor a repair of the time step. A
+This is neither scientific confirmation nor a repair of the time step. A
 capped value or a value treated as `NA` remains an indication that the
 respective profile or gradient situation is critical.
 
@@ -1045,6 +1045,88 @@ is a fast control route for object contents. Custom plots remain useful
 for scientific figures, but for debugging, teaching, and initial data
 checks the function is practical.
 
+### Energy-balance closure diagnostics
+
+[`energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/energy_balance_closure.md)
+is not an additional flux model. It summarizes existing output fields of
+a `weather_station` object as energy-balance diagnostics. The starting
+point is available energy, defined as `rad_bal - soil_flux`. For methods
+with paired sensible and latent heat fluxes, the function calculates
+`available_energy - sensible - latent` as the closure residual. For
+Penman, no artificial sensible heat flux is created; instead, the
+function reports an `unresolved_complement`. Monin-Obukhov/Profile
+outputs are treated diagnostically and are not forced to close the
+energy balance.
+
+In this workflow, `ws_pt` is the existing Priestley-Taylor result
+object. The diagnostic call is therefore restricted to
+`priestley_taylor`.
+
+``` r
+
+closure_diag <- energy_balance_closure(ws_pt, methods = "priestley_taylor")
+
+head(closure_diag)
+#>              datetime           method      closure_type rad_bal soil_flux
+#> 1 2017-06-30 00:00:00 priestley_taylor partition_closure -15.200  1.551533
+#> 2 2017-06-30 00:05:00 priestley_taylor partition_closure  -8.920  1.492695
+#> 3 2017-06-30 00:10:00 priestley_taylor partition_closure  -1.965  1.448708
+#> 4 2017-06-30 00:15:00 priestley_taylor partition_closure  -1.790  1.390439
+#> 5 2017-06-30 00:20:00 priestley_taylor partition_closure  -2.469  1.325316
+#> 6 2017-06-30 00:25:00 priestley_taylor partition_closure  -3.857  1.268762
+#>   available_energy  sensible     latent turbulent_sum closure_residual
+#> 1       -16.751533 -5.301183 -11.450350    -16.751533    -3.552714e-15
+#> 2       -10.412695 -3.308925  -7.103770    -10.412695    -1.776357e-15
+#> 3        -3.413708 -1.084238  -2.329470     -3.413708     0.000000e+00
+#> 4        -3.180439 -1.002820  -2.177619     -3.180439     0.000000e+00
+#> 5        -3.794316 -1.189538  -2.604778     -3.794316     4.440892e-16
+#> 6        -5.125762 -1.571959  -3.553803     -5.125762    -8.881784e-16
+#>   closure_ratio unresolved_complement               status
+#> 1            NA                    NA low_available_energy
+#> 2            NA                    NA low_available_energy
+#> 3            NA                    NA low_available_energy
+#> 4            NA                    NA low_available_energy
+#> 5            NA                    NA low_available_energy
+#> 6            NA                    NA low_available_energy
+```
+
+``` r
+
+plot_energy_balance_closure(closure_diag, type = "residual")
+```
+
+![](fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-residual-en-1.png)
+
+The residual plot shows an energy difference in W m^-2. For paired
+methods, this is `rad_bal - soil_flux - sensible - latent`. In the
+Priestley-Taylor path shown here, values close to zero are expected
+because sensible and latent heat are partitioned from available energy.
+A zero residual therefore indicates formal closure, not physical
+confirmation. For Penman, the plotted value would not be a paired
+closure residual but the unresolved complement after subtracting
+`latent_penman`; it must not be interpreted as sensible heat. For
+Monin-Obukhov/Profile, non-zero residuals would show the difference
+between profile-derived turbulent fluxes and available energy. This
+difference is diagnostically useful and should not be removed by
+rescaling.
+
+``` r
+
+plot_energy_balance_closure(closure_diag, type = "ratio")
+```
+
+![](fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-ratio-en-1.png)
+
+The ratio plot shows `(sensible + latent) / (rad_bal - soil_flux)`. A
+value of 1 indicates formal closure. Values below 1 mean that the paired
+turbulent fluxes are smaller than available energy; values above 1 mean
+that they exceed available energy. In the Priestley-Taylor path shown
+here, values close to 1 are expected because available energy is
+partitioned. For Monin-Obukhov/Profile, deviations from 1 would show the
+difference between profile-based flux estimates and the energy-balance
+reference. Penman is not shown in the ratio plot because `fieldClim`
+does not return a paired sensible heat flux for Penman.
+
 ## Result
 
 This vignette complements the energy-balance workflow with additional
@@ -1059,7 +1141,7 @@ package follow-up workflows. The central logic is:
     intermediate variables.
 6.  Turbulence and stability functions are diagnostic tools.
 7.  Caps and fallbacks are protection mechanisms, not automatic
-    scientific validation.
+    scientific confirmation.
 8.  [`plot_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/plot_weather_station.md)
     and [`as.data.frame()`](https://rdrr.io/r/base/as.data.frame.html)
     make the object accessible for checking and further processing.

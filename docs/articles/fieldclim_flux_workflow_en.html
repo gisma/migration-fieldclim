@@ -43,7 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_method.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -53,7 +53,7 @@
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (DE)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_manual_data_checks.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_flux_workflow.html">fieldClim: fieldClim-Workflow für Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps+.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -1268,6 +1268,67 @@ says “this is how a profile- and stability-dependent method reacts to
 these measured profiles.” If that reaction strongly deviates from
 <code>Q_star - B</code>, it is a diagnostic result about gradients,
 shear and stability assumptions.</p>
+</div>
+<div class="section level3">
+<h3 id="additional-energy-balance-diagnostics">Additional energy-balance diagnostics<a class="anchor" aria-label="anchor" href="#additional-energy-balance-diagnostics"></a>
+</h3>
+<p>After turbulent fluxes have been calculated, energy-balance closure
+diagnostics show whether the result is formally closed, contains an
+unresolved complementary term, or should be read as a profile/stability
+diagnostic. The diagnostic step does not change any fluxes. It only
+shows how the existing output fields relate to
+<code>rad_bal - soil_flux</code>.</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">closure_flux</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">flux_all</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">closure_flux</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              datetime           method      closure_type rad_bal soil_flux</span></span>
+<span><span class="co">#&gt; 1 2017-06-30 00:00:00 priestley_taylor partition_closure -15.200  1.551533</span></span>
+<span><span class="co">#&gt; 2 2017-06-30 00:05:00 priestley_taylor partition_closure  -8.920  1.492695</span></span>
+<span><span class="co">#&gt; 3 2017-06-30 00:10:00 priestley_taylor partition_closure  -1.965  1.448708</span></span>
+<span><span class="co">#&gt; 4 2017-06-30 00:15:00 priestley_taylor partition_closure  -1.790  1.390439</span></span>
+<span><span class="co">#&gt; 5 2017-06-30 00:20:00 priestley_taylor partition_closure  -2.469  1.325316</span></span>
+<span><span class="co">#&gt; 6 2017-06-30 00:25:00 priestley_taylor partition_closure  -3.857  1.268762</span></span>
+<span><span class="co">#&gt;   available_energy  sensible     latent turbulent_sum closure_residual</span></span>
+<span><span class="co">#&gt; 1       -16.751533 -5.301183 -11.450350    -16.751533    -3.552714e-15</span></span>
+<span><span class="co">#&gt; 2       -10.412695 -3.308925  -7.103770    -10.412695    -1.776357e-15</span></span>
+<span><span class="co">#&gt; 3        -3.413708 -1.084238  -2.329470     -3.413708     0.000000e+00</span></span>
+<span><span class="co">#&gt; 4        -3.180439 -1.002820  -2.177619     -3.180439     0.000000e+00</span></span>
+<span><span class="co">#&gt; 5        -3.794316 -1.189538  -2.604778     -3.794316     4.440892e-16</span></span>
+<span><span class="co">#&gt; 6        -5.125762 -1.571959  -3.553803     -5.125762    -8.881784e-16</span></span>
+<span><span class="co">#&gt;   closure_ratio unresolved_complement               status</span></span>
+<span><span class="co">#&gt; 1            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 2            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 3            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 4            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 5            NA                    NA low_available_energy</span></span>
+<span><span class="co">#&gt; 6            NA                    NA low_available_energy</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_flux</span>, type <span class="op">=</span> <span class="st">"residual"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_flux_workflow_en_files/figure-html/closure-flux-residual-en-1.png" class="r-plt" alt="" width="768"></p>
+<p>The residual plot shows an energy difference in W m^-2. For
+Bulk-Residual, residuals close to zero are expected because
+<code>latent_bulk_residual</code> is calculated as
+<code>rad_bal - soil_flux - sensible_bulk</code>. Priestley-Taylor and
+Bowen also close formally through their partitioning logic when the
+required output fields are present and finite. Penman remains open: the
+plot shows the unresolved complement after subtracting
+<code>latent_penman</code>; this term is not automatically sensible
+heat. Monin-Obukhov/Profile may show a substantial residual. This is the
+difference between profile-derived turbulent fluxes and available
+energy, and it should not be removed by rescaling.</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_flux</span>, type <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_flux_workflow_en_files/figure-html/closure-flux-ratio-en-1.png" class="r-plt" alt="" width="768"></p>
+<p>The closure ratio compares <code>sensible + latent</code> with
+<code>rad_bal - soil_flux</code>. Values near 1 indicate formal closure.
+For methods that close by construction, this is expected and does not
+prove physical correctness. Values below 1 mean that paired turbulent
+fluxes are smaller than available energy; values above 1 mean that they
+exceed available energy. For Monin-Obukhov/Profile, deviations are
+diagnostic. Ratios are not robust when available energy is close to
+zero. Penman is not shown because this package does not return a paired
+sensible heat flux for Penman.</p>
 </div>
 </div>
 <div class="section level2">

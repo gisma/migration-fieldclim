@@ -786,6 +786,29 @@ If the deviation is large, the corresponding timestep should not be interpreted 
 
 The edge markers are important. They indicate that some values lie outside the robustly displayed y-axis range. The plot therefore shows a readable center of the distribution plus outlier markers. In plain terms: the profile path does not say "this much energy was closed"; it says "this is how a profile- and stability-dependent method reacts to these measured profiles." If that reaction strongly deviates from `Q_star - B`, it is a diagnostic result about gradients, shear and stability assumptions.
 
+
+## Additional energy-balance diagnostics
+
+After turbulent fluxes have been calculated, energy-balance closure diagnostics show whether the result is formally closed, contains an unresolved complementary term, or should be read as a profile/stability diagnostic. The diagnostic step does not change any fluxes. It only shows how the existing output fields relate to `rad_bal - soil_flux`.
+
+```{r closure-flux-table-en}
+closure_flux <- energy_balance_closure(flux_all)
+
+head(closure_flux)
+```
+
+```{r closure-flux-residual-en, fig.width=8, fig.height=4}
+plot_energy_balance_closure(closure_flux, type = "residual")
+```
+
+The residual plot shows an energy difference in W m^-2. For Bulk-Residual, residuals close to zero are expected because `latent_bulk_residual` is calculated as `rad_bal - soil_flux - sensible_bulk`. Priestley-Taylor and Bowen also close formally through their partitioning logic when the required output fields are present and finite. Penman remains open: the plot shows the unresolved complement after subtracting `latent_penman`; this term is not automatically sensible heat. Monin-Obukhov/Profile may show a substantial residual. This is the difference between profile-derived turbulent fluxes and available energy, and it should not be removed by rescaling.
+
+```{r closure-flux-ratio-en, fig.width=8, fig.height=4}
+plot_energy_balance_closure(closure_flux, type = "ratio")
+```
+
+The closure ratio compares `sensible + latent` with `rad_bal - soil_flux`. Values near 1 indicate formal closure. For methods that close by construction, this is expected and does not prove physical correctness. Values below 1 mean that paired turbulent fluxes are smaller than available energy; values above 1 mean that they exceed available energy. For Monin-Obukhov/Profile, deviations are diagnostic. Ratios are not robust when available energy is close to zero. Penman is not shown because this package does not return a paired sensible heat flux for Penman.
+
 # Consequence for method comparison
 
 The methods react differently to the same station dataset because they do not answer the same question. For this Caldern day, the practical interpretation is:

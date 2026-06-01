@@ -119,9 +119,8 @@ The important point is that different method families treat this remainder diffe
 
 A simple non-meteorological way to read the problem is this: the equation tells us what should add up. The method decides what to do when not all parts are known.
 
-```{r closure-regimes-figure, echo = FALSE, out.width = "100%"}
-knitr::include_graphics("figures/energy_balance_closure_approaches.svg")
-```
+![](figures/energy_balance_closure_approaches.svg)
+
 
 # Energy-balance closure approaches in fieldClim
 

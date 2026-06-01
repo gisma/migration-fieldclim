@@ -1117,6 +1117,78 @@ these measured profiles.” If that reaction strongly deviates from
 `Q_star - B`, it is a diagnostic result about gradients, shear and
 stability assumptions.
 
+### Additional energy-balance diagnostics
+
+After turbulent fluxes have been calculated, energy-balance closure
+diagnostics show whether the result is formally closed, contains an
+unresolved complementary term, or should be read as a profile/stability
+diagnostic. The diagnostic step does not change any fluxes. It only
+shows how the existing output fields relate to `rad_bal - soil_flux`.
+
+``` r
+
+closure_flux <- energy_balance_closure(flux_all)
+
+head(closure_flux)
+#>              datetime           method      closure_type rad_bal soil_flux
+#> 1 2017-06-30 00:00:00 priestley_taylor partition_closure -15.200  1.551533
+#> 2 2017-06-30 00:05:00 priestley_taylor partition_closure  -8.920  1.492695
+#> 3 2017-06-30 00:10:00 priestley_taylor partition_closure  -1.965  1.448708
+#> 4 2017-06-30 00:15:00 priestley_taylor partition_closure  -1.790  1.390439
+#> 5 2017-06-30 00:20:00 priestley_taylor partition_closure  -2.469  1.325316
+#> 6 2017-06-30 00:25:00 priestley_taylor partition_closure  -3.857  1.268762
+#>   available_energy  sensible     latent turbulent_sum closure_residual
+#> 1       -16.751533 -5.301183 -11.450350    -16.751533    -3.552714e-15
+#> 2       -10.412695 -3.308925  -7.103770    -10.412695    -1.776357e-15
+#> 3        -3.413708 -1.084238  -2.329470     -3.413708     0.000000e+00
+#> 4        -3.180439 -1.002820  -2.177619     -3.180439     0.000000e+00
+#> 5        -3.794316 -1.189538  -2.604778     -3.794316     4.440892e-16
+#> 6        -5.125762 -1.571959  -3.553803     -5.125762    -8.881784e-16
+#>   closure_ratio unresolved_complement               status
+#> 1            NA                    NA low_available_energy
+#> 2            NA                    NA low_available_energy
+#> 3            NA                    NA low_available_energy
+#> 4            NA                    NA low_available_energy
+#> 5            NA                    NA low_available_energy
+#> 6            NA                    NA low_available_energy
+```
+
+``` r
+
+plot_energy_balance_closure(closure_flux, type = "residual")
+```
+
+![](fieldclim_flux_workflow_en_files/figure-html/closure-flux-residual-en-1.png)
+
+The residual plot shows an energy difference in W m^-2. For
+Bulk-Residual, residuals close to zero are expected because
+`latent_bulk_residual` is calculated as
+`rad_bal - soil_flux - sensible_bulk`. Priestley-Taylor and Bowen also
+close formally through their partitioning logic when the required output
+fields are present and finite. Penman remains open: the plot shows the
+unresolved complement after subtracting `latent_penman`; this term is
+not automatically sensible heat. Monin-Obukhov/Profile may show a
+substantial residual. This is the difference between profile-derived
+turbulent fluxes and available energy, and it should not be removed by
+rescaling.
+
+``` r
+
+plot_energy_balance_closure(closure_flux, type = "ratio")
+```
+
+![](fieldclim_flux_workflow_en_files/figure-html/closure-flux-ratio-en-1.png)
+
+The closure ratio compares `sensible + latent` with
+`rad_bal - soil_flux`. Values near 1 indicate formal closure. For
+methods that close by construction, this is expected and does not prove
+physical correctness. Values below 1 mean that paired turbulent fluxes
+are smaller than available energy; values above 1 mean that they exceed
+available energy. For Monin-Obukhov/Profile, deviations are diagnostic.
+Ratios are not robust when available energy is close to zero. Penman is
+not shown because this package does not return a paired sensible heat
+flux for Penman.
+
 ## Consequence for method comparison
 
 The methods react differently to the same station dataset because they
