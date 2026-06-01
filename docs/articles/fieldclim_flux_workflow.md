@@ -297,7 +297,12 @@ head(as.data.frame(ws))
 #> 4          2
 #> 5          2
 #> 6          2
+
+# Alle plotten
+fieldClim::plot_weather_station(ws)
 ```
+
+![](fieldclim_flux_workflow_files/figure-html/build-weather-station-1.png)
 
 **Interpretation.** Das `weather_station`-Objekt ist mehr als eine schön
 benannte Tabelle. Es legt fest, welche Spalte welche physikalische Rolle
