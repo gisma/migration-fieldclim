@@ -18,7 +18,7 @@ articles:
 - title: Concepts
   navbar: Theory
   contents:
-  - fieldclim_method
+  - fieldclim_theory
 
 - title: Tutorials & Workflows (EN)
   navbar: Tutorials & Workflows (EN)
