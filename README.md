@@ -134,6 +134,8 @@ stability_method = "none"
 
 Any treatment of missing data must be performed outside `fieldClim` in a documented external workflow. The package does not create `*_filled` replacement columns and heat-flux methods require their actual input fields.
 
+The missing-data inspection vignette demonstrates this read-only workflow using a synthetic gap/QC variant of the packaged Caldern teaching dataset.
+
 ## Validation status
 
 The package is now tested for internal consistency. Method equations, helper equations, guard behaviour and `weather_station` wrappers are covered by automated tests.

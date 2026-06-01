@@ -330,7 +330,7 @@ plot(
 abline(0, 1, lty = 2, col = "grey40")
 ```
 
-![](fieldclim_additional_workflow_steps_files/figure-html/radiation-diagnostic-plots-1.png)
+![](fieldclim_workflow_steps+_files/figure-html/radiation-diagnostic-plots-1.png)
 
 ``` r
 
@@ -587,7 +587,7 @@ plot(
 abline(0, 1, lty = 2, col = "grey40")
 ```
 
-![](fieldclim_additional_workflow_steps_files/figure-html/modeled-radiation-plot-1.png)
+![](fieldclim_workflow_steps+_files/figure-html/modeled-radiation-plot-1.png)
 
 ``` r
 
@@ -661,7 +661,7 @@ plot(
 )
 ```
 
-![](fieldclim_additional_workflow_steps_files/figure-html/soil-workflow-plots-1.png)
+![](fieldclim_workflow_steps+_files/figure-html/soil-workflow-plots-1.png)
 
 ``` r
 
@@ -754,7 +754,7 @@ plot(
 )
 ```
 
-![](fieldclim_additional_workflow_steps_files/figure-html/helper-functions-plot-1.png)
+![](fieldclim_workflow_steps+_files/figure-html/helper-functions-plot-1.png)
 
 ``` r
 
@@ -857,7 +857,7 @@ plot(
 )
 ```
 
-![](fieldclim_additional_workflow_steps_files/figure-html/turbulence-diagnostics-plot-1.png)
+![](fieldclim_workflow_steps+_files/figure-html/turbulence-diagnostics-plot-1.png)
 
 ``` r
 
@@ -1034,7 +1034,7 @@ if ("plot_weather_station" %in% getNamespaceExports("fieldClim")) {
 }
 ```
 
-![](fieldclim_additional_workflow_steps_files/figure-html/plot-weather-station-1.png)
+![](fieldclim_workflow_steps+_files/figure-html/plot-weather-station-1.png)
 
 ``` r
 

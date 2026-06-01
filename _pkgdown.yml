@@ -17,15 +17,21 @@ articles:
 - title: Theory
   navbar: Background
   contents:
-  - fieldclim_method_background
+  - fieldclim_method
+
+- title: Data checks
+  navbar: Data checks
+  contents:
+  - fieldclim_missing_data
+  - fieldclim_manual_data_checks
 
 - title: Core workflows
-  navbar: Workflows (German only)
+  navbar: Workflows
   contents:
-  - fieldclim_workflow_steps
-  - fieldclim_additional_workflow_steps
+  - fieldclim_flux_workflow
+  - fieldclim_workflow_steps+
+
 - title: Deprecated
   contents:
   - fieldclim_update2024
   - fieldclim_check_rad_soil
-

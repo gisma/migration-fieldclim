@@ -45,11 +45,15 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Background</h6></li>
-    <li><a class="dropdown-item" href="articles/fieldclim_method_background.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="articles/fieldclim_method.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Workflows (German only)</h6></li>
-    <li><a class="dropdown-item" href="articles/fieldclim_workflow_steps.html">fieldClim: Workflow-Schritte für Energiebilanz und Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="articles/fieldclim_additional_workflow_steps.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Data checks</h6></li>
+    <li><a class="dropdown-item" href="articles/fieldclim_missing_data.html">fieldClim: Missing-data inspection and input checks</a></li>
+    <li><a class="dropdown-item" href="articles/fieldclim_manual_data_checks.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Workflows</h6></li>
+    <li><a class="dropdown-item" href="articles/fieldclim_flux_workflow.html">fieldClim: fieldClim-Workflow für Wärmeflussmethoden</a></li>
+    <li><a class="dropdown-item" href="articles/fieldclim_workflow_steps+.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="articles/index.html">More articles...</a></li>
   </ul>
@@ -146,6 +150,13 @@ Penman-type latent heat</code></pre>
 <p>The default remains the neutral unguarded bulk estimate:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stability_method</span> <span class="op">=</span> <span class="st">"none"</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="missing-data-inspection-and-quality-control-boundary">Missing-data inspection and quality-control boundary<a class="anchor" aria-label="anchor" href="#missing-data-inspection-and-quality-control-boundary"></a>
+</h2>
+<p><code>fieldClim</code> does not fill, impute, interpolate, model, complete or replace missing meteorological time-series data. The package can inspect <code>weather_station</code> objects with <code><a href="reference/inspect_weather_station_inputs.html">inspect_weather_station_inputs()</a></code> to report available variables, missingness, gap runs, variable classes, simple quality-control flags and heat-flux method input availability.</p>
+<p>Any treatment of missing data must be performed outside <code>fieldClim</code> in a documented external workflow. The package does not create <code>*_filled</code> replacement columns and heat-flux methods require their actual input fields.</p>
+<p>The missing-data inspection vignette demonstrates this read-only workflow using a synthetic gap/QC variant of the packaged Caldern teaching dataset.</p>
 </div>
 <div class="section level2">
 <h2 id="validation-status">Validation status<a class="anchor" aria-label="anchor" href="#validation-status"></a>

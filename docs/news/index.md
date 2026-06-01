@@ -129,6 +129,19 @@
 - [`as.data.frame.weather_station()`](https://gisma.github.io/migration-fieldclim/reference/as.data.frame.weather_station.md)
   is more robust for objects without a `$measurements` field.
 
+### Missing-data inspection boundary
+
+- Removed/disabled weather-station missing-data completion behavior from
+  the package API. `fieldClim` no longer creates replacement time-series
+  columns or performs internal gap treatment.
+- [`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md)
+  remains as a read-only inspection and quality-control helper. It
+  reports missingness, gap runs, variable classes, selected QC flags and
+  heat-flux method input availability.
+- Missing-data treatment must be performed outside `fieldClim` with
+  documented provenance; package heat-flux methods continue to require
+  their actual measured/input fields.
+
 ### Documentation
 
 - Roxygen documentation was updated for formulas, units, sign

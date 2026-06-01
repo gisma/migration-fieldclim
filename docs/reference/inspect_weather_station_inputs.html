@@ -6,11 +6,11 @@
     }
   };
 </script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet"><link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet"><script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet"><meta property="og:title" content="Inspect weather-station inputs for fieldClim workflows — inspect_weather_station_inputs"><meta name="description" content="Reports available, missing and partially missing inputs for common
-fieldClim method families. This function is read-only: it does not fill,
-derive, model, overwrite or mutate any field in the supplied
+fieldClim method families. This function is read-only: it does not alter,
+complete, impute, interpolate, model or replace any value in the supplied
 weather_station object."><meta property="og:description" content="Reports available, missing and partially missing inputs for common
-fieldClim method families. This function is read-only: it does not fill,
-derive, model, overwrite or mutate any field in the supplied
+fieldClim method families. This function is read-only: it does not alter,
+complete, impute, interpolate, model or replace any value in the supplied
 weather_station object."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -32,11 +32,15 @@ weather_station object."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Background</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_method_background.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_method.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Workflows (German only)</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps.html">fieldClim: Workflow-Schritte für Energiebilanz und Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_additional_workflow_steps.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Data checks</h6></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_missing_data.html">fieldClim: Missing-data inspection and input checks</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_manual_data_checks.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Workflows</h6></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_flux_workflow.html">fieldClim: fieldClim-Workflow für Wärmeflussmethoden</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps+.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -51,14 +55,14 @@ weather_station object."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Inspect weather-station inputs for fieldClim workflows</h1>
-      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/R/convenience_missing_inputs.R" class="external-link"><code>R/convenience_missing_inputs.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/R/missing_inputs.r" class="external-link"><code>R/missing_inputs.r</code></a></small>
       <div class="d-none name"><code>inspect_weather_station_inputs.Rd</code></div>
     </div>
 
     <div class="ref-description section level2">
     <p>Reports available, missing and partially missing inputs for common
-<code>fieldClim</code> method families. This function is read-only: it does not fill,
-derive, model, overwrite or mutate any field in the supplied
+<code>fieldClim</code> method families. This function is read-only: it does not alter,
+complete, impute, interpolate, model or replace any value in the supplied
 <code>weather_station</code> object.</p>
     </div>
 
@@ -83,20 +87,424 @@ derive, model, overwrite or mutate any field in the supplied
 
 <dt id="arg-targets">targets<a class="anchor" aria-label="anchor" href="#arg-targets"></a></dt>
 <dd><p>Character vector selecting input groups to inspect. Use
-<code>"all"</code> to include all known groups.</p></dd>
+<code>"all"</code> to include all known groups. Available groups are <code>"radiation"</code>,
+<code>"soil"</code>, <code>"humidity"</code>, <code>"pressure"</code>, <code>"profiles"</code> and <code>"heat_flux"</code>.</p></dd>
 
 
 <dt id="arg-methods">methods<a class="anchor" aria-label="anchor" href="#arg-methods"></a></dt>
-<dd><p>Character vector selecting method readiness checks. Use
-<code>"all"</code> to include all known methods.</p></dd>
+<dd><p>Character vector selecting method-readiness checks. Use
+<code>"all"</code> to include all known methods. Available methods are
+<code>"priestley_taylor"</code>, <code>"bulk_residual"</code>, <code>"bowen"</code>, <code>"monin_profile"</code> and
+<code>"penman"</code>. Selecting <code>"bulk_residual"</code> also includes the optional
+<code>"bulk_residual_ri_guard"</code> readiness check.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A list of class <code>fieldclim_input_inspection</code> with fields:
-<code>fields</code>, <code>method_readiness</code>, <code>possible_actions</code>, and <code>summary</code>.</p>
+<code>fields</code>, <code>gaps</code>, <code>method_readiness</code>, <code>qc_flags</code>, <code>guidance</code>, and
+<code>summary</code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>The inspection classifies variable groups, missing-value runs and selected
+quality-control issues. It is intended to help users decide which downstream
+methods cannot run because inputs are missing and which variables need
+external quality-control review. Any treatment of missing meteorological
+time-series values must happen outside <code>fieldClim</code> in a documented workflow.</p>
+<p>The returned object is a structured inspection report:</p><ul><li><p><code>fields</code> reports whether known input fields are present, missing or
+partially missing.</p></li>
+<li><p><code>gaps</code> reports consecutive missing-value runs in present fields.</p></li>
+<li><p><code>method_readiness</code> reports whether selected heat-flux workflows have their
+required inputs available.</p></li>
+<li><p><code>qc_flags</code> reports selected physically suspicious values, such as relative
+humidity outside 0..100 percent or negative wind speed.</p></li>
+<li><p><code>guidance</code> records the inspection-only policy and the main interpretation
+rules.</p></li>
+<li><p><code>summary</code> provides compact counts and lists of ready/blocked methods.</p></li>
+</ul><p><code>inspect_weather_station_inputs()</code> does not decide how missing data should be
+treated. The first interpretation step is to classify the affected variable
+and the gap length. A one-point gap in a smooth temperature series has a very
+different consequence from a long gap in radiation, wind or soil heat flux.
+Quality-control problems must also be reviewed before any external
+gap-filling workflow is considered.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">dt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"2017-06-30 00:00:00"</span>,</span></span>
+<span class="r-in"><span>  tz <span class="op">=</span> <span class="st">"Europe/Berlin"</span></span></span>
+<span class="r-in"><span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, by <span class="op">=</span> <span class="fl">300</span>, length.out <span class="op">=</span> <span class="fl">6</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_weather_station.html">build_weather_station</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  datetime <span class="op">=</span> <span class="va">dt</span>,</span></span>
+<span class="r-in"><span>  temp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">16</span>, <span class="cn">NA</span>, <span class="fl">18</span>, <span class="fl">19</span>, <span class="fl">20</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  rh <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>, <span class="fl">78</span>, <span class="fl">105</span>, <span class="fl">73</span>, <span class="cn">NA</span>, <span class="fl">68</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  t1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">16</span>, <span class="cn">NA</span>, <span class="fl">18</span>, <span class="fl">19</span>, <span class="fl">20</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  t2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14</span>, <span class="fl">15</span>, <span class="fl">16</span>, <span class="fl">17</span>, <span class="fl">18</span>, <span class="fl">19</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  hum1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">80</span>, <span class="fl">78</span>, <span class="fl">105</span>, <span class="fl">73</span>, <span class="cn">NA</span>, <span class="fl">68</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  hum2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">82</span>, <span class="fl">80</span>, <span class="fl">77</span>, <span class="fl">75</span>, <span class="fl">72</span>, <span class="fl">70</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  v1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1.2</span>, <span class="op">-</span><span class="fl">1</span>, <span class="fl">1.1</span>, <span class="cn">NA</span>, <span class="fl">1.5</span>, <span class="fl">1.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  v2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.0</span>, <span class="fl">2.1</span>, <span class="fl">2.2</span>, <span class="fl">2.0</span>, <span class="fl">2.3</span>, <span class="fl">2.4</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  rad_bal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">20</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="fl">150</span>, <span class="fl">160</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  soil_flux <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="fl">15</span>, <span class="fl">20</span>, <span class="fl">20</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  lat <span class="op">=</span> <span class="fl">50.8405</span>,</span></span>
+<span class="r-in"><span>  lon <span class="op">=</span> <span class="fl">8.6832</span>,</span></span>
+<span class="r-in"><span>  elev <span class="op">=</span> <span class="fl">270</span>,</span></span>
+<span class="r-in"><span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span>  surface_type <span class="op">=</span> <span class="st">"field"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">inspection</span> <span class="op">&lt;-</span> <span class="fu">inspect_weather_station_inputs</span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">inspection</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fields"           "gaps"             "method_readiness" "qc_flags"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "guidance"         "summary"         </span>
+<span class="r-in"><span><span class="va">inspection</span><span class="op">$</span><span class="va">summary</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $n_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 42</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $n_missing_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $n_partial_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $n_gaps</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $n_qc_flags</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $ready_methods</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "priestley_taylor"       "bulk_residual"          "bulk_residual_ri_guard"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "bowen"                  "monin_profile"         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $blocked_methods</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "penman"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $unsafe_missing_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> character(0)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="va">inspection</span><span class="op">$</span><span class="va">fields</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    field present all_missing any_missing n_missing n_total</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               datetime    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    lat    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                    lon    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   elev    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                rad_bal    TRUE       FALSE        TRUE         2       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                rad_net   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7              rad_sw_in   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8             rad_sw_out   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9              rad_lw_in   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10            rad_lw_out   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                albedo   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12          surface_type    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13          surface_temp   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                 slope   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15            exposition   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                valley   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17             soil_flux    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18            soil_temp1   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19            soil_temp2   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20           soil_depth1   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21           soil_depth2   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22          thermal_cond   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23               texture   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24              moisture   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25                    rh    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                  hum1    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                  hum2    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28       vapour_pressure   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29        vapor_pressure   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30     absolute_humidity   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31     specific_humidity   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32              pressure   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                  temp    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                    t1    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                    t2    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36 potential_temperature   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37                    v1    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38                    v2    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39              wind_dir   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40                    z1    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41                    z2    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42            obs_height   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    missing_fraction source_status     group         variable_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5         0.3333333       partial radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10               NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11               NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12        0.0000000       present radiation               surface</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13               NA       missing radiation           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14               NA       missing radiation              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15               NA       missing radiation              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16               NA       missing radiation              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17        0.0000000       present      soil        soil heat flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18               NA       missing      soil      soil temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19               NA       missing      soil      soil temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20               NA       missing      soil              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21               NA       missing      soil              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22               NA       missing      soil soil thermal property</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23               NA       missing      soil          soil texture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24               NA       missing      soil         soil moisture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25        0.1666667       partial  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26        0.1666667       partial  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27        0.0000000       present  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28               NA       missing  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29               NA       missing  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30               NA       missing  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31               NA       missing  humidity              humidity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32               NA       missing  pressure              pressure</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33        0.1666667       partial  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34        0.1666667       partial  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35        0.0000000       present  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36               NA       missing  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37        0.1666667       partial  profiles            wind speed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38        0.0000000       present  profiles            wind speed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39               NA       missing  profiles        wind direction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40        0.0000000       present  profiles              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41        0.0000000       present  profiles              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42               NA       missing  profiles              metadata</span>
+<span class="r-in"><span><span class="va">inspection</span><span class="op">$</span><span class="va">gaps</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     field variable_type gap_start_index gap_end_index n_timesteps</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 rad_bal     radiation               3             4           2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      rh      humidity               5             5           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    hum1      humidity               5             5           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4    temp   temperature               3             3           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5      t1   temperature               3             3           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      v1    wind speed               4             4           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            start_time            end_time duration_seconds gap_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2017-06-30 00:10:00 2017-06-30 00:15:00              600     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2017-06-30 00:20:00 2017-06-30 00:20:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2017-06-30 00:20:00 2017-06-30 00:20:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2017-06-30 00:10:00 2017-06-30 00:10:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2017-06-30 00:10:00 2017-06-30 00:10:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 2017-06-30 00:15:00 2017-06-30 00:15:00              300     short</span>
+<span class="r-in"><span><span class="va">inspection</span><span class="op">$</span><span class="va">qc_flags</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   field row_index                   flag severity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    rh         3 humidity_outside_0_100    error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  hum1         3 humidity_outside_0_100    error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    v1         2    negative_wind_speed    error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                    message</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Relative humidity should be within 0..100 percent before downstream use.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Relative humidity should be within 0..100 percent before downstream use.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                       Wind speed should not be negative.</span>
+<span class="r-in"><span><span class="va">inspection</span><span class="op">$</span><span class="va">method_readiness</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   method</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       priestley_taylor</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          bulk_residual</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 bulk_residual_ri_guard</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                  bowen</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5          monin_profile</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                 penman</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                required_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                       temp, rad_bal, soil_flux, surface_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                       t1, t2, v1, z1, z2, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                   t1, t2, v1, v2, z1, z2, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                         t1, t2, hum1, hum2, z1, z2, elev, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         t1, t2, hum1, hum2, v1, v2, z1, z2, elev, surface_type_or_obs_height</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 datetime, v1, temp, rad_bal, elev, lat, lon, soil_flux, obs_height, surface_type, hum1_or_rh</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                               present_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                     temp, rad_bal, soil_flux, surface_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                     t1, t2, v1, z1, z2, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 t1, t2, v1, v2, z1, z2, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                       t1, t2, hum1, hum2, z1, z2, elev, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                     t1, t2, hum1, hum2, v1, v2, z1, z2, elev, surface_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 datetime, v1, temp, rad_bal, elev, lat, lon, soil_flux, surface_type, hum1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   missing_fields          partial_fields ready</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                          temp, rad_bal  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        t1, v1, rad_bal  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        t1, v1, rad_bal  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                      t1, hum1, rad_bal  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           t1, hum1, v1  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6     obs_height v1, temp, rad_bal, hum1 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                       notes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Requires available measured input fields for temperature, net radiation, soil heat flux and surface type.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          Neutral bulk path can use v1 only; v2 is optional for mean wind.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                         Optional Richardson guard requires v2 and remains unavailable when v2 is missing.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                     Requires two-level temperature and humidity profiles.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                           Requires profile inputs plus either surface_type or obs_height.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                  Uses hum1 when present, otherwise rh; both are interpreted as relative humidity percent.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># The function reports missingness and quality-control flags only.</span></span></span>
+<span class="r-in"><span><span class="co"># It does not fill, impute, interpolate, model or replace values.</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">inspect_weather_station_inputs</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">ws</span>,</span></span>
+<span class="r-in"><span>  targets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"radiation"</span>, <span class="st">"soil"</span>, <span class="st">"profiles"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"priestley_taylor"</span>, <span class="st">"bulk_residual"</span>, <span class="st">"bowen"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                    field present all_missing any_missing n_missing n_total</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1               datetime    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    lat    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                    lon    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   elev    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                rad_bal    TRUE       FALSE        TRUE         2       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                rad_net   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7              rad_sw_in   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8             rad_sw_out   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9              rad_lw_in   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10            rad_lw_out   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11                albedo   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12          surface_type    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13          surface_temp   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14                 slope   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15            exposition   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16                valley   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17             soil_flux    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18            soil_temp1   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19            soil_temp2   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20           soil_depth1   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21           soil_depth2   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22          thermal_cond   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23               texture   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24              moisture   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25                  temp    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26                    t1    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27                    t2    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28 potential_temperature   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29                    v1    TRUE       FALSE        TRUE         1       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30                    v2    TRUE       FALSE       FALSE         0       6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31              wind_dir   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32                    z1    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33                    z2    TRUE       FALSE       FALSE         0       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34            obs_height   FALSE        TRUE        TRUE         0       0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    missing_fraction source_status     group         variable_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4         0.0000000       present  metadata              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5         0.3333333       partial radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9                NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10               NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11               NA       missing radiation             radiation</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12        0.0000000       present radiation               surface</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13               NA       missing radiation           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14               NA       missing radiation              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15               NA       missing radiation              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16               NA       missing radiation              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17        0.0000000       present      soil        soil heat flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18               NA       missing      soil      soil temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19               NA       missing      soil      soil temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20               NA       missing      soil              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21               NA       missing      soil              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22               NA       missing      soil soil thermal property</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23               NA       missing      soil          soil texture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24               NA       missing      soil         soil moisture</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25        0.1666667       partial  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26        0.1666667       partial  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27        0.0000000       present  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28               NA       missing  profiles           temperature</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29        0.1666667       partial  profiles            wind speed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30        0.0000000       present  profiles            wind speed</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31               NA       missing  profiles        wind direction</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32        0.0000000       present  profiles              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33        0.0000000       present  profiles              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34               NA       missing  profiles              metadata</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $gaps</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     field variable_type gap_start_index gap_end_index n_timesteps</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 rad_bal     radiation               3             4           2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2    temp   temperature               3             3           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3      t1   temperature               3             3           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4      v1    wind speed               4             4           1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            start_time            end_time duration_seconds gap_class</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2017-06-30 00:10:00 2017-06-30 00:15:00              600     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2017-06-30 00:10:00 2017-06-30 00:10:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2017-06-30 00:10:00 2017-06-30 00:10:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2017-06-30 00:15:00 2017-06-30 00:15:00              300     short</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $method_readiness</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   method                                      required_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       priestley_taylor               temp, rad_bal, soil_flux, surface_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          bulk_residual               t1, t2, v1, z1, z2, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                  bowen t1, t2, hum1, hum2, z1, z2, elev, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 bulk_residual_ri_guard           t1, t2, v1, v2, z1, z2, rad_bal, soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                               present_fields missing_fields  partial_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     temp, rad_bal, soil_flux, surface_type                  temp, rad_bal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     t1, t2, v1, z1, z2, rad_bal, soil_flux                t1, v1, rad_bal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3   t1, t2, z1, z2, elev, rad_bal, soil_flux     hum1, hum2     t1, rad_bal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 t1, t2, v1, v2, z1, z2, rad_bal, soil_flux                t1, v1, rad_bal</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ready</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                       notes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Requires available measured input fields for temperature, net radiation, soil heat flux and surface type.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          Neutral bulk path can use v1 only; v2 is optional for mean wind.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                     Requires two-level temperature and humidity profiles.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         Optional Richardson guard requires v2 and remains unavailable when v2 is missing.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $qc_flags</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   field row_index                   flag severity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    rh         3 humidity_outside_0_100    error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  hum1         3 humidity_outside_0_100    error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    v1         2    negative_wind_speed    error</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                    message</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 Relative humidity should be within 0..100 percent before downstream use.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Relative humidity should be within 0..100 percent before downstream use.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                       Wind speed should not be negative.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $guidance</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                 topic</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       variable_type</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          gap_length</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3     quality_control</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 method_availability</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   external_workflow</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                                                                                             guidance</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1   Classify the variable first; temperature, humidity, wind, radiation, soil and pressure variables have different treatment risks.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                             Classify gap length before choosing an external data workflow; short and long gaps are not equivalent.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Apply quality control before external missing-data treatment; flag physically impossible values, spikes and sensor failures first.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                            fieldClim reports which heat-flux methods lack required inputs; it does not make missing inputs usable.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                         Any missing-data treatment must be performed outside fieldClim with documented provenance.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$n_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 34</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$n_missing_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$n_partial_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$n_gaps</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$n_qc_flags</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$ready_methods</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "priestley_taylor"       "bulk_residual"          "bulk_residual_ri_guard"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$blocked_methods</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "bowen"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $summary$unsafe_missing_fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> character(0)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "fieldclim_input_inspection"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

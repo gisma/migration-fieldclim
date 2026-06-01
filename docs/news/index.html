@@ -26,11 +26,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Background</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_method_background.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_method.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Workflows (German only)</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps.html">fieldClim: Workflow-Schritte für Energiebilanz und Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_additional_workflow_steps.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Data checks</h6></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_missing_data.html">fieldClim: Missing-data inspection and input checks</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_manual_data_checks.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Workflows</h6></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_flux_workflow.html">fieldClim: fieldClim-Workflow für Wärmeflussmethoden</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps+.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul></li>
@@ -123,6 +127,13 @@
 <li>Penman failures inside <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> are now caught and represented as <code>NA</code> output instead of stopping the whole workflow.</li>
 <li>
 <code><a href="../reference/as.data.frame.weather_station.html">as.data.frame.weather_station()</a></code> is more robust for objects without a <code>$measurements</code> field.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="missing-data-inspection-boundary-1-2-0">Missing-data inspection boundary<a class="anchor" aria-label="anchor" href="#missing-data-inspection-boundary-1-2-0"></a></h3>
+<ul><li>Removed/disabled weather-station missing-data completion behavior from the package API. <code>fieldClim</code> no longer creates replacement time-series columns or performs internal gap treatment.</li>
+<li>
+<code><a href="../reference/inspect_weather_station_inputs.html">inspect_weather_station_inputs()</a></code> remains as a read-only inspection and quality-control helper. It reports missingness, gap runs, variable classes, selected QC flags and heat-flux method input availability.</li>
+<li>Missing-data treatment must be performed outside <code>fieldClim</code> with documented provenance; package heat-flux methods continue to require their actual measured/input fields.</li>
 </ul></div>
 <div class="section level3">
 <h3 id="documentation-1-2-0">Documentation<a class="anchor" aria-label="anchor" href="#documentation-1-2-0"></a></h3>

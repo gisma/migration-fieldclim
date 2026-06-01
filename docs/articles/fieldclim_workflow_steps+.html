@@ -43,11 +43,15 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Background</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_method_background.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_method.html">Scientific background for fieldClim heat-flux methods</a></li>
     <li><hr class="dropdown-divider"></li>
-    <li><h6 class="dropdown-header" data-toc-skip>Workflows (German only)</h6></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps.html">fieldClim: Workflow-Schritte für Energiebilanz und Wärmeflussmethoden</a></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_additional_workflow_steps.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Data checks</h6></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_missing_data.html">fieldClim: Missing-data inspection and input checks</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_manual_data_checks.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><h6 class="dropdown-header" data-toc-skip>Workflows</h6></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_flux_workflow.html">fieldClim: fieldClim-Workflow für Wärmeflussmethoden</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps+.html">fieldClim: Anschlussworkflows und weitere Paketfunktionen</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="../articles/index.html">More articles...</a></li>
   </ul>
@@ -75,8 +79,8 @@ Chris Reudenbach</h4>
             
             <h4 data-toc-skip class="date">2026-05-28</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/vignettes/fieldclim_additional_workflow_steps.Rmd" class="external-link"><code>vignettes/fieldclim_additional_workflow_steps.Rmd</code></a></small>
-      <div class="d-none name"><code>fieldclim_additional_workflow_steps.Rmd</code></div>
+      <small class="dont-index">Source: <a href="https://github.com/gisma/migration-fieldclim/blob/HEAD/vignettes/fieldclim_workflow_steps+.Rmd" class="external-link"><code>vignettes/fieldclim_workflow_steps+.Rmd</code></a></small>
+      <div class="d-none name"><code>fieldclim_workflow_steps+.Rmd</code></div>
     </div>
 
     
@@ -473,7 +477,7 @@ prüfen<a class="anchor" aria-label="anchor" href="#netto-strahlung-aus-nettospa
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_additional_workflow_steps_files/figure-html/radiation-diagnostic-plots-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="fieldclim_workflow_steps+_files/figure-html/radiation-diagnostic-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
@@ -744,7 +748,7 @@ vergleichen<a class="anchor" aria-label="anchor" href="#gemessene-und-modelliert
 <span>  main <span class="op">=</span> <span class="st">"Strahlungsmodell als Plausibilitätscheck"</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey40"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_additional_workflow_steps_files/figure-html/modeled-radiation-plot-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="fieldclim_workflow_steps+_files/figure-html/modeled-radiation-plot-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
@@ -821,7 +825,7 @@ K]</li>
 <span>  ylab <span class="op">=</span> <span class="st">"W/m²"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Bodenwärmestrom: aus Bodenparametern berechnet"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_additional_workflow_steps_files/figure-html/soil-workflow-plots-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="fieldclim_workflow_steps+_files/figure-html/soil-workflow-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
@@ -905,7 +909,7 @@ Wärmeflussmethoden.</p>
 <span>  ylab <span class="op">=</span> <span class="st">"kg/m³"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Luftdichte"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_additional_workflow_steps_files/figure-html/helper-functions-plot-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="fieldclim_workflow_steps+_files/figure-html/helper-functions-plot-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
@@ -999,7 +1003,7 @@ Stabilität geprüft werden. Das Paket stellt dafür mehrere
 <span>  ylab <span class="op">=</span> <span class="st">"Austauschkoeffizient"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Temperatur-Austauschdiagnostik"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_additional_workflow_steps_files/figure-html/turbulence-diagnostics-plot-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="fieldclim_workflow_steps+_files/figure-html/turbulence-diagnostics-plot-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
@@ -1158,7 +1162,7 @@ für weitere Analysen exportiert werden.</p>
 <span><span class="kw">if</span> <span class="op">(</span><span class="st">"plot_weather_station"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html" class="external-link">getNamespaceExports</a></span><span class="op">(</span><span class="st">"fieldClim"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/plot_weather_station.html">plot_weather_station</a></span><span class="op">(</span><span class="va">ws_pt</span>, variable_name <span class="op">=</span> <span class="st">"temp"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p><img src="fieldclim_additional_workflow_steps_files/figure-html/plot-weather-station-1.png" class="r-plt" alt="" width="768"></p>
+<p><img src="fieldclim_workflow_steps+_files/figure-html/plot-weather-station-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Vollständiger Zeitreihenüberblick.</span></span>
 <span><span class="co"># Aus Platzgründen ist dieser Chunk nicht automatisch ausgeführt.</span></span>

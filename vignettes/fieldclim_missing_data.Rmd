@@ -1,0 +1,511 @@
+---
+title: "fieldClim: Missing-data inspection and input checks"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fieldClim: Missing-data inspection and input checks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+format_percent <- function(x) sprintf("%.1f%%", 100 * x)
+format_duration <- function(x) {
+  ifelse(
+    is.na(x),
+    NA_character_,
+    ifelse(x < 3600, paste0(round(x / 60), " min"), paste0(round(x / 3600, 1), " h"))
+  )
+}
+
+gap_file_name <- "caldern_wiese_2017-06-30-gaps.csv"
+gap_candidates <- c(
+  system.file("extdata", gap_file_name, package = "fieldClim"),
+  file.path("..", "inst", "extdata", gap_file_name),
+  file.path("inst", "extdata", gap_file_name)
+)
+gap_file <- gap_candidates[
+  nzchar(gap_candidates) &
+    file.exists(gap_candidates) &
+    file.info(gap_candidates)$size > 0
+][1]
+if (is.na(gap_file)) {
+  stop("Example dataset not found: inst/extdata/", gap_file_name)
+}
+```
+
+## Purpose
+
+This tutorial shows how to inspect station data before heat-flux calculations.
+The goal is to learn the inspection workflow, not to repair the dataset.
+
+`fieldClim` does not repair, fill, impute, interpolate or complete the data. It
+reports missingness, gap blocks, variable classes, quality-control flags and
+method readiness. The first decision is the variable type and the gap length,
+because method suitability depends on what is missing and how the gap is
+structured. Quality control comes before any external gap-filling workflow.
+
+The sections below repeat the same tutorial pattern: run a command, inspect a
+compact original output, then read a cleaned table and interpretation.
+
+## Example dataset
+
+The example is based on the packaged Caldern one-day dataset. It contains one
+five-minute day. Artificial gaps and obvious sensor problems were inserted only
+to demonstrate inspection behavior. The file is not a meteorological benchmark;
+it is a controlled tutorial dataset. The original package dataset is unchanged.
+
+First load the file. The robust file lookup is handled before this chunk; the
+visible command is the part users normally need.
+
+```{r}
+library(fieldClim)
+
+caldern <- read.csv(
+  gap_file,
+  na.strings = c("NA", "NULL", ""),
+  stringsAsFactors = FALSE
+)
+caldern$datetime <- as.POSIXct(
+  caldern$datetime,
+  tz = "Europe/Berlin"
+)
+```
+
+A compact original view is enough to understand the logger columns used in the
+tutorial. It shows time, air temperature, humidity, net radiation, wind speed
+and soil heat flux.
+
+```{r}
+head(caldern[, c(
+  "datetime", "Ta_2m", "Huma_2m", "rad_net",
+  "Windspeed_2m", "heatflux_soil"
+)])
+```
+
+The overview table summarizes the dataset without printing all rows.
+
+```{r, echo = FALSE}
+time_steps <- diff(as.numeric(caldern$datetime))
+overview <- data.frame(
+  Item = c(
+    "Rows",
+    "First timestamp",
+    "Last timestamp",
+    "Median timestep",
+    "Number of variables",
+    "Variables with missing values"
+  ),
+  Value = c(
+    nrow(caldern),
+    format(min(caldern$datetime, na.rm = TRUE), "%Y-%m-%d %H:%M:%S %Z"),
+    format(max(caldern$datetime, na.rm = TRUE), "%Y-%m-%d %H:%M:%S %Z"),
+    paste0(stats::median(time_steps, na.rm = TRUE), " seconds"),
+    ncol(caldern),
+    sum(vapply(caldern, function(x) any(is.na(x)), logical(1)))
+  )
+)
+knitr::kable(overview, align = c("l", "l"))
+```
+
+The row count is still the expected 288 records for a five-minute day. The
+inspection problem is therefore not a missing file or an incomplete day. It is
+that specific variables contain gaps or suspicious values inside an otherwise
+regular teaching example.
+
+## Build the weather_station object
+
+`build_weather_station()` is only a container step. It stores station variables
+under names expected by `fieldClim` functions. It does not check physics,
+repair missing values or calculate replacement fields.
+
+```{r}
+ws <- build_weather_station(
+  datetime = caldern$datetime,
+  temp = caldern$Ta_2m,
+  rh = caldern$Huma_2m,
+  t1 = caldern$Ta_2m,
+  t2 = caldern$Ta_10m,
+  hum1 = caldern$Huma_2m,
+  hum2 = caldern$Huma_10m,
+  v1 = caldern$Windspeed_2m,
+  v2 = caldern$Windspeed_10m,
+  rad_bal = caldern$rad_net,
+  soil_flux = caldern$heatflux_soil,
+  lat = 50.8405,
+  lon = 8.6832,
+  elev = 270,
+  z1 = 2,
+  z2 = 10,
+  surface_type = "field"
+)
+```
+
+The compact object structure shows that `ws` is a named weather-station object.
+The vector lengths identify which fields are time series and which are station
+metadata.
+
+```{r}
+names(ws)
+sapply(ws, length)
+```
+
+The important names for later checks are `temp`, `rh`, `rad_bal`, `soil_flux`,
+`v1`, `v2`, `t1`, `t2`, `hum1` and `hum2`. Those are the names downstream
+functions use, regardless of the original logger column names.
+
+## Run the inspection
+
+Now run the inspection function. It returns a structured report, not modified
+station data.
+
+```{r}
+inspection <- inspect_weather_station_inputs(ws)
+```
+
+The first compact original output is simply the object structure: the returned
+list contains field-level status, gap blocks, method readiness, quality-control
+flags, guidance text and a summary.
+
+```{r}
+names(inspection)
+sapply(inspection, function(x) {
+  if (is.data.frame(x)) {
+    paste(nrow(x), "rows x", ncol(x), "columns")
+  } else {
+    paste(class(x), collapse = ", ")
+  }
+})
+```
+
+Read these components as follows. `fields` has one row per expected station
+field. `gaps` reports consecutive missing blocks, not just total `NA` counts.
+`qc_flags` identifies existing values that are suspicious or physically
+impossible. `method_readiness` reports which heat-flux methods have their
+required input fields.
+
+## Inspect variable-level missingness
+
+This step asks: which station fields contain missing values, and which variable
+classes do those fields represent?
+
+The compact original output below is a filtered view of `inspection$fields`.
+It shows only fields that are present and have at least one missing value.
+
+```{r}
+subset(
+  inspection$fields,
+  present & n_missing > 0,
+  select = c(field, variable_type, group, n_missing, n_total, missing_fraction)
+)
+```
+
+The same result is easier to read as a compact interpretation table.
+
+```{r, echo = FALSE}
+fields <- inspection$fields
+present_missing <- fields[fields$present & fields$n_missing > 0, , drop = FALSE]
+
+gap_summary <- aggregate(n_timesteps ~ field, data = inspection$gaps, FUN = max)
+names(gap_summary)[2] <- "largest_gap_steps"
+first_gap <- aggregate(gap_start_index ~ field, data = inspection$gaps, FUN = min)
+names(first_gap)[2] <- "first_missing_row"
+
+missing_table <- merge(present_missing, gap_summary, by = "field", all.x = TRUE)
+missing_table <- merge(missing_table, first_gap, by = "field", all.x = TRUE)
+missing_table <- missing_table[order(missing_table$group, missing_table$field), ]
+missing_table$missing_fraction <- format_percent(missing_table$missing_fraction)
+missing_table <- missing_table[, c(
+  "field", "variable_type", "group", "n_missing", "missing_fraction",
+  "first_missing_row", "largest_gap_steps"
+)]
+names(missing_table) <- c(
+  "Field", "Variable class", "Group", "Missing values", "Missing fraction",
+  "First missing row", "Largest gap (steps)"
+)
+knitr::kable(missing_table, align = c("l", "l", "l", "r", "r", "r", "r"))
+```
+
+In this dataset, the affected fields are `temp`, `t1`, `rh`, `hum1`, `rad_bal`,
+`v1` and `soil_flux`. The most consequential fields for heat-flux calculations
+are `rad_bal` and `soil_flux`, because together they define available energy
+as `Rn - G`. Missing `v1` affects aerodynamic and profile-related methods.
+Missing `hum1` affects humidity-gradient and Penman-type calculations. Missing
+`t1` affects profile methods and Bulk-Residual sensible heat.
+
+## Inspect gap blocks
+
+Total missing counts are not enough. This step asks whether the missing values
+are isolated or form continuous blocks.
+
+The compact original output sorts the gap table by length and shows the most
+important gaps first.
+
+```{r}
+inspection$gaps[order(-inspection$gaps$n_timesteps), ][1:10, ]
+```
+
+The interpreted table keeps the same information but formats timestamps and
+duration for reading.
+
+```{r, echo = FALSE}
+gaps <- inspection$gaps
+largest_gaps <- gaps[order(gaps$field, -gaps$n_timesteps), ]
+largest_gaps <- largest_gaps[!duplicated(largest_gaps$field), ]
+largest_gaps <- largest_gaps[order(-largest_gaps$n_timesteps), ]
+largest_gaps$duration <- format_duration(largest_gaps$duration_seconds)
+largest_gaps$gap_start <- format(largest_gaps$start_time, "%H:%M")
+largest_gaps$gap_end <- format(largest_gaps$end_time, "%H:%M")
+gap_table <- largest_gaps[, c(
+  "field", "variable_type", "gap_start", "gap_end",
+  "n_timesteps", "duration", "gap_class"
+)]
+names(gap_table) <- c(
+  "Field", "Variable class", "Gap start", "Gap end",
+  "Steps", "Duration", "Gap class"
+)
+knitr::kable(gap_table, align = c("l", "l", "l", "l", "r", "r", "l"))
+```
+
+A single missing five-minute value is a row-level interruption. A 30-60 minute
+gap starts to affect subdaily interpretation. The multi-hour `soil_flux` gap is
+more serious because it affects available energy `Rn - G`. Wind gaps can affect
+Bulk-Residual, Penman and profile-based methods. Humidity gaps affect Bowen,
+Monin-Obukhov/Profile and Penman-type paths.
+
+## Entry matrix: variable type and gap length
+
+The inspection table tells us where values are missing. The entry matrix
+explains why the consequence differs by variable type.
+
+```{r, echo = FALSE}
+entry_matrix <- data.frame(
+  `Variable type` = c("Temperature", "Humidity", "Radiation", "Wind speed", "Soil heat flux"),
+  `Fields in this example` = c("`temp`, `t1`", "`rh`, `hum1`", "`rad_bal`", "`v1`", "`soil_flux`"),
+  `What the inspection shows` = c(
+    "An isolated missing air-temperature value.",
+    "A short humidity gap and one invalid relative-humidity value.",
+    "A medium net-radiation gap and a suspicious shortwave value in the source data.",
+    "A medium wind-speed gap and one negative wind-speed value.",
+    "A long continuous soil heat-flux gap."
+  ),
+  `Why this matters` = c(
+    "Temperature enters profile gradients and helper calculations.",
+    "Humidity affects Bowen, Monin-Obukhov/Profile and Penman-type inputs.",
+    "Radiation controls available energy for energy-balance methods.",
+    "Wind controls aerodynamic and profile-based methods.",
+    "Soil heat flux is subtracted from net radiation in `Rn - G`."
+  ),
+  `What fieldClim does` = c(
+    "Reports this gap and affected methods. It does not repair the value.",
+    "Reports the gap and QC flag. It does not correct humidity values.",
+    "Reports affected radiation fields. It does not substitute modeled radiation.",
+    "Reports the gap and negative-wind flag. It does not invent wind speed.",
+    "Reports the long gap and affected energy-balance methods. It does not replace soil heat flux."
+  ),
+  check.names = FALSE
+)
+knitr::kable(entry_matrix, align = c("l", "l", "l", "l", "l"))
+```
+
+This table is not a ranking of filling methods. It is a reading guide for the
+inspection output. The key research-based point is that variable type, gap
+length and QC status determine the next external decision more than any
+universal method ranking.
+
+## Quality-control flags
+
+Missing values are not the only problem. Some values are present but should not
+be accepted without review.
+
+The compact original output below is the actual `qc_flags` table returned by
+`inspect_weather_station_inputs()`.
+
+```{r}
+inspection$qc_flags
+```
+
+The formatted table adds timestamps and values where they are available.
+
+```{r, echo = FALSE}
+flag_values <- inspection$qc_flags
+flag_values$timestamp <- NA_character_
+flag_values$value <- NA_real_
+if (nrow(flag_values) > 0) {
+  for (i in seq_len(nrow(flag_values))) {
+    field <- flag_values$field[i]
+    row <- flag_values$row_index[i]
+    if (!is.na(row) && row %in% seq_along(ws$datetime)) {
+      flag_values$timestamp[i] <- format(ws$datetime[row], "%Y-%m-%d %H:%M")
+      if (field %in% names(ws) && row <= length(ws[[field]]) && is.numeric(ws[[field]])) {
+        flag_values$value[i] <- ws[[field]][row]
+      }
+    }
+  }
+}
+qc_table <- flag_values[, c("field", "timestamp", "value", "flag", "message")]
+names(qc_table) <- c("Field", "Timestamp", "Value", "Flag type", "Explanation")
+knitr::kable(qc_table, align = c("l", "l", "r", "l", "l"))
+```
+
+In this dataset, relative humidity above 100 percent is invalid. Negative wind
+speed is invalid. Duplicated or irregular timestamps affect gap-length
+interpretation. A suspicious radiation value should be checked against time of
+day and expected physical range. The value is still present in the data; the
+inspection warns that it should not be accepted without review.
+
+The synthetic source data also include two intentionally obvious spike examples
+that are useful for manual review.
+
+```{r, echo = FALSE}
+spikes <- data.frame(
+  Field = c("rad_sw_in", "Ta_2m"),
+  Timestamp = c(
+    format(caldern$datetime[which(caldern$rad_sw_in > 1500)[1]], "%Y-%m-%d %H:%M"),
+    format(caldern$datetime[which(caldern$Ta_2m > 40)[1]], "%Y-%m-%d %H:%M")
+  ),
+  Value = c(
+    caldern$rad_sw_in[which(caldern$rad_sw_in > 1500)[1]],
+    caldern$Ta_2m[which(caldern$Ta_2m > 40)[1]]
+  ),
+  Interpretation = c(
+    "Check shortwave radiation against time of day and expected range.",
+    "Check whether the temperature spike is a sensor artefact."
+  )
+)
+knitr::kable(spikes, align = c("l", "l", "r", "l"))
+```
+
+## Method readiness
+
+This step connects the inspection to downstream heat-flux workflows. It asks
+which methods have their required fields and which required fields contain
+missing values.
+
+The compact original output keeps the relevant readiness columns visible.
+
+```{r}
+inspection$method_readiness[, c(
+  "method", "missing_fields", "partial_fields", "ready"
+)]
+```
+
+The interpreted method table translates that result into method-level
+consequences for this dataset.
+
+```{r, echo = FALSE}
+method_lookup <- data.frame(
+  method = c("priestley_taylor", "bulk_residual", "bulk_residual_ri_guard", "bowen", "monin_profile", "penman"),
+  Method = c(
+    "Priestley-Taylor",
+    "Bulk-Residual",
+    "Bulk-Residual with Richardson guard",
+    "Bowen-ratio",
+    "Monin-Obukhov/Profile",
+    "Penman-type latent heat"
+  ),
+  `Required field groups` = c(
+    "`rad_bal`, `soil_flux`, `temp`, `surface_type`",
+    "temperature difference, wind, heights, `rad_bal`, `soil_flux`",
+    "Bulk-Residual inputs plus two wind heights",
+    "temperature and humidity gradients, heights, `rad_bal`, `soil_flux`",
+    "temperature, humidity and wind profiles plus site metadata",
+    "radiation, soil heat flux, temperature, humidity, wind and site metadata"
+  ),
+  check.names = FALSE
+)
+method_table <- merge(method_lookup, inspection$method_readiness, by = "method", all.x = TRUE)
+method_table$`Structurally available?` <- ifelse(method_table$ready, "Yes", "No")
+method_table$`Fields with gaps` <- ifelse(nzchar(method_table$partial_fields), method_table$partial_fields, "none")
+method_table$`What this means for this dataset` <- c(
+  "If `rad_bal`, `soil_flux` or `temp` is missing at a timestep, `Rn - G` or temperature input is unavailable.",
+  "Gaps in `t1`, `v1`, `rad_bal` or `soil_flux` affect `H_bulk` or residual `LE` at those rows.",
+  "Two wind heights exist, but the same wind and energy-input gaps still matter row by row.",
+  "Missing or invalid humidity affects the gradient ratio; energy-input gaps also affect partitioning.",
+  "Missing or invalid profile values directly affect the diagnostic profile calculation.",
+  "Penman uses radiation, soil heat flux, temperature, humidity, wind and site metadata; it returns latent heat only."
+)
+method_table <- method_table[, c(
+  "Method", "Required field groups", "Structurally available?",
+  "Fields with gaps", "What this means for this dataset"
+)]
+knitr::kable(method_table, align = c("l", "l", "l", "l", "l"))
+```
+
+Priestley-Taylor uses `rad_bal`, `soil_flux`, `temp` and `surface_type`. If
+`rad_bal` or `soil_flux` is missing at a timestep, `Rn - G` is unavailable.
+
+Bulk-Residual uses temperature difference, wind and heights for `H_bulk`, plus
+`rad_bal` and `soil_flux` for residual `LE`. With the optional Richardson
+guard, two wind heights are needed.
+
+Bowen uses temperature and humidity gradients. Missing or invalid humidity
+affects the gradient ratio.
+
+Monin-Obukhov/Profile uses temperature, humidity and wind profiles. Missing or
+invalid profile values directly affect the profile calculation.
+
+Penman uses radiation, soil heat flux, temperature, humidity, wind and site
+metadata. It returns latent heat only.
+
+## External continuation boundary
+
+If gaps or suspicious values are found, the next step depends on the
+variable type, gap length and analysis goal. A short temperature gap, a
+radiation gap during changing cloud conditions and a missing wind profile do
+not have the same meaning for later heat-flux calculations. This is why the
+inspection first reports variable classes, gap blocks, QC flags and method
+readiness instead of ranking algorithms.
+
+
+```{r, echo = FALSE}
+external_packages <- data.frame(
+  Package = c(
+    "[climatol](https://cran.r-project.org/package=climatol)",
+    "[dataresqc](https://cran.r-project.org/package=dataresqc)",
+    "[meteo](https://cran.r-project.org/package=meteo)"
+  ),
+  Main_focus = c(
+    "Climatological station series: quality control, homogenization, missing-data workflows and derived climate products.",
+    "Quality control and formatting of historical daily and sub-daily climate observations.",
+    "Spatial and spatio-temporal prediction for meteorological and environmental station variables."
+  ),
+  Strength_for_this_task = c(
+    "Most relevant when a station series is longer than the one-day example and the problem is not only a short local gap, but consistency of a climatological record. It can support QC, homogenization and documented reconstruction of standard climate variables.",
+    "Most relevant before any later reconstruction step when the main question is whether the observed series is technically and physically trustworthy. It is useful for systematic QC, formatting and flagging of daily or sub-daily climate observations.",
+    "Most relevant when local inspection shows that gaps cannot be interpreted from the target station alone. It can use neighbouring stations, coordinates, time and covariates for spatial or spatio-temporal prediction."
+  ),
+  Limitation_for_this_task = c(
+    "Not designed as an automatic row-level repair step inside a heat-flux calculation. Its assumptions, homogenization choices and reconstructed values would have to be documented before re-importing data into fieldClim.",
+    "Primarily a QC and data-rescue tool, not a heat-flux or microclimate modelling package. It helps decide whether observations are trustworthy; it does not make fieldClim methods run on missing inputs.",
+    "Requires a spatial prediction setup with stations, coordinates and validation. It is not a replacement for measured radiation, wind or soil-flux inputs unless that external modelling decision is explicitly justified."
+  ),
+  Best_fit_in_this_vignette = c(
+    "Longer temperature, humidity, radiation or other climate-station series after fieldClim has shown where the gaps and QC problems are.",
+    "Checking whether suspicious values such as impossible humidity, negative wind speed or inconsistent time structure should be flagged before any further processing.",
+    "Situations where fieldClim inspection shows that a variable is missing for too long to interpret locally and neighbouring stations or spatial covariates are available."
+  ),
+  stringsAsFactors = FALSE
+)
+
+knitr::kable(
+  external_packages,
+  align = c("l", "l", "l", "l", "l"),
+  escape = FALSE
+)
+```
+
+
+
+
+## Summary
+
+This tutorial demonstrated how `inspect_weather_station_inputs()` can be used before running `fieldClim` heat-flux methods. The function returns a structured inspection report with variable-level availability, missing-value runs, quality-control flags and method-readiness information.
+
+The example shows why missing data must be interpreted by variable type and gap length. A short temperature gap, a radiation gap, a missing wind profile and a long soil-flux gap do not have the same consequences for later calculations. The inspection output therefore helps identify which variables require review and which method families are affected.
+
+`fieldClim` does not fill, impute, interpolate, complete or replace missing values. It reports the problem. Any decision to repair or reconstruct data must be made outside `fieldClim`, documented separately, and followed by a new inspection before heat-flux calculations are interpreted.

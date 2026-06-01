@@ -11,15 +11,84 @@
 #' external quality-control review. Any treatment of missing meteorological
 #' time-series values must happen outside `fieldClim` in a documented workflow.
 #'
+#' The returned object is a structured inspection report:
+#'
+#' * `fields` reports whether known input fields are present, missing or
+#'   partially missing.
+#' * `gaps` reports consecutive missing-value runs in present fields.
+#' * `method_readiness` reports whether selected heat-flux workflows have their
+#'   required inputs available.
+#' * `qc_flags` reports selected physically suspicious values, such as relative
+#'   humidity outside 0..100 percent or negative wind speed.
+#' * `guidance` records the inspection-only policy and the main interpretation
+#'   rules.
+#' * `summary` provides compact counts and lists of ready/blocked methods.
+#'
+#' `inspect_weather_station_inputs()` does not decide how missing data should be
+#' treated. The first interpretation step is to classify the affected variable
+#' and the gap length. A one-point gap in a smooth temperature series has a very
+#' different consequence from a long gap in radiation, wind or soil heat flux.
+#' Quality-control problems must also be reviewed before any external
+#' gap-filling workflow is considered.
+#'
 #' @param weather_station Object of class `weather_station`.
 #' @param targets Character vector selecting input groups to inspect. Use
-#'   `"all"` to include all known groups.
-#' @param methods Character vector selecting method readiness checks. Use
-#'   `"all"` to include all known methods.
+#'   `"all"` to include all known groups. Available groups are `"radiation"`,
+#'   `"soil"`, `"humidity"`, `"pressure"`, `"profiles"` and `"heat_flux"`.
+#' @param methods Character vector selecting method-readiness checks. Use
+#'   `"all"` to include all known methods. Available methods are
+#'   `"priestley_taylor"`, `"bulk_residual"`, `"bowen"`, `"monin_profile"` and
+#'   `"penman"`. Selecting `"bulk_residual"` also includes the optional
+#'   `"bulk_residual_ri_guard"` readiness check.
 #'
 #' @return A list of class `fieldclim_input_inspection` with fields:
 #'   `fields`, `gaps`, `method_readiness`, `qc_flags`, `guidance`, and
 #'   `summary`.
+#'
+#' @examples
+#' dt <- as.POSIXct(
+#'   "2017-06-30 00:00:00",
+#'   tz = "Europe/Berlin"
+#' ) + seq(0, by = 300, length.out = 6)
+#'
+#' ws <- build_weather_station(
+#'   datetime = dt,
+#'   temp = c(15, 16, NA, 18, 19, 20),
+#'   rh = c(80, 78, 105, 73, NA, 68),
+#'   t1 = c(15, 16, NA, 18, 19, 20),
+#'   t2 = c(14, 15, 16, 17, 18, 19),
+#'   hum1 = c(80, 78, 105, 73, NA, 68),
+#'   hum2 = c(82, 80, 77, 75, 72, 70),
+#'   v1 = c(1.2, -1, 1.1, NA, 1.5, 1.6),
+#'   v2 = c(2.0, 2.1, 2.2, 2.0, 2.3, 2.4),
+#'   rad_bal = c(0, 20, NA, NA, 150, 160),
+#'   soil_flux = c(0, 5, 10, 15, 20, 20),
+#'   lat = 50.8405,
+#'   lon = 8.6832,
+#'   elev = 270,
+#'   z1 = 2,
+#'   z2 = 10,
+#'   surface_type = "field"
+#' )
+#'
+#' inspection <- inspect_weather_station_inputs(ws)
+#'
+#' names(inspection)
+#' inspection$summary
+#' inspection$fields
+#' inspection$gaps
+#' inspection$qc_flags
+#' inspection$method_readiness
+#'
+#' # The function reports missingness and quality-control flags only.
+#' # It does not fill, impute, interpolate, model or replace values.
+#'
+#' inspect_weather_station_inputs(
+#'   ws,
+#'   targets = c("radiation", "soil", "profiles"),
+#'   methods = c("priestley_taylor", "bulk_residual", "bowen")
+#' )
+#'
 #' @export
 inspect_weather_station_inputs <- function(
     weather_station,

@@ -2,12 +2,14 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  fieldclim_additional_workflow_steps: fieldclim_additional_workflow_steps.html
   fieldclim_check_rad_soil: fieldclim_check_rad_soil.html
-  fieldclim_method_background: fieldclim_method_background.html
+  fieldclim_flux_workflow: fieldclim_flux_workflow.html
+  fieldclim_manual_data_checks: fieldclim_manual_data_checks.html
+  fieldclim_method: fieldclim_method.html
+  fieldclim_missing_data: fieldclim_missing_data.html
   fieldclim_update2024: fieldclim_update2024.html
-  fieldclim_workflow_steps: fieldclim_workflow_steps.html
-last_built: 2026-06-01T05:37Z
+  fieldclim_workflow_steps+: fieldclim_workflow_steps+.html
+last_built: 2026-06-01T08:31Z
 urls:
   reference: https://gisma.github.io/migration-fieldclim/reference
   article: https://gisma.github.io/migration-fieldclim/articles

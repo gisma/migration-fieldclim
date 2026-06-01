@@ -3,14 +3,21 @@
 ### Theory
 
 - [Scientific background for fieldClim heat-flux
-  methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_method_background.md):
+  methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_method.md):
+
+### Data checks
+
+- [fieldClim: Missing-data inspection and input
+  checks](https://gisma.github.io/migration-fieldclim/articles/fieldclim_missing_data.md):
+- [fieldClim: Manuelle Datenprüfung für Energiebilanz und
+  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_manual_data_checks.md):
 
 ### Core workflows
 
-- [fieldClim: Workflow-Schritte für Energiebilanz und
-  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_workflow_steps.md):
+- [fieldClim: fieldClim-Workflow für
+  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_flux_workflow.md):
 - [fieldClim: Anschlussworkflows und weitere
-  Paketfunktionen](https://gisma.github.io/migration-fieldclim/articles/fieldclim_additional_workflow_steps.md):
+  Paketfunktionen](https://gisma.github.io/migration-fieldclim/articles/fieldclim_workflow_steps+.md):
 
 ### Deprecated
 
