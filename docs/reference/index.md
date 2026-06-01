@@ -22,6 +22,8 @@
   : Precipitable water
 - [`hum_specific()`](https://gisma.github.io/migration-fieldclim/reference/hum_specific.md)
   : Specific humidity
+- [`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md)
+  : Inspect weather-station inputs for fieldClim workflows
 - [`latent_bowen()`](https://gisma.github.io/migration-fieldclim/reference/latent_bowen.md)
   : Latent Heat using Bowen Method
 - [`latent_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.md)

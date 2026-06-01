@@ -1,6 +1,5 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://gisma.github.io/migration-fieldclim/404.html</loc></url>
-<url><loc>https://gisma.github.io/migration-fieldclim/README(1).html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_additional_workflow_steps.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_check_rad_soil.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/articles/fieldclim_method_background.html</loc></url>
@@ -22,6 +21,7 @@
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/hum_precipitable_water.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/hum_specific.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/index.html</loc></url>
+<url><loc>https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_bowen.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.html</loc></url>
 <url><loc>https://gisma.github.io/migration-fieldclim/reference/latent_monin.html</loc></url>
