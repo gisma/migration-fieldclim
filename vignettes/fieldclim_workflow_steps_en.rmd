@@ -1,0 +1,750 @@
+---
+title: "fieldClim: Follow-up workflows and additional package functions"
+author: "Jörg Bendix, Chris Reudenbach"
+date: "2026-05-28"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fieldClim: Follow-up workflows and additional package functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Aim of this vignette
+
+This vignette complements the energy-balance workflow vignette. That vignette focuses on the coherent Caldern workflow with \(Q^{*}\), \(B\), \(L\), and \(V\). This page presents the additional package functions as **follow-up workflows**: radiation checks, modelled radiation, soil parameters, meteorological helper variables, stability variables, and object control.
+
+The text is not a second comparison of methods. The central question here is: Which groups of functions exist beyond the main workflow, what are they practically useful for, and which limitations must be considered when applying them?
+
+| Module | Guiding question | Package area |
+|---|---|---|
+| 0 | How does the package work in general? | `weather_station`, default methods, S3 methods |
+| 1 | How can radiation time series be checked without silently replacing measurements? | `rad_*`, measurement columns, time-series checks |
+| 2 | How can radiation be modelled when measurements are missing or when a plausibility benchmark is needed? | `sol_*`, `trans_*`, `terr_*`, `rad_*` |
+| 3 | How are soil parameters and soil heat flux handled? | `soil_*` |
+| 4 | Which helper variables are needed for humidity, pressure, and temperature? | `hum_*`, `pres_*`, `temp_*` |
+| 5 | How are the wind profile, Richardson number, and stability variables checked? | `turb_*`, `bound_*` |
+| 6 | How is a `weather_station` object checked, plotted, and exported? | `build_weather_station()`, `plot_weather_station()`, `as.data.frame()` |
+
+This vignette is a package map with executable mini examples. It does not replace a complete physical derivation, nor does it provide validation against independent flux measurements. Its purpose is to show which package functions fit which workflow steps.
+
+# Shared data and object setup
+
+All modules use the same small teaching dataset. The dataset is included in the installed package under `inst/extdata/`.
+
+```{r load-data}
+# Load fieldClim.
+library(fieldClim)
+
+# Path to the included teaching file.
+caldern_file <- system.file(
+  "extdata",
+  "caldern_wiese_2017-06-30.csv",
+  package = "fieldClim"
+)
+
+# Read the CSV file.
+# "NULL", "NA", and empty entries are treated as missing values.
+caldern <- read.csv(
+  caldern_file,
+  na.strings = c("NULL", "NA", "")
+)
+
+# Interpret timestamps explicitly as local station time.
+caldern$datetime <- as.POSIXct(
+  caldern$datetime,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "Europe/Berlin"
+)
+
+# The solar and radiation functions can work with POSIXct timestamps.
+# The time zone therefore remains explicitly set.
+# Basic checks.
+nrow(caldern)
+range(caldern$datetime)
+summary(diff(caldern$datetime))
+names(caldern)
+```
+
+```{r build-weather-station}
+# A weather_station object combines measurements, location, and model assumptions.
+# This object can be passed to many package functions.
+ws <- build_weather_station(
+  datetime = caldern$datetime,
+  lon = 8.6832,
+  lat = 50.8405,
+  elev = 261,
+
+  temp = caldern$Ta_2m,
+  rh = caldern$Huma_2m,
+
+  t1 = caldern$Ta_2m,
+  t2 = caldern$Ta_10m,
+  hum1 = caldern$Huma_2m,
+  hum2 = caldern$Huma_10m,
+
+  v1 = caldern$Windspeed_2m,
+  v2 = caldern$Windspeed_10m,
+  z1 = 2,
+  z2 = 10,
+
+  slope = 0,
+  exposition = 0,
+  valley = FALSE,
+
+  surface_type = "field",
+  surface_temp = caldern$Ts,
+
+  texture = "peat",
+  moisture = caldern$water_vol_soil,
+
+  rad_bal = caldern$rad_net,
+  soil_flux = caldern$heatflux_soil,
+
+  soil_temp1 = caldern$Ts,
+  soil_temp2 = caldern$Ta_2m,
+  soil_depth1 = 0.25,
+  soil_depth2 = 0,
+
+  obs_height = 2
+)
+
+class(ws)
+names(ws)
+```
+
+**Interpretation.** The `weather_station` object is the central working container of the package. Many functions have two usage forms: a default method with individual arguments and a method for `weather_station`. The object-based route is useful as soon as several functions need the same measurements, site data, and surface assumptions.
+
+# Workflow module 0: Default method or weather_station method?
+
+Almost every central function can be used directly with individual arguments or with a `weather_station` object.
+
+```{r default-vs-object}
+# Default method: all required arguments are provided individually.
+pres_p(elev = 261, temp = 20)
+
+# Object method: the function reads the required variables from the weather_station object.
+pres_p(ws)
+```
+
+**Interpretation.** The default method is useful for individual tests and for tracing formulas. The `weather_station` method is better for workflows because it carries the same data structure through several calculation steps.
+
+# Workflow module 1: Check radiation time series and define the working variable
+
+Radiation time series are often the most important input for energy-balance calculations. Before \(Q^{*}\) is used as net radiation, the components must be checked.
+
+The shortwave balance is:
+
+$$
+K^{*} = K_{\downarrow} - K_{\uparrow}
+$$
+
+with:
+
+- \(K^{*}\): shortwave balance [W/m²]
+- \(K_{\downarrow}\): incoming shortwave radiation [W/m²]
+- \(K_{\uparrow}\): reflected shortwave radiation [W/m²]
+
+The longwave balance is written here in the same direction:
+
+$$
+L^{*} = L_{\downarrow} - L_{\uparrow}
+$$
+
+with:
+
+- \(L^{*}\): longwave balance [W/m²]
+- \(L_{\downarrow}\): incoming longwave radiation [W/m²]
+- \(L_{\uparrow}\): longwave emission from the surface [W/m²]
+
+The net radiation is theoretically given by:
+
+$$
+Q^{*} = K^{*} + L^{*}
+$$
+
+with:
+
+- \(Q^{*}\): net radiation or radiation balance [W/m²]
+
+## 1.1 Calculate components and compare them with stored net columns
+
+```{r radiation-components}
+# Shortwave components from measurement columns.
+caldern$K_down <- caldern$rad_sw_in
+caldern$K_up <- caldern$rad_sw_out
+caldern$K_star_from_components <- caldern$K_down - caldern$K_up
+
+# Longwave components from measurement columns.
+caldern$L_down <- caldern$LDnCo
+caldern$L_up <- caldern$LUpCo
+caldern$L_star_down_minus_up <- caldern$L_down - caldern$L_up
+caldern$L_star_up_minus_down <- caldern$L_up - caldern$L_down
+
+# Check against existing net columns.
+shortwave_check <- summary(caldern$K_star_from_components - caldern$RsNet)
+longwave_check_down_up <- summary(caldern$L_star_down_minus_up - caldern$RlNet)
+longwave_check_up_down <- summary(caldern$L_star_up_minus_down - caldern$RlNet)
+
+shortwave_check
+longwave_check_down_up
+longwave_check_up_down
+```
+
+**Interpretation.** This step checks which column definition is consistent. If `rad_sw_in - rad_sw_out` matches `RsNet` well, the shortwave balance is clear. For the longwave balance, the sign direction must be checked. Depending on whether `LDnCo - LUpCo` or `LUpCo - LDnCo` matches `RlNet` better, a different convention is present.
+
+## 1.2 Check net radiation from net columns and individual components
+
+```{r radiation-net-check}
+# Variant A: net radiation from stored net columns.
+caldern$Q_star_from_net_columns <- caldern$RsNet + caldern$RlNet
+
+# Variant B: net radiation from individual components.
+caldern$Q_star_from_components <- caldern$K_star_from_components +
+  caldern$L_star_down_minus_up
+
+# Existing net radiation.
+caldern$Q_star_measured <- caldern$rad_net
+
+# Check differences.
+summary(caldern$Q_star_from_net_columns - caldern$Q_star_measured)
+summary(caldern$Q_star_from_components - caldern$Q_star_measured)
+```
+
+```{r radiation-diagnostic-plots, fig.width=8, fig.height=6}
+op <- par(mfrow = c(2, 1), mar = c(3.5, 4, 2, 1))
+
+plot(
+  caldern$datetime,
+  caldern$Q_star_measured,
+  type = "l",
+  col = "#000000",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "W/m²",
+  main = "Q*: existing net radiation"
+)
+
+lines(caldern$datetime, caldern$Q_star_from_net_columns, col = "#0072B2", lwd = 2)
+
+legend(
+  "bottomleft",
+  legend = c("rad_net", "RsNet + RlNet"),
+  col = c("#000000", "#0072B2"),
+  lty = 1,
+  lwd = 2,
+  bty = "n"
+)
+
+plot(
+  caldern$Q_star_measured,
+  caldern$Q_star_from_components,
+  pch = 16,
+  col = rgb(0, 0, 0, 0.35),
+  xlab = "rad_net [W/m²]",
+  ylab = "K* + L* from individual components [W/m²]",
+  main = "Compatibility check of radiation columns"
+)
+
+abline(0, 1, lty = 2, col = "grey40")
+
+par(op)
+```
+
+**Interpretation.** This module is a data-validation workflow. The package functions can only be used meaningfully when it is clear which radiation variable is used as the working variable. If `rad_net`, `RsNet + RlNet`, and `K* + L*` diverge, a new net radiation series is not created automatically. Instead, the first step is to document which column represents which balance level.
+
+## 1.3 Define the radiation time series for further calculations
+
+```{r radiation-working-series}
+# Working decision:
+# For energy-balance workflows, the existing rad_net column is used.
+# The other variants remain diagnostic variables.
+caldern$Q_star <- caldern$Q_star_measured
+
+# Document summary statistics of the differences.
+radiation_decision <- data.frame(
+  Comparison = c(
+    "RsNet + RlNet against rad_net",
+    "K* + L* against rad_net"
+  ),
+  Mean_deviation = c(
+    mean(caldern$Q_star_from_net_columns - caldern$Q_star_measured, na.rm = TRUE),
+    mean(caldern$Q_star_from_components - caldern$Q_star_measured, na.rm = TRUE)
+  ),
+  Max_abs_deviation = c(
+    max(abs(caldern$Q_star_from_net_columns - caldern$Q_star_measured), na.rm = TRUE),
+    max(abs(caldern$Q_star_from_components - caldern$Q_star_measured), na.rm = TRUE)
+  )
+)
+
+radiation_decision[, -1] <- round(radiation_decision[, -1], 1)
+radiation_decision
+```
+
+**Interpretation.** This is the actual “fix”: do not silently overwrite values, but define a working series and keep the alternatives as diagnostic variables. When heat fluxes are calculated later, it remains transparent which version of \(Q^{*}\) was used.
+
+## 1.4 Check time lag
+
+A time lag of one 5-minute step can create large deviations in radiation data.
+
+```{r radiation-lag-check}
+# Mean absolute deviation without lag.
+diff_0 <- mean(abs(
+  caldern$Q_star_from_components - caldern$Q_star_measured
+), na.rm = TRUE)
+
+# Compare the component sum one step later against rad_net.
+diff_plus <- mean(abs(
+  caldern$Q_star_from_components[-1] -
+    caldern$Q_star_measured[-length(caldern$Q_star_measured)]
+), na.rm = TRUE)
+
+# Compare the component sum one step earlier against rad_net.
+diff_minus <- mean(abs(
+  caldern$Q_star_from_components[-length(caldern$Q_star_from_components)] -
+    caldern$Q_star_measured[-1]
+), na.rm = TRUE)
+
+lag_check <- data.frame(
+  Comparison = c(
+    "without lag",
+    "components +1 step",
+    "components -1 step"
+  ),
+  mean_absolute_deviation = c(diff_0, diff_plus, diff_minus)
+)
+
+lag_check$mean_absolute_deviation <- round(
+  lag_check$mean_absolute_deviation,
+  1
+)
+
+lag_check
+```
+
+**Interpretation.** If a shifted comparison becomes clearly better, a timestamp or aggregation problem is likely. If it does not improve, this points more toward different column definitions, correction levels, or sign conventions.
+
+# Workflow module 2: Model radiation instead of only measuring it
+
+The radiation functions can be used to check the plausibility of measurements or to model missing radiation components. The package workflow follows a chain:
+
+| Subproblem | Function family | Role |
+|---|---|---|
+| Solar position | `sol_*` | Day angle, solar elevation, azimuth |
+| Atmospheric attenuation | `trans_*` | Air mass, gas, ozone, Rayleigh, water-vapour, and aerosol transmission |
+| Terrain | `terr_*` | Terrain and sky-view geometry |
+| Radiation | `rad_*` | Shortwave, diffuse, longwave, and net radiation |
+
+```{r solar-radiation-scalars}
+# Example timestamp for an individual test.
+# POSIXct is deliberately retained here; the current package version handles
+# POSIXct/POSIXlt consistently.
+example_time <- as.POSIXct("2017-06-30 12:00:00", tz = "Europe/Berlin")
+
+# Location and assumptions.
+lon <- 8.6832
+lat <- 50.8405
+elev <- 261
+temp <- 20
+rh <- 60
+slope <- 0
+exposition <- 0
+valley <- FALSE
+surface_type <- "field"
+surface_temp <- 20
+
+# Solar and topographic partial variables.
+sol_elevation(example_time, lon, lat)
+sol_azimuth(example_time, lon, lat)
+terr_sky_view(slope, valley)
+
+# Modelled shortwave and longwave radiation.
+rad_sw_in(example_time, lon, lat, elev, temp, slope, exposition)
+rad_sw_bal(example_time, lon, lat, elev, temp, slope, exposition, valley, surface_type)
+rad_lw_bal(temp, rh, slope, valley, surface_type, surface_temp)
+
+# Modelled net radiation.
+rad_bal(
+  example_time, lon, lat, elev, temp, rh,
+  slope, exposition, valley, surface_type, surface_temp
+)
+```
+
+**Interpretation.** This module is relevant when radiation components are missing or when measurements need to be checked against a plausible order of magnitude. Modelled radiation is not an automatic replacement measurement here. It is a benchmark: if the diurnal cycle and magnitude roughly agree, this supports a consistent time basis and realistic site assumptions. If measurement and model diverge strongly, the first checks should address time zone, surface type, terrain parameters, sensor processing, or differently defined radiation components. The time basis is technically important here: the current package version handles POSIXct and POSIXlt timestamps consistently. The key point remains that the time zone must be set explicitly because solar position and radiation depend on local time.
+
+## 2.1 Compare measured and modelled radiation as a diurnal cycle
+
+```{r modeled-radiation-day}
+# Modelled incoming shortwave radiation for the full teaching day.
+# The function is vectorised over the POSIXct time axis.
+caldern$K_down_model <- rad_sw_in(
+  caldern$datetime,
+  lon, lat, elev, caldern$Ta_2m,
+  slope, exposition
+)
+
+# Modelled shortwave balance.
+caldern$K_star_model <- rad_sw_bal(
+  caldern$datetime,
+  lon, lat, elev, caldern$Ta_2m,
+  slope, exposition, valley, surface_type
+)
+
+# Modelled longwave balance.
+caldern$L_star_model <- rad_lw_bal(
+  caldern$Ta_2m,
+  caldern$Huma_2m,
+  slope,
+  valley,
+  surface_type,
+  caldern$Ts
+)
+
+# Modelled net radiation.
+caldern$Q_star_model <- rad_bal(
+  caldern$datetime,
+  lon, lat, elev, caldern$Ta_2m, caldern$Huma_2m,
+  slope, exposition, valley, surface_type, caldern$Ts
+)
+```
+
+```{r modeled-radiation-plot, fig.width=8, fig.height=7}
+op <- par(mfrow = c(3, 1), mar = c(3.5, 4, 2, 1))
+
+plot(
+  caldern$datetime,
+  caldern$K_down,
+  type = "l",
+  col = "#000000",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "W/m²",
+  main = "Incoming shortwave radiation: measurement and model"
+)
+lines(caldern$datetime, caldern$K_down_model, col = "#D55E00", lwd = 2)
+legend(
+  "topright",
+  legend = c("measured", "modelled"),
+  col = c("#000000", "#D55E00"),
+  lty = 1,
+  lwd = 2,
+  bty = "n"
+)
+
+plot(
+  caldern$datetime,
+  caldern$Q_star,
+  type = "l",
+  col = "#000000",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "W/m²",
+  main = "Net radiation: working series and model"
+)
+lines(caldern$datetime, caldern$Q_star_model, col = "#0072B2", lwd = 2)
+
+plot(
+  caldern$Q_star,
+  caldern$Q_star_model,
+  pch = 16,
+  col = rgb(0, 0, 0, 0.35),
+  xlab = "Q* working series [W/m²]",
+  ylab = "Q* modelled [W/m²]",
+  main = "Radiation model as plausibility check"
+)
+abline(0, 1, lty = 2, col = "grey40")
+
+par(op)
+```
+
+**Interpretation.** Modelled radiation does not automatically replace measurement. It helps identify whether measurement series are temporally plausible and whether terrain, surface, or transmission assumptions produce realistic orders of magnitude.
+
+# Workflow module 3: Soil parameters and soil heat flux
+
+Soil heat flux can be measured or estimated from the temperature gradient, depth, moisture, and soil texture. The package workflow is:
+
+$$
+B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2}
+$$
+
+with:
+
+- \(B\): soil heat flux [W/m²]
+- \(\lambda_s\): soil thermal conductivity [W/(m K)]
+- \(T_1\): soil temperature at depth \(z_1\) [°C or K]
+- \(T_2\): temperature at the second depth or at the surface \(z_2\) [°C or K]
+- \(z_1\): depth of the first sensor [m]
+- \(z_2\): depth of the second reference [m]
+
+```{r soil-workflow}
+# Thermal conductivity for the selected soil texture and moisture.
+soil_thermal_cond(texture = "peat", moisture = mean(caldern$water_vol_soil, na.rm = TRUE))
+
+# Soil heat flux from the weather_station object.
+caldern$B_model <- soil_heat_flux(ws)
+
+# Measured working variable.
+caldern$B_measured <- caldern$heatflux_soil
+
+summary(caldern$B_model - caldern$B_measured)
+```
+
+```{r soil-workflow-plots, fig.width=8, fig.height=6}
+op <- par(mfrow = c(2, 1), mar = c(3.5, 4, 2, 1))
+
+plot(
+  caldern$datetime,
+  caldern$B_measured,
+  type = "l",
+  col = "#000000",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "W/m²",
+  main = "Soil heat flux: measured"
+)
+
+plot(
+  caldern$datetime,
+  caldern$B_model,
+  type = "l",
+  col = "#009E73",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "W/m²",
+  main = "Soil heat flux: calculated from soil parameters"
+)
+
+par(op)
+```
+
+**Interpretation.** The soil module is mainly useful in two situations: either directly measured soil heat flux is missing, or soil moisture and texture are to be varied as scenarios. However, a value calculated from a temperature gradient and soil parameters is not the same as a heat-flux plate measurement. Differences are therefore expected. For the energy balance, it is important to preserve the sign convention: in `fieldClim`, positive `soil_flux` means that heat enters the soil and is therefore subtracted from the available turbulent energy.
+
+# Workflow module 4: Humidity, pressure, and temperature as helper variables
+
+Humidity, pressure, and temperature functions are usually not end products. They provide intermediate variables for radiation, stability, and heat-flux methods.
+
+```{r helper-functions}
+# Absolute humidity from relative humidity and temperature.
+caldern$hum_abs <- hum_absolute(caldern$Huma_2m, caldern$Ta_2m)
+
+# Latent heat of vaporisation as a temperature-dependent helper variable.
+caldern$evap_heat <- hum_evap_heat(caldern$Ta_2m)
+
+# Humidity gradient between two measurement heights.
+caldern$hum_gradient <- hum_moisture_gradient(
+  caldern$Huma_2m,
+  caldern$Huma_10m,
+  caldern$Ta_2m,
+  caldern$Ta_10m,
+  2,
+  10,
+  261
+)
+
+# Air density from elevation and temperature.
+caldern$air_density <- pres_air_density(261, caldern$Ta_2m)
+
+# Potential temperature.
+caldern$theta <- temp_pot_temp(caldern$Ta_2m, 261)
+
+summary(caldern[, c("hum_abs", "evap_heat", "hum_gradient", "air_density", "theta")])
+```
+
+```{r helper-functions-plot, fig.width=8, fig.height=6}
+op <- par(mfrow = c(2, 1), mar = c(3.5, 4, 2, 1))
+
+plot(
+  caldern$datetime,
+  caldern$hum_abs,
+  type = "l",
+  col = "#0072B2",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "kg/kg or package-internal unit",
+  main = "Absolute humidity"
+)
+
+plot(
+  caldern$datetime,
+  caldern$air_density,
+  type = "l",
+  col = "#D55E00",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "kg/m³",
+  main = "Air density"
+)
+
+par(op)
+```
+
+**Interpretation.** These helper variables are intermediate steps, not independent result fluxes. Absolute humidity, potential temperature, air density, and latent heat of vaporisation later enter gradient analyses, Bowen, Penman, and profile methods. This is exactly why they matter: a small unit or scaling error in a helper variable can later appear as a large difference in heat flux.
+
+# Workflow module 5: Wind profile, Richardson number, and stability
+
+Before using more complex heat-flux methods, the wind profile, roughness, and stability should be checked. The package provides several `turb_*` functions for this purpose.
+
+```{r turbulence-diagnostics}
+# Roughness length from the surface type.
+z0 <- turb_roughness_length("field")
+z0
+
+# Friction velocity from wind speed and measurement height.
+caldern$u_star <- turb_ustar(caldern$Windspeed_2m, 2, surface_type = "field")
+
+# Gradient Richardson number.
+caldern$richardson <- turb_flux_grad_rich_no(
+  caldern$Ta_2m,
+  caldern$Ta_10m,
+  2,
+  10,
+  caldern$Windspeed_2m,
+  caldern$Windspeed_10m,
+  261
+)
+
+# Exchange and stability variables from the package.
+caldern$exchange_temp <- turb_flux_ex_quotient_temp(
+  caldern$Ta_2m,
+  caldern$Ta_10m,
+  2,
+  10,
+  caldern$Windspeed_2m,
+  caldern$Windspeed_10m,
+  261,
+  "field"
+)
+
+summary(caldern[, c("u_star", "richardson", "exchange_temp")])
+```
+
+```{r turbulence-diagnostics-plot, fig.width=8, fig.height=7}
+op <- par(mfrow = c(3, 1), mar = c(3.5, 4, 2, 1))
+
+plot(
+  caldern$datetime,
+  caldern$u_star,
+  type = "l",
+  col = "#000000",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "m/s",
+  main = "u*: friction velocity"
+)
+
+plot(
+  caldern$datetime,
+  caldern$richardson,
+  type = "l",
+  col = "#D55E00",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "Ri",
+  main = "Gradient Richardson number"
+)
+abline(h = 0, lty = 2, col = "grey50")
+
+plot(
+  caldern$datetime,
+  caldern$exchange_temp,
+  type = "l",
+  col = "#0072B2",
+  lwd = 2,
+  xlab = "Time",
+  ylab = "Exchange coefficient",
+  main = "Temperature exchange diagnostics"
+)
+
+par(op)
+```
+
+**Interpretation.** This module checks whether the profile information is usable at all. Richardson number and exchange variables depend on temperature differences, wind-speed differences, and measurement heights. If wind shear is very small or signs change, stability statements become sensitive. These are exactly the situations that later explain why profile-based heat-flux values can become conspicuous. The values should therefore first be read as plausibility and screening variables, not as an energy balance of their own.
+
+## 5.1 Document protection parameters and critical edge cases
+
+Some methods have `cap` arguments or return `NA` in a controlled way for invalid cases. These protection mechanisms are not a physical solution. They mark or limit situations in which denominators are close to zero, intermediate values are non-finite, or profile conditions are extremely sensitive.
+
+```{r cap-examples}
+# Bowen with and without cap.
+V_bowen_no_cap <- latent_bowen(ws)
+V_bowen_cap <- latent_bowen(ws, cap = 1)
+
+# Monin-Obukhov with and without cap.
+L_monin_no_cap <- sensible_monin(ws)
+L_monin_cap <- sensible_monin(ws, cap = 20)
+
+summary(V_bowen_no_cap)
+summary(V_bowen_cap)
+summary(L_monin_no_cap)
+summary(L_monin_cap)
+```
+
+**Interpretation.** Caps and protection rules do not change the measurements. They prevent individual denominators close to zero or non-finite intermediate values from producing uncontrolled outliers. This is neither scientific validation nor a repair of the time step. A capped value or a value treated as `NA` remains an indication that the respective profile or gradient situation is critical.
+
+## 5.2 Boundary-layer functions as a follow-up workflow
+
+The update documentation mentions `bound_thermal_avg()` in connection with `turb_ustar()`. This function group is a follow-up workflow of its own for mechanical or thermal boundary-layer variables. It is not developed fully here, but can be explored through the help pages.
+
+```{r boundary-layer-interface}
+# Check formal interfaces without forcing an artificial example value.
+if ("bound_thermal_avg" %in% getNamespaceExports("fieldClim")) {
+  formals(bound_thermal_avg)
+}
+```
+
+**Interpretation.** This block is deliberately small. Boundary-layer variables are not a by-product that can be meaningfully evaluated from every station dataset without a specific question. The helper functions show the available interface; a robust boundary-layer workflow, however, requires suitable input data and its own model assumption.
+
+# Workflow module 6: Print, plot, and export the object
+
+After calculations, the `weather_station` object contains additional fields. These can be printed as a table, plotted, or exported for further analyses.
+
+```{r object-output}
+# PT path as an example calculation.
+ws_pt <- turb_flux_calc(ws, pt_only = TRUE)
+
+# Convert the result object into a table.
+ws_table <- as.data.frame(ws_pt)
+
+# Available fields after calculation.
+names(ws_table)
+
+# Table excerpt.
+head(ws_table)
+```
+
+```{r plot-weather-station, fig.width=8, fig.height=4}
+# Plot a single variable from the weather_station object
+# if the function is available in the package version.
+if ("plot_weather_station" %in% getNamespaceExports("fieldClim")) {
+  plot_weather_station(ws_pt, variable_name = "temp")
+}
+```
+
+```{r plot-weather-station-grid, fig.width=8, fig.height=8, eval=FALSE}
+# Complete time-series overview.
+# For space reasons, this chunk is not run automatically.
+plot_weather_station(ws_pt)
+```
+
+**Interpretation.** `plot_weather_station()` is a fast control route for object contents. Custom plots remain useful for scientific figures, but for debugging, teaching, and initial data checks the function is practical.
+
+# Result
+
+This vignette complements the energy-balance workflow with additional package follow-up workflows. The central logic is:
+
+1. `weather_station` is the package working object.
+2. Radiation time series must be checked before \(Q^{*}\) is used.
+3. Radiation can be measured, modelled, or calculated as a plausibility check.
+4. Soil heat flux can be measured or estimated from soil parameters.
+5. Humidity, pressure, and temperature functions provide important intermediate variables.
+6. Turbulence and stability functions are diagnostic tools.
+7. Caps and fallbacks are protection mechanisms, not automatic scientific validation.
+8. `plot_weather_station()` and `as.data.frame()` make the object accessible for checking and further processing.

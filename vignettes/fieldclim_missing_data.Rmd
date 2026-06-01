@@ -1,5 +1,8 @@
 ---
 title: "fieldClim: Missing-data inspection and input checks"
+author: "Jörg Bendix, Chris Reudenbach"
+date: "2026-05-28"
+
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{fieldClim: Missing-data inspection and input checks}
