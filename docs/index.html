@@ -154,6 +154,23 @@ Penman-type latent heat</code></pre>
 <code class="sourceCode R"><span><span class="va">stability_method</span> <span class="op">=</span> <span class="st">"none"</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="energy-balance-closure-diagnostics">Energy-balance closure diagnostics<a class="anchor" aria-label="anchor" href="#energy-balance-closure-diagnostics"></a>
+</h2>
+<p><code>fieldClim</code> provides <code><a href="reference/energy_balance_closure.html">energy_balance_closure()</a></code> to make the closure behaviour of calculated heat-flux outputs explicit. The function does not compute new fluxes. It inspects existing fields of a <code>weather_station</code> object and compares the available energy, <code>rad_bal - soil_flux</code>, with already calculated sensible and latent heat fluxes.</p>
+<p>For methods with paired sensible and latent heat outputs, the diagnostic residual is:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">closure_residual</span> <span class="op">=</span> <span class="va">rad_bal</span> <span class="op">-</span> <span class="va">soil_flux</span> <span class="op">-</span> <span class="va">sensible</span> <span class="op">-</span> <span class="va">latent</span></span></code></pre></div>
+<p>and the closure ratio is:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">closure_ratio</span> <span class="op">=</span> <span class="op">(</span><span class="va">sensible</span> <span class="op">+</span> <span class="va">latent</span><span class="op">)</span> <span class="op">/</span> <span class="op">(</span><span class="va">rad_bal</span> <span class="op">-</span> <span class="va">soil_flux</span><span class="op">)</span></span></code></pre></div>
+<p>For Penman, <code>fieldClim</code> reports an open complement:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">unresolved_complement</span> <span class="op">=</span> <span class="va">rad_bal</span> <span class="op">-</span> <span class="va">soil_flux</span> <span class="op">-</span> <span class="va">latent_penman</span></span></code></pre></div>
+<p>This complement must not be interpreted as sensible heat. Monin-Obukhov/Profile residuals are diagnostic differences between profile-derived turbulent fluxes and available energy; they are not automatic errors and are not forced to close. Formal closure indicates an algebraic relationship in the package output, not physical validation.</p>
+<p>The companion <code><a href="reference/plot_energy_balance_closure.html">plot_energy_balance_closure()</a></code> function plots residuals, Penman unresolved complements and closure ratios from the diagnostic output.</p>
+<p>Bulk-Residual is treated on two levels: the sensible-heat estimate can use different exchange-velocity assumptions, while the latent heat flux remains residual closure through <code>rad_bal - soil_flux - sensible_bulk</code>.</p>
+</div>
+<div class="section level2">
 <h2 id="missing-data-inspection-and-quality-control-boundary">Missing-data inspection and quality-control boundary<a class="anchor" aria-label="anchor" href="#missing-data-inspection-and-quality-control-boundary"></a>
 </h2>
 <p><code>fieldClim</code> does not fill, impute, interpolate, model, complete or replace missing meteorological time-series data. The package can inspect <code>weather_station</code> objects with <code><a href="reference/inspect_weather_station_inputs.html">inspect_weather_station_inputs()</a></code> to report available variables, missingness, gap runs, variable classes, simple quality-control flags and heat-flux method input availability.</p>
@@ -181,6 +198,7 @@ Penman-type latent heat</code></pre>
 <li>Fixed <code><a href="reference/hum_precipitable_water.html">hum_precipitable_water()</a></code> for POSIXct input in the <code><a href="reference/rad_sw_in.html">rad_sw_in()</a></code> -&gt; <code><a href="reference/trans_vapor.html">trans_vapor()</a></code> path.</li>
 <li>Corrected <code><a href="reference/soil_attenuation.html">soil_attenuation()</a></code> argument forwarding.</li>
 <li>Extended <code><a href="reference/turb_flux_calc.html">turb_flux_calc()</a></code> with Bulk-Residual output, <code>pt_only</code>, and graceful Penman fallback to <code>NA</code>.</li>
+<li>Added <code><a href="reference/energy_balance_closure.html">energy_balance_closure()</a></code> and <code><a href="reference/plot_energy_balance_closure.html">plot_energy_balance_closure()</a></code> for diagnostic inspection of formal closure behaviour in existing flux outputs.</li>
 <li>Updated Roxygen documentation for formulas, units, sign conventions and guard behaviour.</li>
 </ul>
 </div>

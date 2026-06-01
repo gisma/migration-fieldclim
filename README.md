@@ -163,6 +163,8 @@ physical validation.
 The companion `plot_energy_balance_closure()` function plots residuals,
 Penman unresolved complements and closure ratios from the diagnostic output.
 
+Bulk-Residual is treated on two levels: the sensible-heat estimate can use different exchange-velocity assumptions, while the latent heat flux remains residual closure through `rad_bal - soil_flux - sensible_bulk`.
+
 
 ## Missing-data inspection and quality-control boundary
 

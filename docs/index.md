@@ -148,6 +148,54 @@ The default remains the neutral unguarded bulk estimate:
 stability_method = "none"
 ```
 
+## Energy-balance closure diagnostics
+
+`fieldClim` provides
+[`energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/energy_balance_closure.md)
+to make the closure behaviour of calculated heat-flux outputs explicit.
+The function does not compute new fluxes. It inspects existing fields of
+a `weather_station` object and compares the available energy,
+`rad_bal - soil_flux`, with already calculated sensible and latent heat
+fluxes.
+
+For methods with paired sensible and latent heat outputs, the diagnostic
+residual is:
+
+``` r
+
+closure_residual = rad_bal - soil_flux - sensible - latent
+```
+
+and the closure ratio is:
+
+``` r
+
+closure_ratio = (sensible + latent) / (rad_bal - soil_flux)
+```
+
+For Penman, `fieldClim` reports an open complement:
+
+``` r
+
+unresolved_complement = rad_bal - soil_flux - latent_penman
+```
+
+This complement must not be interpreted as sensible heat.
+Monin-Obukhov/Profile residuals are diagnostic differences between
+profile-derived turbulent fluxes and available energy; they are not
+automatic errors and are not forced to close. Formal closure indicates
+an algebraic relationship in the package output, not physical
+validation.
+
+The companion
+[`plot_energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/plot_energy_balance_closure.md)
+function plots residuals, Penman unresolved complements and closure
+ratios from the diagnostic output.
+
+Bulk-Residual is treated on two levels: the sensible-heat estimate can
+use different exchange-velocity assumptions, while the latent heat flux
+remains residual closure through `rad_bal - soil_flux - sensible_bulk`.
+
 ## Missing-data inspection and quality-control boundary
 
 `fieldClim` does not fill, impute, interpolate, model, complete or
@@ -213,5 +261,11 @@ changes are:
   [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
   with Bulk-Residual output, `pt_only`, and graceful Penman fallback to
   `NA`.
+- Added
+  [`energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/energy_balance_closure.md)
+  and
+  [`plot_energy_balance_closure()`](https://gisma.github.io/migration-fieldclim/reference/plot_energy_balance_closure.md)
+  for diagnostic inspection of formal closure behaviour in existing flux
+  outputs.
 - Updated Roxygen documentation for formulas, units, sign conventions
   and guard behaviour.

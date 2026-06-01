@@ -245,7 +245,7 @@ unresolved.</p>
 <p>A simple non-meteorological way to read the problem is this: the
 equation tells us what should add up. The method decides what to do when
 not all parts are known.</p>
-<p><img src="figures/energy_balance_closure_approaches.svg"></p>
+<p><img src="figures/method_families_closure_overview.png"></p>
 </div>
 <div class="section level2">
 <h2 id="energy-balance-closure-approaches-in-fieldclim">Energy-balance closure approaches in fieldClim<a class="anchor" aria-label="anchor" href="#energy-balance-closure-approaches-in-fieldclim"></a>
@@ -530,6 +530,28 @@ H_{bulk} + LE_{res} = R_n - G
 is a perfect physical estimate. It means that the residual latent heat
 flux inherits all errors in <code>Rn</code>, <code>G</code> and the bulk
 sensible heat estimate.</p>
+<div class="section level4">
+<h4 id="bulk-residual-exchange-estimate-and-residual-closure">Bulk-Residual: exchange estimate and residual closure<a class="anchor" aria-label="anchor" href="#bulk-residual-exchange-estimate-and-residual-closure"></a>
+</h4>
+<p>Bulk-Residual must be read on two levels. First,
+<code>sensible_bulk</code> is estimated from a temperature gradient and
+an exchange-velocity scale. This exchange scale may be a simple
+mean-wind approximation, a profile-derived friction velocity, or a
+roughness-based friction velocity. With
+<code>exchange_velocity = "u_star_profile"</code>, the sensible-heat
+estimate uses the two wind measurement heights and moves closer to a
+neutral profile-transfer logic. With
+<code>exchange_velocity = "u_star_roughness"</code>, the estimate
+depends on a roughness-length assumption.</p>
+<p>The closure logic, however, remains residual.
+<code>latent_bulk_residual</code> is still calculated as the remaining
+available energy after subtracting <code>sensible_bulk</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">latent_bulk_residual</span> <span class="op">=</span> <span class="va">rad_bal</span> <span class="op">-</span> <span class="va">soil_flux</span> <span class="op">-</span> <span class="va">sensible_bulk</span></span></code></pre></div>
+<p>A near-zero closure residual therefore confirms the algebraic
+residual construction. It does not prove that the selected
+exchange-velocity assumption is physically correct.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="penman-type-latent-heat-path">Penman-type latent heat path<a class="anchor" aria-label="anchor" href="#penman-type-latent-heat-path"></a>

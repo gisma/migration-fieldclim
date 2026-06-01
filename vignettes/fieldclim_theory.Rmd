@@ -119,7 +119,8 @@ The important point is that different method families treat this remainder diffe
 
 A simple non-meteorological way to read the problem is this: the equation tells us what should add up. The method decides what to do when not all parts are known.
 
-![](figures/energy_balance_closure_approaches.svg)
+
+![](figures/method_families_closure_overview.png)
 
 
 # Energy-balance closure approaches in fieldClim
@@ -362,6 +363,18 @@ H_{bulk} + LE_{res} = R_n - G
 $$
 
 This closure is algebraic. It does not prove that `H_bulk` is a perfect physical estimate. It means that the residual latent heat flux inherits all errors in `Rn`, `G` and the bulk sensible heat estimate.
+
+### Bulk-Residual: exchange estimate and residual closure
+
+Bulk-Residual must be read on two levels. First, `sensible_bulk` is estimated from a temperature gradient and an exchange-velocity scale. This exchange scale may be a simple mean-wind approximation, a profile-derived friction velocity, or a roughness-based friction velocity. With `exchange_velocity = "u_star_profile"`, the sensible-heat estimate uses the two wind measurement heights and moves closer to a neutral profile-transfer logic. With `exchange_velocity = "u_star_roughness"`, the estimate depends on a roughness-length assumption.
+
+The closure logic, however, remains residual. `latent_bulk_residual` is still calculated as the remaining available energy after subtracting `sensible_bulk`:
+
+```r
+latent_bulk_residual = rad_bal - soil_flux - sensible_bulk
+```
+
+A near-zero closure residual therefore confirms the algebraic residual construction. It does not prove that the selected exchange-velocity assumption is physically correct.
 
 ## Penman-type latent heat path
 

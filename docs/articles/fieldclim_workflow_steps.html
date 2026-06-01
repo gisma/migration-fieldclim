@@ -1120,6 +1120,21 @@ künstlicher sensibler Wärmefluss erzeugt; stattdessen wird der offene
 Ergänzungsterm <code>unresolved_complement</code> ausgegeben.
 Monin-Obukhov/Profile-Ergebnisse werden diagnostisch gelesen und nicht
 auf Bilanzschluss gezwungen.</p>
+<p>Bulk-Residual ist deshalb kein einheitlich „einfacher“ Ansatz.
+Einfach oder profilnah ist vor allem die Schätzung von
+<code>sensible_bulk</code>. Mit
+<code>exchange_velocity = "wind_mean"</code> wird eine einfache mittlere
+Windgeschwindigkeit verwendet. Mit
+<code>exchange_velocity = "u_star_profile"</code> nutzt die Schätzung
+die zwei Windhöhen und rückt näher an eine neutrale
+Profil-Austauschlogik. Mit
+<code>exchange_velocity = "u_star_roughness"</code> wird die
+Austauschgeschwindigkeit über eine Rauigkeitslänge bestimmt. Die
+Energiebilanz wird aber weiterhin residual geschlossen:
+<code>latent_bulk_residual</code> ist der Rest aus
+<code>rad_bal - soil_flux - sensible_bulk</code>. Bulk kann damit in der
+<code>H</code>-Schätzung profilnaher werden und trotzdem bei
+<code>LE</code> residual schließen.</p>
 <p>In diesem Workflow liegt mit <code>ws_pt</code> der bereits
 berechnete Priestley-Taylor-Pfad vor. Deshalb wird die Diagnose hier nur
 für <code>priestley_taylor</code> aufgerufen.</p>
@@ -1149,36 +1164,58 @@ für <code>priestley_taylor</code> aufgerufen.</p>
 <span><span class="co">#&gt; 5            NA                    NA low_available_energy</span></span>
 <span><span class="co">#&gt; 6            NA                    NA low_available_energy</span></span></code></pre></div>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_diag</span>, type <span class="op">=</span> <span class="st">"residual"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-residual-de-1.png" class="r-plt" alt="" width="768"></p>
-<p>Der Residualplot zeigt eine Energiedifferenz in W m^-2. Für gepaarte
-Verfahren ist dies <code>rad_bal - soil_flux - sensible - latent</code>.
-Im hier gezeigten Priestley-Taylor-Pfad sollte dieser Wert nahe null
-liegen, weil sensible und latente Wärme gemeinsam aus der verfügbaren
-Energie partitioniert werden. Ein Nullwert bedeutet hier formalen
-Bilanzschluss, nicht physikalische Bestätigung. Bei Penman würde die
-Funktion keinen gepaarten Schließungsrest zeigen, sondern den offenen
-Ergänzungsterm nach Abzug von <code>latent_penman</code>; dieser Term
-darf nicht einfach als sensibler Wärmefluss gelesen werden. Bei
-Monin-Obukhov/Profile würde ein nicht-nulliger Wert die Differenz
-zwischen profilbasierten turbulenten Flüssen und verfügbarer Energie
-zeigen. Genau diese Differenz ist diagnostisch interessant und soll
-nicht wegskaliert werden.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_diag</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"open_terms"</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-open-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
+<p>Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
+sondern den jeweils offenen oder residualisierten Term. Bei
+Bulk-Residual ist dies <code>latent_bulk_residual</code>: Die latente
+Wärme wird nach der Schätzung von <code>sensible_bulk</code> als Rest
+aus <code>rad_bal - soil_flux - sensible_bulk</code> berechnet. Bei
+Penman ist es der offene Ergänzungsterm nach Abzug von
+<code>latent_penman</code>; dieser Term ist nicht automatisch fühlbarer
+Wärmestrom. Bei Monin-Obukhov/Profile ist es der diagnostische
+Bilanzrest <code>rad_bal - soil_flux - sensible - latent</code>.
+Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+verfügbare Energie partitionieren und keinen expliziten offenen Term
+ausgeben. Im hier gezeigten Priestley-Taylor-Pfad bleibt dieser Plot
+deshalb leer.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_diag</span>, type <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-ratio-de-1.png" class="r-plt" alt="" width="768"></p>
-<p>Der Quotientenplot zeigt
-<code>(sensible + latent) / (rad_bal - soil_flux)</code>. Ein Wert von 1
-bedeutet formalen Bilanzschluss. Werte unter 1 bedeuten, dass die
-gepaarten turbulenten Flüsse kleiner sind als die verfügbare Energie;
-Werte über 1 bedeuten, dass sie größer sind. Im hier gezeigten
-Priestley-Taylor-Pfad ist ein Wert nahe 1 erwartbar, weil die verfügbare
-Energie partitioniert wird. Bei Monin-Obukhov/Profile wären Abweichungen
-von 1 keine automatische Fehlermeldung, sondern die Differenz zwischen
-Profilfluss-Schätzung und Energiebilanz. Penman wird im Quotientenplot
-nicht dargestellt, weil <code>fieldClim</code> für Penman keinen
-gepaarten sensiblen Wärmefluss ausgibt.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_diag</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"closure_check"</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-check-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
+<p>Der Schließungscheck zeigt
+<code>rad_bal - soil_flux - sensible - latent</code> für Verfahren mit
+gepaarten Flüssen. Bei Priestley-Taylor, Bowen und Bulk-Residual sind
+Werte nahe null methodisch erwartbar. Das zeigt formalen Bilanzschluss,
+aber keine physikalische Validierung. Bei Monin-Obukhov/Profile ist ein
+nicht-nulliger Wert diagnostisch und zeigt die Differenz zwischen
+Profilfluss-Schätzung und verfügbarer Energie. Penman wird hier nicht
+gezeigt, weil kein gepaarter sensibler Wärmefluss berechnet wird.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_diag</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"ratio"</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"facets"</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-ratio-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
+<p>Der Quotientenplot ist hier auf den Bereich 0 bis 2 fokussiert, damit
+Abweichungen um den formalen Bilanzschluss bei 1 lesbar bleiben.
+Einzelne Werte außerhalb dieses Bereichs sind keine besseren oder
+schlechteren Methodenwerte, sondern Hinweise auf instabile Quotienten,
+meist bei kleiner verfügbarer Energie oder stark abweichenden
+Profilflüssen. Die Tabelle oberhalb enthält die nicht beschnittenen
+Diagnosewerte. Penman wird im Quotientenplot nicht dargestellt, weil
+<code>fieldClim</code> für Penman keinen gepaarten sensiblen Wärmefluss
+ausgibt.</p>
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Ergebnisobjekt in eine Tabelle überführen.</span></span>
 <span><span class="va">ws_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">ws_pt</span><span class="op">)</span></span>
 <span></span>
@@ -1230,14 +1267,14 @@ gepaarten sensiblen Wärmefluss ausgibt.</p>
 <span><span class="co">#&gt; 4          2                 -1.002820               -2.177619</span></span>
 <span><span class="co">#&gt; 5          2                 -1.189538               -2.604778</span></span>
 <span><span class="co">#&gt; 6          2                 -1.571959               -3.553803</span></span></code></pre></div>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Einzelvariable aus dem weather_station-Objekt plotten,</span></span>
 <span><span class="co"># wenn die Funktion in der Paketversion verfügbar ist.</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="st">"plot_weather_station"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/ns-reflect.html" class="external-link">getNamespaceExports</a></span><span class="op">(</span><span class="st">"fieldClim"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/plot_weather_station.html">plot_weather_station</a></span><span class="op">(</span><span class="va">ws_pt</span>, variable_name <span class="op">=</span> <span class="st">"temp"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="fieldclim_workflow_steps_files/figure-html/plot-weather-station-1.png" class="r-plt" alt="" width="768"></p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Vollständiger Zeitreihenüberblick.</span></span>
 <span><span class="co"># Aus Platzgründen ist dieser Chunk nicht automatisch ausgeführt.</span></span>
 <span><span class="fu"><a href="../reference/plot_weather_station.html">plot_weather_station</a></span><span class="op">(</span><span class="va">ws_pt</span><span class="op">)</span></span></code></pre></div>

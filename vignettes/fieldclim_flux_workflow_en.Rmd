@@ -88,6 +88,10 @@ for energy-closing or residual methods in valid finite cases. This relation is n
 
 All methods use the same station concept, but they do not answer the same question. Some methods partition the available energy, some estimate one flux and compute the other as a residual, and some use measured vertical profiles without forcing closure against available energy.
 
+```{r method-overview-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
+knitr::include_graphics("figures/en_clos_wf-method_overview_meadow_station.png")
+```
+
 | Method | Main question | Direct inputs | Output | Role in the workflow |
 |---|---|---|---|---|
 | Priestley-Taylor | How can available energy be partitioned in a stable way? | `Q_star`, `B`, parameter | `L_pt`, `V_pt` | first energy-bound package path |
@@ -97,6 +101,10 @@ All methods use the same station concept, but they do not answer the same questi
 | Penman | How large is latent heat flux from energy and aerodynamic drying power? | `Q_star`, `B`, wind, temperature, humidity, surface | `V_penman` | latent-heat-only comparison path |
 
 ## Priestley-Taylor
+
+```{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
+knitr::include_graphics("figures/en_clos_wf-method_priestley_taylor.png")
+```
 
 Priestley-Taylor is the stable first package path in this vignette. It is directly bound to available energy and does not require an unstable ratio of small humidity gradients.
 
@@ -112,9 +120,14 @@ $$
 L_{PT} = (Q^{*} - B) - V_{PT}
 $$
 
-The advantage of this path is energy bookkeeping. If `Q_star` and `B` are set correctly, the sum of `L_PT` and `V_PT` remains tied to the available energy. This does not prove that Priestley-Taylor is the physically best method for every situation; it makes it a readable first comparison path.
+The advantage of this path is energy bookkeeping. If `Q_star` and `B` are set correctly, the sum of `L_PT` and `V_PT` remains tied to the available energy. This does not prove that Priestley-Taylor is physically correct for every situation; it makes it a readable first comparison path.
 
 ## Bulk-Residual with optional Richardson guard
+
+
+```{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
+knitr::include_graphics("figures/en_clos_wf-method_bulk_residual.png")
+```
 
 The package path `turb_flux_bulk_residual()` first estimates sensible heat flux with a simplified bulk-transfer equation. Latent heat flux is then computed as the residual of the surface energy balance:
 
@@ -143,6 +156,11 @@ The guard is not the default. It is activated only by setting `stability_method 
 
 ## Bowen-ratio
 
+```{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
+knitr::include_graphics("figures/en_clos_wf-method_bowen.png")
+```
+
+
 The Bowen approach uses a ratio between temperature and humidity gradients. It partitions the available energy into sensible and latent heat flux.
 
 $$
@@ -163,6 +181,11 @@ For finite, uncapped denominator cases, Bowen closes the available energy. It is
 
 ## Monin-Obukhov/Profile
 
+```{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
+knitr::include_graphics("figures/en_clos_wf-method_monin_obukhov.png")
+```
+
+
 The Monin-Obukhov/Profile path in `fieldClim` is not a method that automatically partitions available energy into `L` and `V`. It calculates heat fluxes from measured differences between two heights: temperature, humidity, wind and measurement height directly determine the profile calculation. The method is therefore sensitive when gradients are small, noisy or contradictory.
 
 The current package version catches several problematic cases explicitly. If the temperature gradient between the two heights is zero, sensible heat flux is set to zero for that timestep. If the humidity gradient is zero, latent heat flux is set to zero. Invalid measurement heights, missing wind values or non-evaluable profile states return `NA` with a warning.
@@ -178,6 +201,10 @@ $$
 holds. This relation is used only as a plausibility check. Large deviations point to critical profile conditions: small temperature or humidity gradients, weak wind differences, unfavorable stability assumptions or 5-minute noise.
 
 ## Penman
+
+```{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
+knitr::include_graphics("figures/en_clos_wf-method_penman.png")
+```
 
 Penman is a combination approach for latent heat flux. It combines an energy term with an aerodynamic drying term. In the current package workflow, Penman returns `V`, but not a paired sensible heat flux `L`.
 
@@ -797,17 +824,95 @@ closure_flux <- energy_balance_closure(flux_all)
 head(closure_flux)
 ```
 
-```{r closure-flux-residual-en, fig.width=8, fig.height=4}
-plot_energy_balance_closure(closure_flux, type = "residual")
+```{r closure-flux-open-en, fig.width=11, fig.height=7, out.width="100%", fig.align="center"}
+plot_energy_balance_closure(
+  closure_flux,
+  type = "open_terms",
+  layout = "facets"
+)
 ```
 
-The residual plot shows an energy difference in W m^-2. For Bulk-Residual, residuals close to zero are expected because `latent_bulk_residual` is calculated as `rad_bal - soil_flux - sensible_bulk`. Priestley-Taylor and Bowen also close formally through their partitioning logic when the required output fields are present and finite. Penman remains open: the plot shows the unresolved complement after subtracting `latent_penman`; this term is not automatically sensible heat. Monin-Obukhov/Profile may show a substantial residual. This is the difference between profile-derived turbulent fluxes and available energy, and it should not be removed by rescaling.
+The plot does not show the same residual concept for all methods. It shows the term that is open or residualized in each method family. For Bulk-Residual, this is `latent_bulk_residual`: latent heat is calculated as the remaining available energy after estimating `sensible_bulk`. For Penman, it is the unresolved complement after subtracting `latent_penman`; this term is not automatically sensible heat. For Monin-Obukhov/Profile, it is the diagnostic balance residual `rad_bal - soil_flux - sensible - latent`. Priestley-Taylor and Bowen are not shown because they partition available energy and do not return an explicit open term.
 
-```{r closure-flux-ratio-en, fig.width=8, fig.height=4}
-plot_energy_balance_closure(closure_flux, type = "ratio")
+```{r closure-flux-check-en, fig.width=11, fig.height=7, out.width="100%", fig.align="center"}
+plot_energy_balance_closure(
+  closure_flux,
+  type = "closure_check",
+  layout = "facets"
+)
 ```
 
-The closure ratio compares `sensible + latent` with `rad_bal - soil_flux`. Values near 1 indicate formal closure. For methods that close by construction, this is expected and does not prove physical correctness. Values below 1 mean that paired turbulent fluxes are smaller than available energy; values above 1 mean that they exceed available energy. For Monin-Obukhov/Profile, deviations are diagnostic. Ratios are not robust when available energy is close to zero. Penman is not shown because this package does not return a paired sensible heat flux for Penman.
+The closure check shows `rad_bal - soil_flux - sensible - latent` for methods with paired fluxes. For Priestley-Taylor, Bowen and Bulk-Residual, values close to zero are expected by construction. This indicates formal closure, not physical validation. For Monin-Obukhov/Profile, non-zero values are diagnostic and show the difference between profile-derived flux estimates and available energy. Penman is not shown because no paired sensible heat flux is calculated.
+
+```{r closure-flux-ratio-en, fig.width=11, fig.height=7, out.width="100%", fig.align="center"}
+plot_energy_balance_closure(
+  closure_flux,
+  type = "ratio",
+  layout = "facets",
+  ylim = c(0, 2)
+)
+```
+
+The ratio plot is zoomed to the range 0 to 2 so that deviations around formal closure at 1 remain readable. Values outside this range are not better or worse method values; they indicate unstable ratios, often caused by small available energy or strongly deviating profile-derived fluxes. The table above contains the untrimmed diagnostic values. Penman is not shown because this package does not return a paired sensible heat flux for Penman.
+
+```{r closure-flux-extreme-ratio-en}
+extreme_ratio <- subset(
+  closure_flux,
+  is.finite(closure_ratio) &
+    (closure_ratio < 0 | closure_ratio > 2)
+)
+
+head(extreme_ratio[, c(
+  "datetime", "method", "available_energy",
+  "turbulent_sum", "closure_ratio", "status"
+)])
+```
+
+This table lists cases outside the plotted ratio range. Such values usually occur when the denominator `rad_bal - soil_flux` is small or when profile-derived fluxes deviate strongly from available energy. They are diagnostic cases, not a ranking of methods.
+
+### Bulk-Residual: exchange velocity and residual closure
+
+The following block keeps the residual closure logic fixed and varies only the exchange velocity used in the `sensible_bulk` estimate. The existing `weather_station` object `ws` contains two wind heights as well as `surface_type` and `obs_height`, so the roughness-based variant can be calculated without inventing new inputs.
+
+```{r bulk-exchange-velocity-en}
+bulk_mean <- turb_flux_bulk_residual(
+  ws,
+  exchange_velocity = "wind_mean"
+)
+
+bulk_profile <- turb_flux_bulk_residual(
+  ws,
+  exchange_velocity = "u_star_profile"
+)
+
+bulk_roughness <- turb_flux_bulk_residual(
+  ws,
+  exchange_velocity = "u_star_roughness"
+)
+
+diag_mean <- energy_balance_closure(bulk_mean, methods = "bulk_residual")
+diag_mean$exchange_velocity <- "wind_mean"
+
+diag_profile <- energy_balance_closure(bulk_profile, methods = "bulk_residual")
+diag_profile$exchange_velocity <- "u_star_profile"
+
+diag_roughness <- energy_balance_closure(bulk_roughness, methods = "bulk_residual")
+diag_roughness$exchange_velocity <- "u_star_roughness"
+
+bulk_exchange_diag <- rbind(
+  diag_mean,
+  diag_profile,
+  diag_roughness
+)
+
+aggregate(
+  cbind(sensible, latent, closure_residual, closure_ratio) ~ exchange_velocity,
+  data = bulk_exchange_diag,
+  FUN = function(x) round(mean(x, na.rm = TRUE), 2)
+)
+```
+
+The table shows the key distinction. The closure ratio remains close to 1 for the Bulk-Residual path because `latent_bulk_residual` is always calculated as the residual of `rad_bal - soil_flux - sensible_bulk`. The actual methodological sensitivity occurs one step earlier, in `sensible_bulk`. Depending on whether the exchange velocity is based on mean wind, `u_star_profile`, or `u_star_roughness`, the partition between sensible and latent heat changes. A closed residual therefore does not prove that the selected exchange-velocity assumption is physically correct.
 
 # Consequence for method comparison
 

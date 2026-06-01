@@ -1058,6 +1058,19 @@ function reports an `unresolved_complement`. Monin-Obukhov/Profile
 outputs are treated diagnostically and are not forced to close the
 energy balance.
 
+Bulk-Residual is therefore not a uniformly “simple” approach. What
+becomes simple or more profile-like is mainly the estimate of
+`sensible_bulk`. With `exchange_velocity = "wind_mean"`, a simple
+mean-wind exchange scale is used. With
+`exchange_velocity = "u_star_profile"`, the estimate uses the two wind
+measurement heights and moves closer to a neutral profile-transfer
+logic. With `exchange_velocity = "u_star_roughness"`, the exchange
+velocity is derived from roughness length. The energy balance, however,
+remains residual: `latent_bulk_residual` is still the remaining
+available energy after subtracting `sensible_bulk`. Bulk can therefore
+be profile-like in the `H` estimate while still residual-closing in
+`LE`.
+
 In this workflow, `ws_pt` is the existing Priestley-Taylor result
 object. The diagnostic call is therefore restricted to
 `priestley_taylor`.
@@ -1092,40 +1105,65 @@ head(closure_diag)
 
 ``` r
 
-plot_energy_balance_closure(closure_diag, type = "residual")
+plot_energy_balance_closure(
+  closure_diag,
+  type = "open_terms",
+  layout = "facets"
+)
 ```
 
-![](fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-residual-en-1.png)
+![](fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-open-en-1.png)
 
-The residual plot shows an energy difference in W m^-2. For paired
-methods, this is `rad_bal - soil_flux - sensible - latent`. In the
-Priestley-Taylor path shown here, values close to zero are expected
-because sensible and latent heat are partitioned from available energy.
-A zero residual therefore indicates formal closure, not physical
-confirmation. For Penman, the plotted value would not be a paired
-closure residual but the unresolved complement after subtracting
-`latent_penman`; it must not be interpreted as sensible heat. For
-Monin-Obukhov/Profile, non-zero residuals would show the difference
-between profile-derived turbulent fluxes and available energy. This
-difference is diagnostically useful and should not be removed by
-rescaling.
+The plot does not show the same residual concept for all methods. It
+shows the term that is open or residualized in each method family. For
+Bulk-Residual, this is `latent_bulk_residual`: latent heat is calculated
+as the remaining available energy after estimating `sensible_bulk`. For
+Penman, it is the unresolved complement after subtracting
+`latent_penman`; this term is not automatically sensible heat. For
+Monin-Obukhov/Profile, it is the diagnostic balance residual
+`rad_bal - soil_flux - sensible - latent`. Priestley-Taylor and Bowen
+are not shown because they partition available energy and do not return
+an explicit open term. In the Priestley-Taylor path shown here, this
+plot is therefore empty.
 
 ``` r
 
-plot_energy_balance_closure(closure_diag, type = "ratio")
+plot_energy_balance_closure(
+  closure_diag,
+  type = "closure_check",
+  layout = "facets"
+)
+```
+
+![](fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-check-en-1.png)
+
+The closure check shows `rad_bal - soil_flux - sensible - latent` for
+methods with paired fluxes. For Priestley-Taylor, Bowen and
+Bulk-Residual, values close to zero are expected by construction. This
+indicates formal closure, not physical validation. For
+Monin-Obukhov/Profile, non-zero values are diagnostic and show the
+difference between profile-derived flux estimates and available energy.
+Penman is not shown because no paired sensible heat flux is calculated.
+
+``` r
+
+plot_energy_balance_closure(
+  closure_diag,
+  type = "ratio",
+  layout = "facets",
+  ylim = c(0, 2)
+)
 ```
 
 ![](fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-ratio-en-1.png)
 
-The ratio plot shows `(sensible + latent) / (rad_bal - soil_flux)`. A
-value of 1 indicates formal closure. Values below 1 mean that the paired
-turbulent fluxes are smaller than available energy; values above 1 mean
-that they exceed available energy. In the Priestley-Taylor path shown
-here, values close to 1 are expected because available energy is
-partitioned. For Monin-Obukhov/Profile, deviations from 1 would show the
-difference between profile-based flux estimates and the energy-balance
-reference. Penman is not shown in the ratio plot because `fieldClim`
-does not return a paired sensible heat flux for Penman.
+The ratio plot is zoomed to the range 0 to 2 so that deviations around
+formal closure at 1 remain readable. Values outside this range are not
+better or worse method values; they indicate unstable ratios, often
+caused by small available energy or strongly deviating profile-derived
+fluxes. The table above contains the untrimmed diagnostic values. Penman
+is not shown in the ratio plot because `fieldClim` does not return a
+paired sensible heat flux for Penman.
 
 ## Result
 

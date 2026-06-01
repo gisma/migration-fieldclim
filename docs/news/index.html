@@ -68,6 +68,15 @@
 <li>The default Bulk-Residual behaviour remains the neutral, unguarded estimate with <code>stability_method = "none"</code>.</li>
 </ul></div>
 <div class="section level3">
+<h3 id="energy-balance-closure-diagnostics-1-2-0">Energy-balance closure diagnostics<a class="anchor" aria-label="anchor" href="#energy-balance-closure-diagnostics-1-2-0"></a></h3>
+<ul><li>Added <code><a href="../reference/energy_balance_closure.html">energy_balance_closure()</a></code> to inspect how existing heat-flux output fields relate to available energy, <code>rad_bal - soil_flux</code>.</li>
+<li>For paired sensible/latent heat methods, the diagnostic reports <code>closure_residual = rad_bal - soil_flux - sensible - latent</code> and <code>closure_ratio = (sensible + latent) / (rad_bal - soil_flux)</code>.</li>
+<li>For Penman, the diagnostic reports <code>unresolved_complement = rad_bal - soil_flux - latent_penman</code>; this complement is not a paired sensible heat flux.</li>
+<li>Monin-Obukhov/Profile residuals are reported as diagnostic differences and are not treated as automatic errors or forced to close the balance.</li>
+<li>Added <code><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure()</a></code> to plot diagnostic residuals, Penman unresolved complements and closure ratios. Formal closure is not presented as physical validation.</li>
+<li>Clarified Bulk-Residual documentation: the sensible-heat estimate may use mean-wind, profile-derived friction velocity, or roughness-derived friction velocity, while latent heat remains a residual closure term.</li>
+</ul></div>
+<div class="section level3">
 <h3 id="penman-latent-heat-1-2-0">Penman latent heat<a class="anchor" aria-label="anchor" href="#penman-latent-heat-1-2-0"></a></h3>
 <ul><li>Corrected the Penman vapour-pressure-deficit term by converting saturation and actual vapour pressure from hPa to kPa before use.</li>
 <li>This fixes a unit mismatch in <code><a href="../reference/latent_penman.html">latent_penman()</a></code> and can substantially change Penman latent-heat estimates.</li>

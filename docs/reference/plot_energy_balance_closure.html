@@ -69,8 +69,14 @@ fluxes and does not alter the diagnostic object.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">plot_energy_balance_closure</span><span class="op">(</span></span>
 <span>  <span class="va">x</span>,</span>
-<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"residual"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"open_terms"</span>, <span class="st">"closure_check"</span>, <span class="st">"ratio"</span><span class="op">)</span>,</span>
 <span>  methods <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  layout <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"facets"</span>, <span class="st">"combined"</span><span class="op">)</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  main <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cex <span class="op">=</span> <span class="fl">0.85</span>,</span>
+<span>  lwd <span class="op">=</span> <span class="fl">1.2</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fl">16</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -84,13 +90,43 @@ fluxes and does not alter the diagnostic object.</p>
 
 
 <dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>Plot type. <code>"residual"</code> plots closure residuals and Penman
-unresolved complements. <code>"ratio"</code> plots finite closure ratios for
-paired methods.</p></dd>
+<dd><p>Plot type. <code>"open_terms"</code> plots open, residualized, or
+diagnostically unresolved terms. <code>"closure_check"</code> plots
+<code>available_energy - sensible - latent</code> for paired methods.
+<code>"ratio"</code> plots finite closure ratios for paired methods.
+<code>"residual"</code> is deprecated and maps to <code>"closure_check"</code>.</p></dd>
 
 
 <dt id="arg-methods">methods<a class="anchor" aria-label="anchor" href="#arg-methods"></a></dt>
 <dd><p>Optional character vector of methods to include.</p></dd>
+
+
+<dt id="arg-layout">layout<a class="anchor" aria-label="anchor" href="#arg-layout"></a></dt>
+<dd><p>Plot layout. <code>"facets"</code> draws one method per panel.
+<code>"combined"</code> draws all selected methods in one panel.</p></dd>
+
+
+<dt id="arg-ylim">ylim<a class="anchor" aria-label="anchor" href="#arg-ylim"></a></dt>
+<dd><p>Optional y-axis limits. If <code>NULL</code>, faceted plots use
+separate y-scales per panel and combined plots use the range of all plotted
+values.</p></dd>
+
+
+<dt id="arg-main">main<a class="anchor" aria-label="anchor" href="#arg-main"></a></dt>
+<dd><p>Optional plot title. For faceted plots, this is used as the
+outer title.</p></dd>
+
+
+<dt id="arg-cex">cex<a class="anchor" aria-label="anchor" href="#arg-cex"></a></dt>
+<dd><p>Character expansion passed to base plotting functions.</p></dd>
+
+
+<dt id="arg-lwd">lwd<a class="anchor" aria-label="anchor" href="#arg-lwd"></a></dt>
+<dd><p>Line width passed to base plotting functions.</p></dd>
+
+
+<dt id="arg-pch">pch<a class="anchor" aria-label="anchor" href="#arg-pch"></a></dt>
+<dd><p>Point symbol passed to base plotting functions.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -103,14 +139,32 @@ paired methods.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>For residual plots, paired methods use <code>closure_residual</code>. Penman uses
-<code>unresolved_complement</code>, labelled explicitly as such; the Penman
-complement is not sensible heat. Monin/Profile residuals remain diagnostic
-and are not forced to close.</p>
-<p>Ratio plots use <code>closure_ratio</code> for paired methods only. Penman is
-excluded because fieldClim does not provide a paired Penman sensible heat
-flux. Rows marked <code>low_available_energy</code> are omitted from ratio plots
-because closure ratios are unstable near zero available energy.</p>
+    <p>The default <code>layout = "facets"</code> is recommended for vignettes because it
+draws one panel per method and avoids overplotting. The optional
+<code>layout = "combined"</code> draws all selected methods in one panel.</p>
+<p>The default <code>type = "open_terms"</code> plots terms that are open,
+residualized, or diagnostically unresolved. For Bulk-Residual this is the
+residual latent heat term, for Penman it is the unresolved complement, and
+for Monin/Profile it is the diagnostic energy-balance residual.
+Priestley-Taylor and Bowen are omitted from this plot type because they
+partition available energy and do not return an explicit open term.</p>
+<p>The <code>type = "closure_check"</code> plot is a technical balance check for
+paired sensible/latent heat methods. It shows <code>A - H - LE</code>, where
+<code>A = rad_bal - soil_flux</code>. Priestley-Taylor, Bulk-Residual and Bowen
+are expected to be close to zero by construction when their values are
+finite. Bulk-Residual can still have an open/residualized latent term in
+<code>open_terms</code>; its <code>closure_check</code> is near zero because that latent
+term closes the balance algebraically. Monin/Profile residuals are
+diagnostic. Penman is excluded because it has no paired sensible heat output.</p>
+<p>The <code>type = "ratio"</code> plot shows <code>(sensible + latent) / available
+energy</code> for paired methods. Penman is excluded and rows marked
+<code>low_available_energy</code> are omitted because ratios are unstable near
+zero available energy.</p>
+<p>The deprecated <code>type = "residual"</code> is mapped to
+<code>type = "closure_check"</code> with a warning.</p>
+<p>The <code>ylim</code> argument can be used for zoomed diagnostic views. A zoomed
+ratio plot must not be read as data removal; it only makes the range around
+formal closure readable.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

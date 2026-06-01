@@ -206,36 +206,86 @@ energy_balance_closure <- function(
 #' helper for diagnostics, not a flux model. It does not compute new turbulent
 #' fluxes and does not alter the diagnostic object.
 #'
-#' For residual plots, paired methods use \code{closure_residual}. Penman uses
-#' \code{unresolved_complement}, labelled explicitly as such; the Penman
-#' complement is not sensible heat. Monin/Profile residuals remain diagnostic
-#' and are not forced to close.
+#' The default \code{layout = "facets"} is recommended for vignettes because it
+#' draws one panel per method and avoids overplotting. The optional
+#' \code{layout = "combined"} draws all selected methods in one panel.
 #'
-#' Ratio plots use \code{closure_ratio} for paired methods only. Penman is
-#' excluded because fieldClim does not provide a paired Penman sensible heat
-#' flux. Rows marked \code{low_available_energy} are omitted from ratio plots
-#' because closure ratios are unstable near zero available energy.
+#' The default \code{type = "open_terms"} plots terms that are open,
+#' residualized, or diagnostically unresolved. For Bulk-Residual this is the
+#' residual latent heat term, for Penman it is the unresolved complement, and
+#' for Monin/Profile it is the diagnostic energy-balance residual.
+#' Priestley-Taylor and Bowen are omitted from this plot type because they
+#' partition available energy and do not return an explicit open term.
+#'
+#' The \code{type = "closure_check"} plot is a technical balance check for
+#' paired sensible/latent heat methods. It shows \code{A - H - LE}, where
+#' \code{A = rad_bal - soil_flux}. Priestley-Taylor, Bulk-Residual and Bowen
+#' are expected to be close to zero by construction when their values are
+#' finite. Bulk-Residual can still have an open/residualized latent term in
+#' \code{open_terms}; its \code{closure_check} is near zero because that latent
+#' term closes the balance algebraically. Monin/Profile residuals are
+#' diagnostic. Penman is excluded because it has no paired sensible heat output.
+#'
+#' The \code{type = "ratio"} plot shows \code{(sensible + latent) / available
+#' energy} for paired methods. Penman is excluded and rows marked
+#' \code{low_available_energy} are omitted because ratios are unstable near
+#' zero available energy.
+#'
+#' The deprecated \code{type = "residual"} is mapped to
+#' \code{type = "closure_check"} with a warning.
+#'
+#' The \code{ylim} argument can be used for zoomed diagnostic views. A zoomed
+#' ratio plot must not be read as data removal; it only makes the range around
+#' formal closure readable.
 #'
 #' @param x Output from \code{energy_balance_closure()}.
-#' @param type Plot type. \code{"residual"} plots closure residuals and Penman
-#'   unresolved complements. \code{"ratio"} plots finite closure ratios for
-#'   paired methods.
+#' @param type Plot type. \code{"open_terms"} plots open, residualized, or
+#'   diagnostically unresolved terms. \code{"closure_check"} plots
+#'   \code{available_energy - sensible - latent} for paired methods.
+#'   \code{"ratio"} plots finite closure ratios for paired methods.
+#'   \code{"residual"} is deprecated and maps to \code{"closure_check"}.
 #' @param methods Optional character vector of methods to include.
+#' @param layout Plot layout. \code{"facets"} draws one method per panel.
+#'   \code{"combined"} draws all selected methods in one panel.
+#' @param ylim Optional y-axis limits. If \code{NULL}, faceted plots use
+#'   separate y-scales per panel and combined plots use the range of all plotted
+#'   values.
+#' @param main Optional plot title. For faceted plots, this is used as the
+#'   outer title.
+#' @param cex Character expansion passed to base plotting functions.
+#' @param lwd Line width passed to base plotting functions.
+#' @param pch Point symbol passed to base plotting functions.
 #' @param ... Additional arguments passed to base plotting functions.
 #'
 #' @return Invisibly returns \code{x}.
 #' @export
 plot_energy_balance_closure <- function(
     x,
-    type = c("residual", "ratio"),
+    type = c("open_terms", "closure_check", "ratio"),
     methods = NULL,
+    layout = c("facets", "combined"),
+    ylim = NULL,
+    main = NULL,
+    cex = 0.85,
+    lwd = 1.2,
+    pch = 16,
     ...) {
 
-  type <- match.arg(type)
+  type <- as.character(type)[1]
+  if (identical(type, "residual")) {
+    warning(
+      "`type = 'residual'` is deprecated; use `type = 'closure_check'` or `type = 'open_terms'`.",
+      call. = FALSE
+    )
+    type <- "closure_check"
+  }
+  type <- match.arg(type, c("open_terms", "closure_check", "ratio"))
+  layout <- match.arg(layout)
 
   required <- c(
-    "datetime", "method", "closure_type", "closure_residual",
-    "closure_ratio", "unresolved_complement", "status"
+    "datetime", "method", "closure_type", "available_energy", "sensible",
+    "latent", "closure_residual", "closure_ratio", "unresolved_complement",
+    "status"
   )
   missing_columns <- setdiff(required, names(x))
   if (length(missing_columns) > 0) {
@@ -254,70 +304,190 @@ plot_energy_balance_closure <- function(
 
   if (nrow(plot_data) == 0) {
     graphics::plot.new()
-    graphics::text(0.5, 0.5, "No closure diagnostics to plot")
+    graphics::text(0.5, 0.5, "No closure diagnostics to plot", cex = cex)
     return(invisible(x))
   }
 
-  if (type == "residual") {
+  if (type == "open_terms") {
+    keep <- plot_data$method %in% c("bulk_residual", "penman", "monin")
+    plot_data <- plot_data[keep, , drop = FALSE]
+    if (nrow(plot_data) == 0) {
+      graphics::plot.new()
+      graphics::text(0.5, 0.5, "No open terms to plot", cex = cex)
+      return(invisible(x))
+    }
+
+    plot_data$plot_value <- NA_real_
+    plot_data$plot_value[plot_data$method == "bulk_residual"] <- plot_data$latent[plot_data$method == "bulk_residual"]
+    plot_data$plot_value[plot_data$method == "penman"] <- plot_data$unresolved_complement[plot_data$method == "penman"]
+    plot_data$plot_value[plot_data$method == "monin"] <- plot_data$closure_residual[plot_data$method == "monin"]
+    plot_data$panel_label <- plot_data$method
+    plot_data$panel_label[plot_data$method == "bulk_residual"] <- "bulk_residual: latent residual term"
+    plot_data$panel_label[plot_data$method == "penman"] <- "penman: unresolved complement"
+    plot_data$panel_label[plot_data$method == "monin"] <- "monin: diagnostic residual"
+    ylab <- "Open or residualized term (W m^-2)"
+    ref <- 0
+  } else if (type == "closure_check") {
+    plot_data <- plot_data[
+      plot_data$method != "penman" &
+        plot_data$closure_type != "le_only_open",
+      ,
+      drop = FALSE
+    ]
+    if (nrow(plot_data) == 0) {
+      graphics::plot.new()
+      graphics::text(0.5, 0.5, "No closure check diagnostics to plot", cex = cex)
+      return(invisible(x))
+    }
+
     plot_data$plot_value <- plot_data$closure_residual
-    penman <- plot_data$closure_type == "le_only_open" | plot_data$method == "penman"
-    plot_data$plot_value[penman] <- plot_data$unresolved_complement[penman]
-    plot_data$plot_label <- ifelse(penman, "unresolved_complement", "closure_residual")
-    plot_data <- plot_data[is.finite(plot_data$plot_value), , drop = FALSE]
-    ylab <- "Closure residual / unresolved complement (W m-2)"
+    plot_data$panel_label <- paste0(plot_data$method, ": closure check")
+    plot_data$panel_label[plot_data$method == "monin"] <- "monin: diagnostic residual"
+    ylab <- "Closure check: A - H - LE (W m^-2)"
+    ref <- 0
   } else {
     plot_data <- plot_data[
       plot_data$method != "penman" &
-        plot_data$closure_type != "le_only_open" &
-        is.finite(plot_data$closure_ratio),
+        plot_data$closure_type != "le_only_open",
       ,
       drop = FALSE
     ]
     if ("status" %in% names(plot_data)) {
       plot_data <- plot_data[plot_data$status != "low_available_energy", , drop = FALSE]
     }
+    if (nrow(plot_data) == 0) {
+      graphics::plot.new()
+      graphics::text(0.5, 0.5, "No finite ratio diagnostics to plot", cex = cex)
+      return(invisible(x))
+    }
     plot_data$plot_value <- plot_data$closure_ratio
-    plot_data$plot_label <- "closure_ratio"
-    ylab <- "Closure ratio ((H + LE) / available energy)"
+    plot_data$panel_label <- plot_data$method
+    ylab <- "(sensible + latent) / available energy"
+    ref <- 1
   }
+
+  plot_data <- plot_data[is.finite(plot_data$plot_value), , drop = FALSE]
 
   if (nrow(plot_data) == 0) {
     graphics::plot.new()
-    graphics::text(0.5, 0.5, paste("No", type, "diagnostics to plot"))
+    graphics::text(0.5, 0.5, paste("No finite", type, "diagnostics to plot"), cex = cex)
     return(invisible(x))
   }
 
-  x_axis <- if (inherits(plot_data$datetime, "POSIXt")) {
+  plot_data$x_axis <- if (inherits(plot_data$datetime, "POSIXt")) {
     plot_data$datetime
   } else {
     seq_len(nrow(plot_data))
   }
 
-  groups <- unique(paste(plot_data$method, plot_data$plot_label, sep = ": "))
+  if (layout == "facets") {
+    panels <- unique(plot_data$panel_label)
+    n_panels <- length(panels)
+    n_col <- ceiling(sqrt(n_panels))
+    n_row <- ceiling(n_panels / n_col)
+    old_par <- graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(old_par), add = TRUE)
+    graphics::par(
+      mfrow = c(n_row, n_col),
+      mar = c(4, 4.2, 3, 1),
+      oma = c(0, 0, if (!is.null(main)) 2 else 0, 0)
+    )
+
+    for (panel in panels) {
+      panel_data <- plot_data[plot_data$panel_label == panel, , drop = FALSE]
+      if (nrow(panel_data) == 0 || !any(is.finite(panel_data$plot_value))) {
+        graphics::plot.new()
+        graphics::title(main = panel, cex.main = cex)
+        graphics::text(0.5, 0.5, "no finite values", cex = cex)
+        next
+      }
+
+      panel_ylim <- ylim
+      if (is.null(panel_ylim)) {
+        yr <- range(panel_data$plot_value, ref, finite = TRUE)
+        if (!all(is.finite(yr)) || diff(yr) == 0) {
+          yr <- yr + c(-1, 1)
+        } else {
+          pad <- 0.08 * diff(yr)
+          yr <- yr + c(-pad, pad)
+        }
+        panel_ylim <- yr
+      }
+
+      graphics::plot(
+        panel_data$x_axis,
+        panel_data$plot_value,
+        type = "b",
+        pch = pch,
+        lwd = lwd,
+        cex = cex,
+        xlab = "Time",
+        ylab = ylab,
+        main = panel,
+        ylim = panel_ylim,
+        ...
+      )
+      graphics::abline(h = ref, col = "grey60", lty = 2)
+    }
+    if (!is.null(main)) {
+      graphics::mtext(main, outer = TRUE, cex = cex)
+    }
+    return(invisible(x))
+  }
+
+  groups <- unique(plot_data$panel_label)
   colors <- seq_along(groups)
+  combined_ylim <- ylim
+  if (is.null(combined_ylim)) {
+    yr <- range(plot_data$plot_value, ref, finite = TRUE)
+    if (!all(is.finite(yr)) || diff(yr) == 0) {
+      yr <- yr + c(-1, 1)
+    } else {
+      pad <- 0.08 * diff(yr)
+      yr <- yr + c(-pad, pad)
+    }
+    combined_ylim <- yr
+  }
+
   graphics::plot(
-    x_axis,
+    plot_data$x_axis,
     plot_data$plot_value,
     type = "n",
     xlab = "Time",
     ylab = ylab,
+    main = main,
+    ylim = combined_ylim,
     ...
   )
-  graphics::abline(h = if (type == "ratio") 1 else 0, col = "grey70", lty = 2)
+  graphics::abline(h = ref, col = "grey60", lty = 2)
 
   for (i in seq_along(groups)) {
-    parts <- strsplit(groups[i], ": ", fixed = TRUE)[[1]]
-    rows <- plot_data$method == parts[1] & plot_data$plot_label == parts[2]
-    graphics::lines(x_axis[rows], plot_data$plot_value[rows], col = colors[i], type = "b")
+    rows <- plot_data$panel_label == groups[i]
+    graphics::lines(
+      plot_data$x_axis[rows],
+      plot_data$plot_value[rows],
+      col = colors[i],
+      type = "b",
+      pch = pch,
+      lwd = lwd,
+      cex = cex
+    )
   }
 
+  old_xpd <- graphics::par("xpd")
+  on.exit(graphics::par(xpd = old_xpd), add = TRUE)
+  graphics::par(xpd = NA)
   graphics::legend(
-    "topright",
+    "top",
+    inset = c(0, -0.12),
     legend = groups,
     col = colors,
     lty = 1,
-    pch = 1,
-    bty = "n"
+    pch = pch,
+    lwd = lwd,
+    cex = cex,
+    bty = "n",
+    horiz = TRUE
   )
 
   invisible(x)

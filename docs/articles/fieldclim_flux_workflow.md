@@ -1234,40 +1234,163 @@ head(closure_flux)
 
 ``` r
 
-plot_energy_balance_closure(closure_flux, type = "residual")
+plot_energy_balance_closure(
+  closure_flux,
+  type = "open_terms",
+  layout = "facets"
+)
 ```
 
-![](fieldclim_flux_workflow_files/figure-html/closure-flux-residual-de-1.png)
+![](fieldclim_flux_workflow_files/figure-html/closure-flux-open-de-1.png)
 
-Der Residualplot zeigt eine Energiedifferenz in W m^-2. Bei
-Bulk-Residual ist ein Residuum nahe null zu erwarten, weil
-`latent_bulk_residual` als `rad_bal - soil_flux - sensible_bulk`
-berechnet wird. Bei Priestley-Taylor und Bowen entsteht formaler
-Bilanzschluss ebenfalls durch die jeweilige Partitionslogik, sofern die
-benötigten Ergebnisfelder vorhanden und die Werte gültig sind. Penman
-bleibt offen: Der Plot zeigt den nicht aufgelösten Ergänzungsterm nach
-Abzug von `latent_penman`; dieser Term ist nicht automatisch sensibler
-Wärmefluss. Monin-Obukhov/Profile darf deutlich von null abweichen.
-Diese Abweichung ist die Differenz zwischen profilbasierten turbulenten
-Flüssen und verfügbarer Energie und soll nicht durch Skalierung entfernt
-werden.
+Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
+sondern den jeweils offenen oder residualisierten Term. Bei
+Bulk-Residual ist dies `latent_bulk_residual`: Die latente Wärme wird
+nach der Schätzung von `sensible_bulk` als Rest aus
+`rad_bal - soil_flux - sensible_bulk` berechnet. Bei Penman ist es der
+offene Ergänzungsterm nach Abzug von `latent_penman`; dieser Term ist
+nicht automatisch fühlbarer Wärmestrom. Bei Monin-Obukhov/Profile ist es
+der diagnostische Bilanzrest `rad_bal - soil_flux - sensible - latent`.
+Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+verfügbare Energie partitionieren und keinen expliziten offenen Term
+ausgeben.
 
 ``` r
 
-plot_energy_balance_closure(closure_flux, type = "ratio")
+plot_energy_balance_closure(
+  closure_flux,
+  type = "closure_check",
+  layout = "facets"
+)
+```
+
+![](fieldclim_flux_workflow_files/figure-html/closure-flux-check-de-1.png)
+
+Der Schließungscheck zeigt `rad_bal - soil_flux - sensible - latent` für
+Verfahren mit gepaarten Flüssen. Bei Priestley-Taylor, Bowen und
+Bulk-Residual sind Werte nahe null methodisch erwartbar. Das zeigt
+formalen Bilanzschluss, aber keine physikalische Validierung. Bei
+Monin-Obukhov/Profile ist ein nicht-nulliger Wert diagnostisch und zeigt
+die Differenz zwischen Profilfluss-Schätzung und verfügbarer Energie.
+Penman wird hier nicht gezeigt, weil kein gepaarter sensibler Wärmefluss
+berechnet wird.
+
+``` r
+
+plot_energy_balance_closure(
+  closure_flux,
+  type = "ratio",
+  layout = "facets",
+  ylim = c(0, 2)
+)
 ```
 
 ![](fieldclim_flux_workflow_files/figure-html/closure-flux-ratio-de-1.png)
 
-Der Schließungsquotient vergleicht `sensible + latent` mit
-`rad_bal - soil_flux`. Werte nahe 1 bedeuten formalen Bilanzschluss. Bei
-konstruktiv schließenden Verfahren ist das erwartbar und kein Beleg für
-physikalische Richtigkeit. Werte unter 1 zeigen, dass die gepaarten
-turbulenten Flüsse kleiner sind als die verfügbare Energie; Werte über 1
-zeigen, dass sie größer sind. Bei Monin-Obukhov/Profile sind
-Abweichungen diagnostisch. Werte bei sehr kleiner verfügbarer Energie
-sind nicht belastbar. Penman erscheint hier nicht, weil kein gepaarter
+Der Quotientenplot ist hier auf den Bereich 0 bis 2 fokussiert, damit
+Abweichungen um den formalen Bilanzschluss bei 1 lesbar bleiben.
+Einzelne Werte außerhalb dieses Bereichs sind keine besseren oder
+schlechteren Methodenwerte, sondern Hinweise auf instabile Quotienten,
+meist bei kleiner verfügbarer Energie oder stark abweichenden
+Profilflüssen. Die Tabelle oberhalb enthält die nicht beschnittenen
+Diagnosewerte. Penman erscheint hier nicht, weil kein gepaarter
 sensibler Wärmefluss ausgegeben wird.
+
+``` r
+
+extreme_ratio <- subset(
+  closure_flux,
+  is.finite(closure_ratio) &
+    (closure_ratio < 0 | closure_ratio > 2)
+)
+
+head(extreme_ratio[, c(
+  "datetime", "method", "available_energy",
+  "turbulent_sum", "closure_ratio", "status"
+)])
+#>                 datetime method available_energy turbulent_sum closure_ratio
+#> 1210 2017-06-30 04:45:00  monin         22.15414    -0.7281989   -0.03286966
+#> 1211 2017-06-30 04:50:00  monin         30.15442    -1.3077789   -0.04336939
+#> 1212 2017-06-30 04:55:00  monin         33.72670    -0.7619606   -0.02259221
+#> 1213 2017-06-30 05:00:00  monin         37.35555    -1.2179595   -0.03260452
+#> 1214 2017-06-30 05:05:00  monin         39.10012    -1.6151695   -0.04130856
+#> 1215 2017-06-30 05:10:00  monin         46.68153    -1.9150174   -0.04102302
+#>                   status
+#> 1210 diagnostic_residual
+#> 1211 diagnostic_residual
+#> 1212 diagnostic_residual
+#> 1213 diagnostic_residual
+#> 1214 diagnostic_residual
+#> 1215 diagnostic_residual
+```
+
+Diese Tabelle zeigt Fälle außerhalb des geplotteten Quotientenbereichs.
+Solche Werte entstehen typischerweise, wenn der Nenner
+`rad_bal - soil_flux` klein ist oder wenn profilbasierte Flüsse stark
+von der verfügbaren Energie abweichen. Sie sind Diagnosefälle, keine
+Rangliste der Verfahren.
+
+#### Bulk-Residual: Austauschgeschwindigkeit und Residualschluss
+
+Der folgende Block hält den Residualschluss fest und variiert nur die
+Austauschgeschwindigkeit in der Schätzung von `sensible_bulk`. Das
+vorhandene `weather_station`-Objekt `ws` enthält zwei Windhöhen sowie
+`surface_type` und `obs_height`; deshalb kann auch die
+rauigkeitsbasierte Variante berechnet werden, ohne neue Eingaben zu
+erfinden.
+
+``` r
+
+bulk_mean <- turb_flux_bulk_residual(
+  ws,
+  exchange_velocity = "wind_mean"
+)
+
+bulk_profile <- turb_flux_bulk_residual(
+  ws,
+  exchange_velocity = "u_star_profile"
+)
+
+bulk_roughness <- turb_flux_bulk_residual(
+  ws,
+  exchange_velocity = "u_star_roughness"
+)
+
+diag_mean <- energy_balance_closure(bulk_mean, methods = "bulk_residual")
+diag_mean$exchange_velocity <- "wind_mean"
+
+diag_profile <- energy_balance_closure(bulk_profile, methods = "bulk_residual")
+diag_profile$exchange_velocity <- "u_star_profile"
+
+diag_roughness <- energy_balance_closure(bulk_roughness, methods = "bulk_residual")
+diag_roughness$exchange_velocity <- "u_star_roughness"
+
+bulk_exchange_diag <- rbind(
+  diag_mean,
+  diag_profile,
+  diag_roughness
+)
+
+aggregate(
+  cbind(sensible, latent, closure_residual, closure_ratio) ~ exchange_velocity,
+  data = bulk_exchange_diag,
+  FUN = function(x) round(mean(x, na.rm = TRUE), 2)
+)
+#>   exchange_velocity sensible latent closure_residual closure_ratio
+#> 1    u_star_profile    -1.57 145.08                0             1
+#> 2  u_star_roughness    -2.69 142.27                0             1
+#> 3         wind_mean   -23.77 163.35                0             1
+```
+
+Die Tabelle zeigt den zentralen Unterschied. Der Schließungsquotient
+bleibt beim Bulk-Residual-Pfad nahe 1, weil `latent_bulk_residual` immer
+als Rest aus `rad_bal - soil_flux - sensible_bulk` berechnet wird. Die
+eigentliche methodische Sensitivität liegt vorher in `sensible_bulk`. Je
+nachdem, ob die Austauschgeschwindigkeit über mittleren Wind, über
+`u_star_profile` oder über `u_star_roughness` bestimmt wird, ändert sich
+die Aufteilung zwischen fühlbarem und latentem Wärmestrom. Ein
+geschlossener Bilanzrest bedeutet deshalb nicht, dass die gewählte
+Austauschgeschwindigkeit physikalisch richtig ist.
 
 ### Konsequenz für den Methodenvergleich
 

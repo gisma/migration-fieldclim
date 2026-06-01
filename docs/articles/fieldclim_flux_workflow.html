@@ -1374,33 +1374,147 @@ sichtbar, wie die vorhandenen Ergebnisfelder im Verhältnis zu
 <span><span class="co">#&gt; 5            NA                    NA low_available_energy</span></span>
 <span><span class="co">#&gt; 6            NA                    NA low_available_energy</span></span></code></pre></div>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_flux</span>, type <span class="op">=</span> <span class="st">"residual"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-residual-de-1.png" class="r-plt" alt="" width="768"></p>
-<p>Der Residualplot zeigt eine Energiedifferenz in W m^-2. Bei
-Bulk-Residual ist ein Residuum nahe null zu erwarten, weil
-<code>latent_bulk_residual</code> als
-<code>rad_bal - soil_flux - sensible_bulk</code> berechnet wird. Bei
-Priestley-Taylor und Bowen entsteht formaler Bilanzschluss ebenfalls
-durch die jeweilige Partitionslogik, sofern die benötigten
-Ergebnisfelder vorhanden und die Werte gültig sind. Penman bleibt offen:
-Der Plot zeigt den nicht aufgelösten Ergänzungsterm nach Abzug von
-<code>latent_penman</code>; dieser Term ist nicht automatisch sensibler
-Wärmefluss. Monin-Obukhov/Profile darf deutlich von null abweichen.
-Diese Abweichung ist die Differenz zwischen profilbasierten turbulenten
-Flüssen und verfügbarer Energie und soll nicht durch Skalierung entfernt
-werden.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_flux</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"open_terms"</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-open-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
+<p>Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
+sondern den jeweils offenen oder residualisierten Term. Bei
+Bulk-Residual ist dies <code>latent_bulk_residual</code>: Die latente
+Wärme wird nach der Schätzung von <code>sensible_bulk</code> als Rest
+aus <code>rad_bal - soil_flux - sensible_bulk</code> berechnet. Bei
+Penman ist es der offene Ergänzungsterm nach Abzug von
+<code>latent_penman</code>; dieser Term ist nicht automatisch fühlbarer
+Wärmestrom. Bei Monin-Obukhov/Profile ist es der diagnostische
+Bilanzrest <code>rad_bal - soil_flux - sensible - latent</code>.
+Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+verfügbare Energie partitionieren und keinen expliziten offenen Term
+ausgeben.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span><span class="va">closure_flux</span>, type <span class="op">=</span> <span class="st">"ratio"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-ratio-de-1.png" class="r-plt" alt="" width="768"></p>
-<p>Der Schließungsquotient vergleicht <code>sensible + latent</code> mit
-<code>rad_bal - soil_flux</code>. Werte nahe 1 bedeuten formalen
-Bilanzschluss. Bei konstruktiv schließenden Verfahren ist das erwartbar
-und kein Beleg für physikalische Richtigkeit. Werte unter 1 zeigen, dass
-die gepaarten turbulenten Flüsse kleiner sind als die verfügbare
-Energie; Werte über 1 zeigen, dass sie größer sind. Bei
-Monin-Obukhov/Profile sind Abweichungen diagnostisch. Werte bei sehr
-kleiner verfügbarer Energie sind nicht belastbar. Penman erscheint hier
-nicht, weil kein gepaarter sensibler Wärmefluss ausgegeben wird.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_flux</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"closure_check"</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-check-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
+<p>Der Schließungscheck zeigt
+<code>rad_bal - soil_flux - sensible - latent</code> für Verfahren mit
+gepaarten Flüssen. Bei Priestley-Taylor, Bowen und Bulk-Residual sind
+Werte nahe null methodisch erwartbar. Das zeigt formalen Bilanzschluss,
+aber keine physikalische Validierung. Bei Monin-Obukhov/Profile ist ein
+nicht-nulliger Wert diagnostisch und zeigt die Differenz zwischen
+Profilfluss-Schätzung und verfügbarer Energie. Penman wird hier nicht
+gezeigt, weil kein gepaarter sensibler Wärmefluss berechnet wird.</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_flux</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"ratio"</span>,</span>
+<span>  layout <span class="op">=</span> <span class="st">"facets"</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-ratio-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
+<p>Der Quotientenplot ist hier auf den Bereich 0 bis 2 fokussiert, damit
+Abweichungen um den formalen Bilanzschluss bei 1 lesbar bleiben.
+Einzelne Werte außerhalb dieses Bereichs sind keine besseren oder
+schlechteren Methodenwerte, sondern Hinweise auf instabile Quotienten,
+meist bei kleiner verfügbarer Energie oder stark abweichenden
+Profilflüssen. Die Tabelle oberhalb enthält die nicht beschnittenen
+Diagnosewerte. Penman erscheint hier nicht, weil kein gepaarter
+sensibler Wärmefluss ausgegeben wird.</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">extreme_ratio</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span></span>
+<span>  <span class="va">closure_flux</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">closure_ratio</span><span class="op">)</span> <span class="op">&amp;</span></span>
+<span>    <span class="op">(</span><span class="va">closure_ratio</span> <span class="op">&lt;</span> <span class="fl">0</span> <span class="op">|</span> <span class="va">closure_ratio</span> <span class="op">&gt;</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">extreme_ratio</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"datetime"</span>, <span class="st">"method"</span>, <span class="st">"available_energy"</span>,</span>
+<span>  <span class="st">"turbulent_sum"</span>, <span class="st">"closure_ratio"</span>, <span class="st">"status"</span></span>
+<span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                 datetime method available_energy turbulent_sum closure_ratio</span></span>
+<span><span class="co">#&gt; 1210 2017-06-30 04:45:00  monin         22.15414    -0.7281989   -0.03286966</span></span>
+<span><span class="co">#&gt; 1211 2017-06-30 04:50:00  monin         30.15442    -1.3077789   -0.04336939</span></span>
+<span><span class="co">#&gt; 1212 2017-06-30 04:55:00  monin         33.72670    -0.7619606   -0.02259221</span></span>
+<span><span class="co">#&gt; 1213 2017-06-30 05:00:00  monin         37.35555    -1.2179595   -0.03260452</span></span>
+<span><span class="co">#&gt; 1214 2017-06-30 05:05:00  monin         39.10012    -1.6151695   -0.04130856</span></span>
+<span><span class="co">#&gt; 1215 2017-06-30 05:10:00  monin         46.68153    -1.9150174   -0.04102302</span></span>
+<span><span class="co">#&gt;                   status</span></span>
+<span><span class="co">#&gt; 1210 diagnostic_residual</span></span>
+<span><span class="co">#&gt; 1211 diagnostic_residual</span></span>
+<span><span class="co">#&gt; 1212 diagnostic_residual</span></span>
+<span><span class="co">#&gt; 1213 diagnostic_residual</span></span>
+<span><span class="co">#&gt; 1214 diagnostic_residual</span></span>
+<span><span class="co">#&gt; 1215 diagnostic_residual</span></span></code></pre></div>
+<p>Diese Tabelle zeigt Fälle außerhalb des geplotteten
+Quotientenbereichs. Solche Werte entstehen typischerweise, wenn der
+Nenner <code>rad_bal - soil_flux</code> klein ist oder wenn
+profilbasierte Flüsse stark von der verfügbaren Energie abweichen. Sie
+sind Diagnosefälle, keine Rangliste der Verfahren.</p>
+<div class="section level4">
+<h4 id="bulk-residual-austauschgeschwindigkeit-und-residualschluss">Bulk-Residual: Austauschgeschwindigkeit und Residualschluss<a class="anchor" aria-label="anchor" href="#bulk-residual-austauschgeschwindigkeit-und-residualschluss"></a>
+</h4>
+<p>Der folgende Block hält den Residualschluss fest und variiert nur die
+Austauschgeschwindigkeit in der Schätzung von
+<code>sensible_bulk</code>. Das vorhandene
+<code>weather_station</code>-Objekt <code>ws</code> enthält zwei
+Windhöhen sowie <code>surface_type</code> und <code>obs_height</code>;
+deshalb kann auch die rauigkeitsbasierte Variante berechnet werden, ohne
+neue Eingaben zu erfinden.</p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">bulk_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual</a></span><span class="op">(</span></span>
+<span>  <span class="va">ws</span>,</span>
+<span>  exchange_velocity <span class="op">=</span> <span class="st">"wind_mean"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bulk_profile</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual</a></span><span class="op">(</span></span>
+<span>  <span class="va">ws</span>,</span>
+<span>  exchange_velocity <span class="op">=</span> <span class="st">"u_star_profile"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">bulk_roughness</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual</a></span><span class="op">(</span></span>
+<span>  <span class="va">ws</span>,</span>
+<span>  exchange_velocity <span class="op">=</span> <span class="st">"u_star_roughness"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">diag_mean</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">bulk_mean</span>, methods <span class="op">=</span> <span class="st">"bulk_residual"</span><span class="op">)</span></span>
+<span><span class="va">diag_mean</span><span class="op">$</span><span class="va">exchange_velocity</span> <span class="op">&lt;-</span> <span class="st">"wind_mean"</span></span>
+<span></span>
+<span><span class="va">diag_profile</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">bulk_profile</span>, methods <span class="op">=</span> <span class="st">"bulk_residual"</span><span class="op">)</span></span>
+<span><span class="va">diag_profile</span><span class="op">$</span><span class="va">exchange_velocity</span> <span class="op">&lt;-</span> <span class="st">"u_star_profile"</span></span>
+<span></span>
+<span><span class="va">diag_roughness</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">bulk_roughness</span>, methods <span class="op">=</span> <span class="st">"bulk_residual"</span><span class="op">)</span></span>
+<span><span class="va">diag_roughness</span><span class="op">$</span><span class="va">exchange_velocity</span> <span class="op">&lt;-</span> <span class="st">"u_star_roughness"</span></span>
+<span></span>
+<span><span class="va">bulk_exchange_diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="va">diag_mean</span>,</span>
+<span>  <span class="va">diag_profile</span>,</span>
+<span>  <span class="va">diag_roughness</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">sensible</span>, <span class="va">latent</span>, <span class="va">closure_residual</span>, <span class="va">closure_ratio</span><span class="op">)</span> <span class="op">~</span> <span class="va">exchange_velocity</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">bulk_exchange_diag</span>,</span>
+<span>  FUN <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;   exchange_velocity sensible latent closure_residual closure_ratio</span></span>
+<span><span class="co">#&gt; 1    u_star_profile    -1.57 145.08                0             1</span></span>
+<span><span class="co">#&gt; 2  u_star_roughness    -2.69 142.27                0             1</span></span>
+<span><span class="co">#&gt; 3         wind_mean   -23.77 163.35                0             1</span></span></code></pre></div>
+<p>Die Tabelle zeigt den zentralen Unterschied. Der Schließungsquotient
+bleibt beim Bulk-Residual-Pfad nahe 1, weil
+<code>latent_bulk_residual</code> immer als Rest aus
+<code>rad_bal - soil_flux - sensible_bulk</code> berechnet wird. Die
+eigentliche methodische Sensitivität liegt vorher in
+<code>sensible_bulk</code>. Je nachdem, ob die Austauschgeschwindigkeit
+über mittleren Wind, über <code>u_star_profile</code> oder über
+<code>u_star_roughness</code> bestimmt wird, ändert sich die Aufteilung
+zwischen fühlbarem und latentem Wärmestrom. Ein geschlossener Bilanzrest
+bedeutet deshalb nicht, dass die gewählte Austauschgeschwindigkeit
+physikalisch richtig ist.</p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="konsequenz-für-den-methodenvergleich">Konsequenz für den Methodenvergleich<a class="anchor" aria-label="anchor" href="#konsequenz-f%C3%BCr-den-methodenvergleich"></a>

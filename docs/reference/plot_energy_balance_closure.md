@@ -10,8 +10,14 @@ compute new turbulent fluxes and does not alter the diagnostic object.
 ``` r
 plot_energy_balance_closure(
   x,
-  type = c("residual", "ratio"),
+  type = c("open_terms", "closure_check", "ratio"),
   methods = NULL,
+  layout = c("facets", "combined"),
+  ylim = NULL,
+  main = NULL,
+  cex = 0.85,
+  lwd = 1.2,
+  pch = 16,
   ...
 )
 ```
@@ -25,12 +31,42 @@ plot_energy_balance_closure(
 
 - type:
 
-  Plot type. `"residual"` plots closure residuals and Penman unresolved
-  complements. `"ratio"` plots finite closure ratios for paired methods.
+  Plot type. `"open_terms"` plots open, residualized, or diagnostically
+  unresolved terms. `"closure_check"` plots
+  `available_energy - sensible - latent` for paired methods. `"ratio"`
+  plots finite closure ratios for paired methods. `"residual"` is
+  deprecated and maps to `"closure_check"`.
 
 - methods:
 
   Optional character vector of methods to include.
+
+- layout:
+
+  Plot layout. `"facets"` draws one method per panel. `"combined"` draws
+  all selected methods in one panel.
+
+- ylim:
+
+  Optional y-axis limits. If `NULL`, faceted plots use separate y-scales
+  per panel and combined plots use the range of all plotted values.
+
+- main:
+
+  Optional plot title. For faceted plots, this is used as the outer
+  title.
+
+- cex:
+
+  Character expansion passed to base plotting functions.
+
+- lwd:
+
+  Line width passed to base plotting functions.
+
+- pch:
+
+  Point symbol passed to base plotting functions.
 
 - ...:
 
@@ -42,12 +78,36 @@ Invisibly returns `x`.
 
 ## Details
 
-For residual plots, paired methods use `closure_residual`. Penman uses
-`unresolved_complement`, labelled explicitly as such; the Penman
-complement is not sensible heat. Monin/Profile residuals remain
-diagnostic and are not forced to close.
+The default `layout = "facets"` is recommended for vignettes because it
+draws one panel per method and avoids overplotting. The optional
+`layout = "combined"` draws all selected methods in one panel.
 
-Ratio plots use `closure_ratio` for paired methods only. Penman is
-excluded because fieldClim does not provide a paired Penman sensible
-heat flux. Rows marked `low_available_energy` are omitted from ratio
-plots because closure ratios are unstable near zero available energy.
+The default `type = "open_terms"` plots terms that are open,
+residualized, or diagnostically unresolved. For Bulk-Residual this is
+the residual latent heat term, for Penman it is the unresolved
+complement, and for Monin/Profile it is the diagnostic energy-balance
+residual. Priestley-Taylor and Bowen are omitted from this plot type
+because they partition available energy and do not return an explicit
+open term.
+
+The `type = "closure_check"` plot is a technical balance check for
+paired sensible/latent heat methods. It shows `A - H - LE`, where
+`A = rad_bal - soil_flux`. Priestley-Taylor, Bulk-Residual and Bowen are
+expected to be close to zero by construction when their values are
+finite. Bulk-Residual can still have an open/residualized latent term in
+`open_terms`; its `closure_check` is near zero because that latent term
+closes the balance algebraically. Monin/Profile residuals are
+diagnostic. Penman is excluded because it has no paired sensible heat
+output.
+
+The `type = "ratio"` plot shows `(sensible + latent) / available energy`
+for paired methods. Penman is excluded and rows marked
+`low_available_energy` are omitted because ratios are unstable near zero
+available energy.
+
+The deprecated `type = "residual"` is mapped to `type = "closure_check"`
+with a warning.
+
+The `ylim` argument can be used for zoomed diagnostic views. A zoomed
+ratio plot must not be read as data removal; it only makes the range
+around formal closure readable.

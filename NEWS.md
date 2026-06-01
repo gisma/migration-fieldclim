@@ -16,6 +16,7 @@
 - For Penman, the diagnostic reports `unresolved_complement = rad_bal - soil_flux - latent_penman`; this complement is not a paired sensible heat flux.
 - Monin-Obukhov/Profile residuals are reported as diagnostic differences and are not treated as automatic errors or forced to close the balance.
 - Added `plot_energy_balance_closure()` to plot diagnostic residuals, Penman unresolved complements and closure ratios. Formal closure is not presented as physical validation.
+- Clarified Bulk-Residual documentation: the sensible-heat estimate may use mean-wind, profile-derived friction velocity, or roughness-derived friction velocity, while latent heat remains a residual closure term.
 
 ## Penman latent heat
 
