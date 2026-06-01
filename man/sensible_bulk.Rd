@@ -19,6 +19,10 @@ sensible_bulk(t1, ...)
   cp = 1005,
   k = 0.41,
   min_wind = 0.1,
+  exchange_velocity = c("wind_mean", "u_star_profile", "u_star_roughness"),
+  min_ustar = 0.01,
+  surface_type = NULL,
+  obs_height = NULL,
   warn_threshold = 600,
   stability_method = c("none", "ri_guard"),
   ri_neutral = 0.01,
@@ -35,6 +39,8 @@ sensible_bulk(t1, ...)
   cp = 1005,
   k = 0.41,
   min_wind = 0.1,
+  exchange_velocity = c("wind_mean", "u_star_profile", "u_star_roughness"),
+  min_ustar = 0.01,
   warn_threshold = 600,
   stability_method = c("none", "ri_guard"),
   ri_neutral = 0.01,
@@ -69,6 +75,24 @@ missing, \code{v1} is used.}
 
 \item{min_wind}{Minimum wind speed in m s-1 for the resistance calculation.
 Values at or below this threshold return \code{NA}.}
+
+\item{exchange_velocity}{Character. Velocity scale used for the neutral
+aerodynamic resistance. \code{"wind_mean"} keeps the original package
+behaviour. \code{"u_star_profile"} estimates friction velocity from the
+two-height wind profile using \code{v1}, \code{v2}, \code{z1}, and
+\code{z2}. \code{"u_star_roughness"} estimates friction velocity from one
+reference wind speed and roughness length derived from \code{surface_type}
+or \code{obs_height}.}
+
+\item{min_ustar}{Minimum friction velocity in m s-1. Values at or below this
+threshold return \code{NA} when \code{exchange_velocity} uses a
+friction-velocity path.}
+
+\item{surface_type}{Surface-type label used to estimate roughness length
+when \code{exchange_velocity = "u_star_roughness"}.}
+
+\item{obs_height}{Obstacle height in m used to estimate roughness length
+when \code{exchange_velocity = "u_star_roughness"}.}
 
 \item{warn_threshold}{Absolute flux threshold in W m-2 for diagnostic
 warnings.}
@@ -122,6 +146,33 @@ upper measurement height in m, \eqn{k} is the von Karman constant, and
 \eqn{\bar{u}} is the mean wind speed in m s-1. If \code{v2} is supplied,
 \eqn{\bar{u}} is calculated as the mean of \code{v1} and \code{v2}. If
 \code{v2} is not supplied, \code{v1} is used as \eqn{\bar{u}}.
+
+This mean-wind path is selected by the default
+\code{exchange_velocity = "wind_mean"}. With
+\code{exchange_velocity = "u_star_profile"}, friction velocity is estimated
+from the two-height wind profile:
+
+\deqn{
+u_* = \frac{k (v_2 - v_1)}{\log(z_2 / z_1)}
+}
+
+and resistance is calculated as:
+
+\deqn{
+r_a = \frac{\log(z_2 / z_1)}{k u_*}
+}
+
+With \code{exchange_velocity = "u_star_roughness"}, friction velocity is
+estimated from one reference wind speed and roughness length:
+
+\deqn{
+u_* = \frac{k u_{ref}}{\log(z_{ref} / z_0)}
+}
+
+and the same \eqn{u_*}-based resistance is used.
+\code{u_star_profile} requires \code{v2}. \code{u_star_roughness}
+requires \code{surface_type} or \code{obs_height}. All three paths are
+neutral approximations and do not apply Monin-Obukhov stability corrections.
 
 The sign convention follows the package energy-balance convention:
 

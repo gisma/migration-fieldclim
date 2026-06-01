@@ -78,6 +78,10 @@ wind speed and a simplified aerodynamic resistance.</p>
 <span>  cp <span class="op">=</span> <span class="fl">1005</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">0.41</span>,</span>
 <span>  min_wind <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  exchange_velocity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wind_mean"</span>, <span class="st">"u_star_profile"</span>, <span class="st">"u_star_roughness"</span><span class="op">)</span>,</span>
+<span>  min_ustar <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>  surface_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  obs_height <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  warn_threshold <span class="op">=</span> <span class="fl">600</span>,</span>
 <span>  stability_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"ri_guard"</span><span class="op">)</span>,</span>
 <span>  ri_neutral <span class="op">=</span> <span class="fl">0.01</span>,</span>
@@ -95,6 +99,8 @@ wind speed and a simplified aerodynamic resistance.</p>
 <span>  cp <span class="op">=</span> <span class="fl">1005</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">0.41</span>,</span>
 <span>  min_wind <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  exchange_velocity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"wind_mean"</span>, <span class="st">"u_star_profile"</span>, <span class="st">"u_star_roughness"</span><span class="op">)</span>,</span>
+<span>  min_ustar <span class="op">=</span> <span class="fl">0.01</span>,</span>
 <span>  warn_threshold <span class="op">=</span> <span class="fl">600</span>,</span>
 <span>  stability_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"ri_guard"</span><span class="op">)</span>,</span>
 <span>  ri_neutral <span class="op">=</span> <span class="fl">0.01</span>,</span>
@@ -156,6 +162,32 @@ missing, <code>v1</code> is used.</p></dd>
 Values at or below this threshold return <code>NA</code>.</p></dd>
 
 
+<dt id="arg-exchange-velocity">exchange_velocity<a class="anchor" aria-label="anchor" href="#arg-exchange-velocity"></a></dt>
+<dd><p>Character. Velocity scale used for the neutral
+aerodynamic resistance. <code>"wind_mean"</code> keeps the original package
+behaviour. <code>"u_star_profile"</code> estimates friction velocity from the
+two-height wind profile using <code>v1</code>, <code>v2</code>, <code>z1</code>, and
+<code>z2</code>. <code>"u_star_roughness"</code> estimates friction velocity from one
+reference wind speed and roughness length derived from <code>surface_type</code>
+or <code>obs_height</code>.</p></dd>
+
+
+<dt id="arg-min-ustar">min_ustar<a class="anchor" aria-label="anchor" href="#arg-min-ustar"></a></dt>
+<dd><p>Minimum friction velocity in m s-1. Values at or below this
+threshold return <code>NA</code> when <code>exchange_velocity</code> uses a
+friction-velocity path.</p></dd>
+
+
+<dt id="arg-surface-type">surface_type<a class="anchor" aria-label="anchor" href="#arg-surface-type"></a></dt>
+<dd><p>Surface-type label used to estimate roughness length
+when <code>exchange_velocity = "u_star_roughness"</code>.</p></dd>
+
+
+<dt id="arg-obs-height">obs_height<a class="anchor" aria-label="anchor" href="#arg-obs-height"></a></dt>
+<dd><p>Obstacle height in m used to estimate roughness length
+when <code>exchange_velocity = "u_star_roughness"</code>.</p></dd>
+
+
 <dt id="arg-warn-threshold">warn_threshold<a class="anchor" aria-label="anchor" href="#arg-warn-threshold"></a></dt>
 <dd><p>Absolute flux threshold in W m-2 for diagnostic
 warnings.</p></dd>
@@ -215,6 +247,26 @@ upper measurement height in m, \(k\) is the von Karman constant, and
 \(\bar{u}\) is the mean wind speed in m s-1. If <code>v2</code> is supplied,
 \(\bar{u}\) is calculated as the mean of <code>v1</code> and <code>v2</code>. If
 <code>v2</code> is not supplied, <code>v1</code> is used as \(\bar{u}\).</p>
+<p>This mean-wind path is selected by the default
+<code>exchange_velocity = "wind_mean"</code>. With
+<code>exchange_velocity = "u_star_profile"</code>, friction velocity is estimated
+from the two-height wind profile:</p>
+<p>$$
+u_* = \frac{k (v_2 - v_1)}{\log(z_2 / z_1)}
+$$</p>
+<p>and resistance is calculated as:</p>
+<p>$$
+r_a = \frac{\log(z_2 / z_1)}{k u_*}
+$$</p>
+<p>With <code>exchange_velocity = "u_star_roughness"</code>, friction velocity is
+estimated from one reference wind speed and roughness length:</p>
+<p>$$
+u_* = \frac{k u_{ref}}{\log(z_{ref} / z_0)}
+$$</p>
+<p>and the same \(u_*\)-based resistance is used.
+<code>u_star_profile</code> requires <code>v2</code>. <code>u_star_roughness</code>
+requires <code>surface_type</code> or <code>obs_height</code>. All three paths are
+neutral approximations and do not apply Monin-Obukhov stability corrections.</p>
 <p>The sign convention follows the package energy-balance convention:</p>
 <p>$$
 H &gt; 0

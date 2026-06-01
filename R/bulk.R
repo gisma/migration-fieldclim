@@ -27,6 +27,33 @@
 #' \eqn{\bar{u}} is calculated as the mean of \code{v1} and \code{v2}. If
 #' \code{v2} is not supplied, \code{v1} is used as \eqn{\bar{u}}.
 #'
+#' This mean-wind path is selected by the default
+#' \code{exchange_velocity = "wind_mean"}. With
+#' \code{exchange_velocity = "u_star_profile"}, friction velocity is estimated
+#' from the two-height wind profile:
+#'
+#' \deqn{
+#' u_* = \frac{k (v_2 - v_1)}{\log(z_2 / z_1)}
+#' }
+#'
+#' and resistance is calculated as:
+#'
+#' \deqn{
+#' r_a = \frac{\log(z_2 / z_1)}{k u_*}
+#' }
+#'
+#' With \code{exchange_velocity = "u_star_roughness"}, friction velocity is
+#' estimated from one reference wind speed and roughness length:
+#'
+#' \deqn{
+#' u_* = \frac{k u_{ref}}{\log(z_{ref} / z_0)}
+#' }
+#'
+#' and the same \eqn{u_*}-based resistance is used.
+#' \code{u_star_profile} requires \code{v2}. \code{u_star_roughness}
+#' requires \code{surface_type} or \code{obs_height}. All three paths are
+#' neutral approximations and do not apply Monin-Obukhov stability corrections.
+#'
 #' The sign convention follows the package energy-balance convention:
 #'
 #' \deqn{
@@ -68,6 +95,20 @@
 #' @param k von Karman constant. Default is 0.41.
 #' @param min_wind Minimum wind speed in m s-1 for the resistance calculation.
 #'   Values at or below this threshold return \code{NA}.
+#' @param exchange_velocity Character. Velocity scale used for the neutral
+#'   aerodynamic resistance. \code{"wind_mean"} keeps the original package
+#'   behaviour. \code{"u_star_profile"} estimates friction velocity from the
+#'   two-height wind profile using \code{v1}, \code{v2}, \code{z1}, and
+#'   \code{z2}. \code{"u_star_roughness"} estimates friction velocity from one
+#'   reference wind speed and roughness length derived from \code{surface_type}
+#'   or \code{obs_height}.
+#' @param min_ustar Minimum friction velocity in m s-1. Values at or below this
+#'   threshold return \code{NA} when \code{exchange_velocity} uses a
+#'   friction-velocity path.
+#' @param surface_type Surface-type label used to estimate roughness length
+#'   when \code{exchange_velocity = "u_star_roughness"}.
+#' @param obs_height Obstacle height in m used to estimate roughness length
+#'   when \code{exchange_velocity = "u_star_roughness"}.
 #' @param warn_threshold Absolute flux threshold in W m-2 for diagnostic
 #'   warnings.
 #' @param stability_method Optional stability screening method. \code{"none"}
@@ -127,6 +168,10 @@ sensible_bulk.default <- function(
     cp = 1005,
     k = 0.41,
     min_wind = 0.1,
+    exchange_velocity = c("wind_mean", "u_star_profile", "u_star_roughness"),
+    min_ustar = 0.01,
+    surface_type = NULL,
+    obs_height = NULL,
     warn_threshold = 600,
     stability_method = c("none", "ri_guard"),
     ri_neutral = 0.01,
@@ -137,9 +182,20 @@ sensible_bulk.default <- function(
     ...) {
 
   stability_method <- match.arg(stability_method)
+  exchange_velocity <- match.arg(exchange_velocity)
 
   if (stability_method == "ri_guard" && is.null(v2)) {
     stop("stability_method = 'ri_guard' requires v2.", call. = FALSE)
+  }
+
+  if (exchange_velocity == "u_star_profile" && is.null(v2)) {
+    stop("exchange_velocity = 'u_star_profile' requires v2.", call. = FALSE)
+  }
+
+  if (exchange_velocity == "u_star_roughness" &&
+      is.null(surface_type) &&
+      is.null(obs_height)) {
+    stop("exchange_velocity = 'u_star_roughness' requires surface_type or obs_height.", call. = FALSE)
   }
 
   if (length(z1) != 1 || length(z2) != 1) {
@@ -150,25 +206,77 @@ sensible_bulk.default <- function(
     stop("z1 and z2 must satisfy 0 < z1 < z2.", call. = FALSE)
   }
 
-  if (is.null(v2)) {
-    wind_mean <- v1
+  if (exchange_velocity == "wind_mean") {
+    if (is.null(v2)) {
+      velocity_scale <- v1
+    } else {
+      velocity_scale <- (v1 + v2) / 2
+    }
+
+    bad_velocity <- is.na(velocity_scale) |
+      !is.finite(velocity_scale) |
+      velocity_scale <= min_wind
+
+    if (any(bad_velocity, na.rm = TRUE)) {
+      warning(
+        "sensible_bulk: wind speed is missing or too small for some values; returning NA there.",
+        call. = FALSE
+      )
+    }
+
+    velocity_scale[bad_velocity] <- NA_real_
+  } else if (exchange_velocity == "u_star_profile") {
+    velocity_scale <- k * (v2 - v1) / log(z2 / z1)
+
+    bad_velocity <- is.na(velocity_scale) |
+      !is.finite(velocity_scale) |
+      velocity_scale <= min_ustar
+
+    if (any(bad_velocity, na.rm = TRUE)) {
+      warning(
+        "sensible_bulk: profile-derived friction velocity is missing, non-positive, or too small for some values; returning NA there.",
+        call. = FALSE
+      )
+    }
+
+    velocity_scale[bad_velocity] <- NA_real_
   } else {
-    wind_mean <- (v1 + v2) / 2
+    if (is.null(v2)) {
+      v_ref <- v1
+      z_ref <- z1
+    } else {
+      v_ref <- v2
+      z_ref <- z2
+    }
+
+    if (!is.null(obs_height)) {
+      z0 <- turb_roughness_length(obs_height = obs_height)
+    } else {
+      z0 <- turb_roughness_length(surface_type = surface_type)
+    }
+
+    velocity_scale <- k * v_ref / log(z_ref / z0)
+
+    bad_velocity <- is.na(velocity_scale) |
+      !is.finite(velocity_scale) |
+      velocity_scale <= min_ustar |
+      is.na(z0) |
+      !is.finite(z0) |
+      z0 <= 0 |
+      z_ref <= z0
+
+    if (any(bad_velocity, na.rm = TRUE)) {
+      warning(
+        "sensible_bulk: roughness-derived friction velocity is invalid or too small for some values; returning NA there.",
+        call. = FALSE
+      )
+    }
+
+    velocity_scale[bad_velocity] <- NA_real_
   }
-
-  bad_wind <- is.na(wind_mean) | wind_mean <= min_wind
-
-  if (any(bad_wind, na.rm = TRUE)) {
-    warning(
-      "sensible_bulk: wind speed is missing or too small for some values; returning NA there.",
-      call. = FALSE
-    )
-  }
-
-  wind_mean[bad_wind] <- NA_real_
 
   delta_t <- t1 - t2
-  r_a <- log(z2 / z1) / (k * wind_mean)
+  r_a <- log(z2 / z1) / (k * velocity_scale)
 
   h <- rho * cp * delta_t / r_a
 
@@ -248,6 +356,8 @@ sensible_bulk.weather_station <- function(
     cp = 1005,
     k = 0.41,
     min_wind = 0.1,
+    exchange_velocity = c("wind_mean", "u_star_profile", "u_star_roughness"),
+    min_ustar = 0.01,
     warn_threshold = 600,
     stability_method = c("none", "ri_guard"),
     ri_neutral = 0.01,
@@ -258,6 +368,7 @@ sensible_bulk.weather_station <- function(
     ...) {
 
   stability_method <- match.arg(stability_method)
+  exchange_velocity <- match.arg(exchange_velocity)
 
   weather_station <- t1
 
@@ -269,6 +380,16 @@ sensible_bulk.weather_station <- function(
   v2 <- if ("v2" %in% names(weather_station)) weather_station$v2 else NULL
   if (is.null(elev) && "elev" %in% names(weather_station)) {
     elev <- weather_station$elev
+  }
+  surface_type <- if ("surface_type" %in% names(weather_station)) {
+    weather_station$surface_type
+  } else {
+    NULL
+  }
+  obs_height <- if ("obs_height" %in% names(weather_station)) {
+    weather_station$obs_height
+  } else {
+    NULL
   }
 
   sensible_bulk.default(
@@ -282,6 +403,10 @@ sensible_bulk.weather_station <- function(
     cp = cp,
     k = k,
     min_wind = min_wind,
+    exchange_velocity = exchange_velocity,
+    min_ustar = min_ustar,
+    surface_type = surface_type,
+    obs_height = obs_height,
     warn_threshold = warn_threshold,
     stability_method = stability_method,
     ri_neutral = ri_neutral,
