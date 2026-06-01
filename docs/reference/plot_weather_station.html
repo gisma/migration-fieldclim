@@ -88,23 +88,70 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Assuming `weather_station` is a list or data frame with a datetime field and other variables</span></span></span>
-<span class="r-in"><span><span class="co"># Example weather_station object creation</span></span></span>
-<span class="r-in"><span><span class="va">weather_station</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  datetime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-08-01 00:00"</span>, <span class="st">"2023-08-01 01:00"</span>, <span class="st">"2023-08-01 02:00"</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  temp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15.5</span>, <span class="fl">16.0</span>, <span class="fl">16.5</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  windspeed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">3.5</span>, <span class="fl">3.1</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  location <span class="op">=</span> <span class="st">"Test Location"</span>  <span class="co"># This will be excluded from the plot</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">caldern_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="st">"extdata"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"caldern_wiese_2017-06-30.csv"</span>,</span></span>
+<span class="r-in"><span>  package <span class="op">=</span> <span class="st">"fieldClim"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot the temperature data</span></span></span>
-<span class="r-in"><span><span class="fu">plot_weather_station</span><span class="op">(</span><span class="va">weather_station</span>, <span class="st">"temp"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">caldern</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">caldern_file</span>,</span></span>
+<span class="r-in"><span>  na.strings <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"NULL"</span>, <span class="st">"NA"</span>, <span class="st">""</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span></span>
+<span class="r-in"><span>  tz <span class="op">=</span> <span class="st">"Europe/Berlin"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu"><a href="build_weather_station.html">build_weather_station</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="co"># Time axis.</span></span></span>
+<span class="r-in"><span>  datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Station location.</span></span></span>
+<span class="r-in"><span>  lon <span class="op">=</span> <span class="fl">8.6832</span>,</span></span>
+<span class="r-in"><span>  lat <span class="op">=</span> <span class="fl">50.8405</span>,</span></span>
+<span class="r-in"><span>  elev <span class="op">=</span> <span class="fl">261</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Standard air temperature and relative humidity.</span></span></span>
+<span class="r-in"><span>  temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span></span>
+<span class="r-in"><span>  rh <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Profile variables for gradient- and stability-related methods.</span></span></span>
+<span class="r-in"><span>  t1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span></span>
+<span class="r-in"><span>  t2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_10m</span>,</span></span>
+<span class="r-in"><span>  hum1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span></span>
+<span class="r-in"><span>  hum2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_10m</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Wind profile and measurement heights.</span></span></span>
+<span class="r-in"><span>  v1 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_2m</span>,</span></span>
+<span class="r-in"><span>  v2 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Windspeed_10m</span>,</span></span>
+<span class="r-in"><span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span></span>
+<span class="r-in"><span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Package names for theoretical flux terms:</span></span></span>
+<span class="r-in"><span>  <span class="co"># rad_bal corresponds to Q*, soil_flux corresponds to B.</span></span></span>
+<span class="r-in"><span>  rad_bal <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span>,</span></span>
+<span class="r-in"><span>  soil_flux <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Additional surface and soil information.</span></span></span>
+<span class="r-in"><span>  moisture <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">water_vol_soil</span>,</span></span>
+<span class="r-in"><span>  surface_temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ts</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Surface type as a model assumption.</span></span></span>
+<span class="r-in"><span>  surface_type <span class="op">=</span> <span class="st">"field"</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="co"># Observation height for methods requiring a reference height.</span></span></span>
+<span class="r-in"><span>  obs_height <span class="op">=</span> <span class="fl">2</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Plot air temperature.</span></span></span>
+<span class="r-in"><span><span class="fu">plot_weather_station</span><span class="op">(</span><span class="va">ws</span>, <span class="st">"temp"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_weather_station-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Plot all time series variables</span></span></span>
-<span class="r-in"><span><span class="fu">plot_weather_station</span><span class="op">(</span><span class="va">weather_station</span>, <span class="cn">NULL</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># Plot all available time series variables.</span></span></span>
+<span class="r-in"><span><span class="fu">plot_weather_station</span><span class="op">(</span><span class="va">ws</span>, <span class="cn">NULL</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plot_weather_station-2.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

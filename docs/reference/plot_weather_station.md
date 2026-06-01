@@ -40,20 +40,67 @@ dependencies and simplicity in usage.
 ## Examples
 
 ``` r
-# Assuming `weather_station` is a list or data frame with a datetime field and other variables
-# Example weather_station object creation
-weather_station <- list(
-  datetime = as.POSIXct(c("2023-08-01 00:00", "2023-08-01 01:00", "2023-08-01 02:00")),
-  temp = c(15.5, 16.0, 16.5),
-  windspeed = c(3.2, 3.5, 3.1),
-  location = "Test Location"  # This will be excluded from the plot
+caldern_file <- system.file(
+  "extdata",
+  "caldern_wiese_2017-06-30.csv",
+  package = "fieldClim"
 )
 
-# Plot the temperature data
-plot_weather_station(weather_station, "temp")
+caldern <- read.csv(
+  caldern_file,
+  na.strings = c("NULL", "NA", "")
+)
+
+caldern$datetime <- as.POSIXct(
+  caldern$datetime,
+  tz = "Europe/Berlin"
+)
+
+ws <- build_weather_station(
+  # Time axis.
+  datetime = caldern$datetime,
+
+  # Station location.
+  lon = 8.6832,
+  lat = 50.8405,
+  elev = 261,
+
+  # Standard air temperature and relative humidity.
+  temp = caldern$Ta_2m,
+  rh = caldern$Huma_2m,
+
+  # Profile variables for gradient- and stability-related methods.
+  t1 = caldern$Ta_2m,
+  t2 = caldern$Ta_10m,
+  hum1 = caldern$Huma_2m,
+  hum2 = caldern$Huma_10m,
+
+  # Wind profile and measurement heights.
+  v1 = caldern$Windspeed_2m,
+  v2 = caldern$Windspeed_10m,
+  z1 = 2,
+  z2 = 10,
+
+  # Package names for theoretical flux terms:
+  # rad_bal corresponds to Q*, soil_flux corresponds to B.
+  rad_bal = caldern$Q_star,
+  soil_flux = caldern$B,
+
+  # Additional surface and soil information.
+  moisture = caldern$water_vol_soil,
+  surface_temp = caldern$Ts,
+
+  # Surface type as a model assumption.
+  surface_type = "field",
+
+  # Observation height for methods requiring a reference height.
+  obs_height = 2
+)
+
+# Plot air temperature.
+plot_weather_station(ws, "temp")
 
 
-# Plot all time series variables
-plot_weather_station(weather_station, NULL)
-
+# Plot all available time series variables.
+plot_weather_station(ws, NULL)
 ```
