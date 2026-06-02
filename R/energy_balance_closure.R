@@ -50,6 +50,36 @@
 #'   \code{available_energy}, \code{sensible}, \code{latent},
 #'   \code{turbulent_sum}, \code{closure_residual}, \code{closure_ratio},
 #'   \code{unresolved_complement}, and \code{status}.
+#' @examples
+#' ws <- structure(
+#'   list(
+#'     datetime = as.POSIXct(
+#'       c("2023-06-30 12:00", "2023-06-30 12:30"),
+#'       tz = "UTC"
+#'     ),
+#'     rad_bal = c(400, 300),
+#'     soil_flux = c(60, 40),
+#'
+#'     # Bulk-Residual: formally closed by construction.
+#'     sensible_bulk = c(120, 80),
+#'     latent_bulk_residual = c(220, 180),
+#'
+#'     # Penman: latent heat only; complement remains unresolved.
+#'     latent_penman = c(200, 160),
+#'
+#'     # Monin/Profile: diagnostic residual remains visible.
+#'     sensible_monin = c(100, 100),
+#'     latent_monin = c(180, 130)
+#'   ),
+#'   class = "weather_station"
+#' )
+#'
+#' closure <- energy_balance_closure(
+#'   ws,
+#'   methods = c("bulk_residual", "penman", "monin")
+#' )
+#'
+#' closure
 #' @export
 energy_balance_closure <- function(
     weather_station,
@@ -258,6 +288,32 @@ energy_balance_closure <- function(
 #' @param ... Additional arguments passed to base plotting functions.
 #'
 #' @return Invisibly returns \code{x}.
+#' @examples
+#' ws <- structure(
+#'   list(
+#'     datetime = as.POSIXct(
+#'       c("2023-06-30 12:00", "2023-06-30 12:30"),
+#'       tz = "UTC"
+#'     ),
+#'     rad_bal = c(400, 300),
+#'     soil_flux = c(60, 40),
+#'     sensible_bulk = c(120, 80),
+#'     latent_bulk_residual = c(220, 180),
+#'     latent_penman = c(200, 160),
+#'     sensible_monin = c(100, 100),
+#'     latent_monin = c(180, 130)
+#'   ),
+#'   class = "weather_station"
+#' )
+#'
+#' closure <- energy_balance_closure(
+#'   ws,
+#'   methods = c("bulk_residual", "penman", "monin")
+#' )
+#'
+#' plot_energy_balance_closure(closure, type = "open_terms")
+#' plot_energy_balance_closure(closure, type = "closure_check")
+#' plot_energy_balance_closure(closure, type = "ratio", ylim = c(0, 2))
 #' @export
 plot_energy_balance_closure <- function(
     x,

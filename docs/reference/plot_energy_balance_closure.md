@@ -111,3 +111,35 @@ with a warning.
 The `ylim` argument can be used for zoomed diagnostic views. A zoomed
 ratio plot must not be read as data removal; it only makes the range
 around formal closure readable.
+
+## Examples
+
+``` r
+ws <- structure(
+  list(
+    datetime = as.POSIXct(
+      c("2023-06-30 12:00", "2023-06-30 12:30"),
+      tz = "UTC"
+    ),
+    rad_bal = c(400, 300),
+    soil_flux = c(60, 40),
+    sensible_bulk = c(120, 80),
+    latent_bulk_residual = c(220, 180),
+    latent_penman = c(200, 160),
+    sensible_monin = c(100, 100),
+    latent_monin = c(180, 130)
+  ),
+  class = "weather_station"
+)
+
+closure <- energy_balance_closure(
+  ws,
+  methods = c("bulk_residual", "penman", "monin")
+)
+
+plot_energy_balance_closure(closure, type = "open_terms")
+
+plot_energy_balance_closure(closure, type = "closure_check")
+
+plot_energy_balance_closure(closure, type = "ratio", ylim = c(0, 2))
+```

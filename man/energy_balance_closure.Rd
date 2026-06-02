@@ -67,3 +67,34 @@ Monin/Profile residuals are diagnostic and are not forced to close. Formal
 closure does not validate physical correctness; it only describes the
 algebraic behaviour of the existing method outputs.
 }
+\examples{
+ws <- structure(
+  list(
+    datetime = as.POSIXct(
+      c("2023-06-30 12:00", "2023-06-30 12:30"),
+      tz = "UTC"
+    ),
+    rad_bal = c(400, 300),
+    soil_flux = c(60, 40),
+
+    # Bulk-Residual: formally closed by construction.
+    sensible_bulk = c(120, 80),
+    latent_bulk_residual = c(220, 180),
+
+    # Penman: latent heat only; complement remains unresolved.
+    latent_penman = c(200, 160),
+
+    # Monin/Profile: diagnostic residual remains visible.
+    sensible_monin = c(100, 100),
+    latent_monin = c(180, 130)
+  ),
+  class = "weather_station"
+)
+
+closure <- energy_balance_closure(
+  ws,
+  methods = c("bulk_residual", "penman", "monin")
+)
+
+closure
+}

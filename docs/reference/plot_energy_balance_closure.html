@@ -167,6 +167,38 @@ ratio plot must not be read as data removal; it only makes the range around
 formal closure readable.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    datetime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-06-30 12:00"</span>, <span class="st">"2023-06-30 12:30"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      tz <span class="op">=</span> <span class="st">"UTC"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    rad_bal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">300</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    soil_flux <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">40</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    sensible_bulk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">80</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    latent_bulk_residual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">220</span>, <span class="fl">180</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    latent_penman <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">160</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    sensible_monin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">100</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    latent_monin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">130</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"weather_station"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">closure</span> <span class="op">&lt;-</span> <span class="fu"><a href="energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">ws</span>,</span></span>
+<span class="r-in"><span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bulk_residual"</span>, <span class="st">"penman"</span>, <span class="st">"monin"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">plot_energy_balance_closure</span><span class="op">(</span><span class="va">closure</span>, type <span class="op">=</span> <span class="st">"open_terms"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_energy_balance_closure-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="fu">plot_energy_balance_closure</span><span class="op">(</span><span class="va">closure</span>, type <span class="op">=</span> <span class="st">"closure_check"</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_energy_balance_closure-2.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="fu">plot_energy_balance_closure</span><span class="op">(</span><span class="va">closure</span>, type <span class="op">=</span> <span class="st">"ratio"</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="plot_energy_balance_closure-3.png" alt="" width="700" height="433"></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

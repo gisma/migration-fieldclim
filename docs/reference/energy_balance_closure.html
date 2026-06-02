@@ -130,6 +130,60 @@ closure does not validate physical correctness; it only describes the
 algebraic behaviour of the existing method outputs.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">ws</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    datetime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.POSIXlt.html" class="external-link">as.POSIXct</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2023-06-30 12:00"</span>, <span class="st">"2023-06-30 12:30"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>      tz <span class="op">=</span> <span class="st">"UTC"</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    rad_bal <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">400</span>, <span class="fl">300</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    soil_flux <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">60</span>, <span class="fl">40</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>    <span class="co"># Bulk-Residual: formally closed by construction.</span></span></span>
+<span class="r-in"><span>    sensible_bulk <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">80</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    latent_bulk_residual <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">220</span>, <span class="fl">180</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>    <span class="co"># Penman: latent heat only; complement remains unresolved.</span></span></span>
+<span class="r-in"><span>    latent_penman <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">160</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>    <span class="co"># Monin/Profile: diagnostic residual remains visible.</span></span></span>
+<span class="r-in"><span>    sensible_monin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">100</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    latent_monin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">130</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  class <span class="op">=</span> <span class="st">"weather_station"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">closure</span> <span class="op">&lt;-</span> <span class="fu">energy_balance_closure</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">ws</span>,</span></span>
+<span class="r-in"><span>  methods <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bulk_residual"</span>, <span class="st">"penman"</span>, <span class="st">"monin"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">closure</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>              datetime        method       closure_type rad_bal soil_flux</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2023-06-30 12:00:00 bulk_residual   residual_closure     400        60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2023-06-30 12:30:00 bulk_residual   residual_closure     300        40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2023-06-30 12:00:00        penman       le_only_open     400        60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2023-06-30 12:30:00        penman       le_only_open     300        40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2023-06-30 12:00:00         monin profile_diagnostic     400        60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 2023-06-30 12:30:00         monin profile_diagnostic     300        40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   available_energy sensible latent turbulent_sum closure_residual closure_ratio</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              340      120    220           340                0     1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2              260       80    180           260                0     1.0000000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3              340       NA    200            NA               NA            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4              260       NA    160            NA               NA            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5              340      100    180           280               60     0.8235294</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6              260      100    130           230               30     0.8846154</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   unresolved_complement              status</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                    NA                  ok</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    NA                  ok</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                   140     open_complement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                   100     open_complement</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                    NA diagnostic_residual</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6                    NA diagnostic_residual</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
