@@ -197,7 +197,7 @@ eine Wiesenstation mit Strahlungsbilanz, Bodenwärmestrom, Temperatur-,
 Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren
 greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
 unterschiedliche Teilinformationen.</p>
-<p><img src="figures/clos_wf-method_overview_meadow_station.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="figures/Overview_meadow_station.png" class="r-plt" alt="" width="100%"></p>
 <p>Die Verfahren sind nicht als gleichartige Messverfahren zu lesen. Sie
 sind unterschiedliche Rechenpfade mit unterschiedlicher Nähe zur
 Energiebilanz, zu Gradienten und zu Profilannahmen. Für die eigentliche
@@ -279,7 +279,7 @@ Oberfläche</td>
 <div class="section level4">
 <h4 id="priestley-taylor">1. Priestley-Taylor<a class="anchor" aria-label="anchor" href="#priestley-taylor"></a>
 </h4>
-<p><img src="figures/clos_wf-method_priestley_taylor.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_priestley_taylor.png") #</code></p>
 <p>Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad.
 Der Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
 keine empfindliche Aufteilung über kleine Feuchtegradienten.</p>
@@ -300,7 +300,7 @@ Energie.</p>
 <div class="section level4">
 <h4 id="bulk-residual-mit-optionalem-richardson-guard">2. Bulk-Residual mit optionalem Richardson-Guard<a class="anchor" aria-label="anchor" href="#bulk-residual-mit-optionalem-richardson-guard"></a>
 </h4>
-<p><img src="figures/clos_wf-method_bulk_residual.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/Overview_meadow_station.png") #</code></p>
 <p>Der Paketpfad <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> nutzt eine
 einfache Bulk-Transfer-Schätzung für den fühlbaren Wärmestrom und
 berechnet den latenten Wärmestrom anschließend als Residuum. Die
@@ -339,7 +339,7 @@ den Paketpfad mit optionalem Richardson-Guard umgestellt.</p>
 <div class="section level4">
 <h4 id="bowen-verhältnis">3. Bowen-Verhältnis<a class="anchor" aria-label="anchor" href="#bowen-verh%C3%A4ltnis"></a>
 </h4>
-<p><img src="figures/clos_wf-method_bowen.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_bowen.png") #</code></p>
 <p>Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
 latenten Wärmestrom.</p>
@@ -370,7 +370,7 @@ interpretiert.</p>
 <div class="section level4">
 <h4 id="monin-obukhovprofile">4. Monin-Obukhov/Profile<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile"></a>
 </h4>
-<p><img src="figures/clos_wf-method_monin_obukhov.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_monin_obukhov.png") #</code></p>
 <p>Der Monin-Obukhov/Profile-Pfad ist in <code>fieldClim</code> kein
 Verfahren, das die verfügbare Energie automatisch auf <span class="math inline">\(L\)</span> und <span class="math inline">\(V\)</span> verteilt. Er berechnet Wärmeflüsse aus
 den gemessenen Unterschieden zwischen zwei Höhen: Temperatur, Feuchte,
@@ -412,7 +412,7 @@ Partitionierungsansatz gelesen werden darf.</p>
 <div class="section level4">
 <h4 id="penman">5. Penman<a class="anchor" aria-label="anchor" href="#penman"></a>
 </h4>
-<p><img src="figures/clos_wf-method_penman.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_penman.png") #</code></p>
 <p>Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
 verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
 Im aktuellen Paketpfad liefert Penman <code>V</code>, aber keinen

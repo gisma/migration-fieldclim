@@ -56,7 +56,7 @@ estimate one flux and compute the other as a residual, and some use
 measured vertical profiles without forcing closure against available
 energy.
 
-![](figures/en_clos_wf-method_overview_meadow_station.png)
+![](figures/Overview_meadow_station.png)
 
 | Method | Main question | Direct inputs | Output | Role in the workflow |
 |----|----|----|----|----|
@@ -68,7 +68,7 @@ energy.
 
 ### Priestley-Taylor
 
-![](figures/en_clos_wf-method_priestley_taylor.png)
+## `{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_priestley_taylor.png") #`
 
 Priestley-Taylor is the stable first package path in this vignette. It
 is directly bound to available energy and does not require an unstable
@@ -89,7 +89,7 @@ comparison path.
 
 ### Bulk-Residual with optional Richardson guard
 
-![](figures/en_clos_wf-method_bulk_residual.png)
+## `{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_bulk_residual.png") #`
 
 The package path
 [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
@@ -120,7 +120,7 @@ non-robust sensible heat estimate.
 
 ### Bowen-ratio
 
-![](figures/en_clos_wf-method_bowen.png)
+## `{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_bowen.png") #`
 
 The Bowen approach uses a ratio between temperature and humidity
 gradients. It partitions the available energy into sensible and latent
@@ -148,7 +148,7 @@ Capped or non-finite cases should not be read as exact partitions of
 
 ### Monin-Obukhov/Profile
 
-![](figures/en_clos_wf-method_monin_obukhov.png)
+\#`{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/en_clos_wf-method_monin_obukhov.png") #`
 
 The Monin-Obukhov/Profile path in `fieldClim` is not a method that
 automatically partitions available energy into `L` and `V`. It
@@ -182,7 +182,7 @@ assumptions or 5-minute noise.
 
 ### Penman
 
-![](figures/en_clos_wf-method_penman.png)
+\#`{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/en_clos_wf-method_penman.png") #`
 
 Penman is a combination approach for latent heat flux. It combines an
 energy term with an aerodynamic drying term. In the current package

@@ -203,7 +203,7 @@ same question. Some methods partition the available energy, some
 estimate one flux and compute the other as a residual, and some use
 measured vertical profiles without forcing closure against available
 energy.</p>
-<p><img src="figures/en_clos_wf-method_overview_meadow_station.png" class="r-plt" alt="" width="100%"></p>
+<p><img src="figures/Overview_meadow_station.png" class="r-plt" alt="" width="100%"></p>
 <table class="table">
 <colgroup>
 <col width="20%">
@@ -280,7 +280,12 @@ surface</td>
 <div class="section level3">
 <h3 id="priestley-taylor">Priestley-Taylor<a class="anchor" aria-label="anchor" href="#priestley-taylor"></a>
 </h3>
-<p><img src="figures/en_clos_wf-method_priestley_taylor.png" class="r-plt" alt="" width="100%"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="r-method-pt-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_priestley_taylor-png">
+<code>{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_priestley_taylor.png") #</code><a class="anchor" aria-label="anchor" href="#r-method-pt-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_priestley_taylor-png"></a>
+</h2>
 <p>Priestley-Taylor is the stable first package path in this vignette.
 It is directly bound to available energy and does not require an
 unstable ratio of small humidity gradients.</p>
@@ -298,11 +303,15 @@ L_{PT} = (Q^{*} - B) - V_{PT}
 <code>L_PT</code> and <code>V_PT</code> remains tied to the available
 energy. This does not prove that Priestley-Taylor is physically correct
 for every situation; it makes it a readable first comparison path.</p>
-</div>
 <div class="section level3">
 <h3 id="bulk-residual-with-optional-richardson-guard">Bulk-Residual with optional Richardson guard<a class="anchor" aria-label="anchor" href="#bulk-residual-with-optional-richardson-guard"></a>
 </h3>
-<p><img src="figures/en_clos_wf-method_bulk_residual.png" class="r-plt" alt="" width="100%"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="r-method-bulk-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bulk_residual-png">
+<code>{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_bulk_residual.png") #</code><a class="anchor" aria-label="anchor" href="#r-method-bulk-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bulk_residual-png"></a>
+</h2>
 <p>The package path <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> first
 estimates sensible heat flux with a simplified bulk-transfer equation.
 Latent heat flux is then computed as the residual of the surface energy
@@ -332,11 +341,15 @@ invalid or weak-shear cases are set to <code>NA</code>. If
 <code>L_bulk</code> becomes <code>NA</code>, the residual
 <code>V_bulk</code> also becomes <code>NA</code>. This prevents an
 algebraic residual from hiding a non-robust sensible heat estimate.</p>
-</div>
 <div class="section level3">
 <h3 id="bowen-ratio">Bowen-ratio<a class="anchor" aria-label="anchor" href="#bowen-ratio"></a>
 </h3>
-<p><img src="figures/en_clos_wf-method_bowen.png" class="r-plt" alt="" width="100%"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="r-method-bowen-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bowen-png">
+<code>{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_bowen.png") #</code><a class="anchor" aria-label="anchor" href="#r-method-bowen-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bowen-png"></a>
+</h2>
 <p>The Bowen approach uses a ratio between temperature and humidity
 gradients. It partitions the available energy into sensible and latent
 heat flux.</p>
@@ -362,11 +375,10 @@ become very small, signs change, <code>beta</code> is not finite or
 <code>1 + beta</code> approaches zero, individual timesteps can produce
 strong excursions. Capped or non-finite cases should not be read as
 exact partitions of <span class="math display">\[Q^{*} - B\]</span>.</p>
-</div>
 <div class="section level3">
 <h3 id="monin-obukhovprofile">Monin-Obukhov/Profile<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile"></a>
 </h3>
-<p><img src="figures/en_clos_wf-method_monin_obukhov.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/en_clos_wf-method_monin_obukhov.png") #</code></p>
 <p>The Monin-Obukhov/Profile path in <code>fieldClim</code> is not a
 method that automatically partitions available energy into
 <code>L</code> and <code>V</code>. It calculates heat fluxes from
@@ -398,7 +410,7 @@ assumptions or 5-minute noise.</p>
 <div class="section level3">
 <h3 id="penman">Penman<a class="anchor" aria-label="anchor" href="#penman"></a>
 </h3>
-<p><img src="figures/en_clos_wf-method_penman.png" class="r-plt" alt="" width="100%"></p>
+<p>#<code>{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/en_clos_wf-method_penman.png") #</code></p>
 <p>Penman is a combination approach for latent heat flux. It combines an
 energy term with an aerodynamic drying term. In the current package
 workflow, Penman returns <code>V</code>, but not a paired sensible heat

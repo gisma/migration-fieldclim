@@ -51,7 +51,7 @@ Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren
 greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
 unterschiedliche Teilinformationen.
 
-![](figures/clos_wf-method_overview_meadow_station.png)
+![](figures/Overview_meadow_station.png)
 
 Die Verfahren sind nicht als gleichartige Messverfahren zu lesen. Sie
 sind unterschiedliche Rechenpfade mit unterschiedlicher Nähe zur
@@ -70,7 +70,7 @@ verwendet.
 
 #### 1. Priestley-Taylor
 
-![](figures/clos_wf-method_priestley_taylor.png)
+\#`{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_priestley_taylor.png") #`
 
 Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad. Der
 Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
@@ -89,7 +89,7 @@ verfügbaren Energie.
 
 #### 2. Bulk-Residual mit optionalem Richardson-Guard
 
-![](figures/clos_wf-method_bulk_residual.png)
+\#`{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/Overview_meadow_station.png") #`
 
 Der Paketpfad
 [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
@@ -125,7 +125,7 @@ den Paketpfad mit optionalem Richardson-Guard umgestellt.
 
 #### 3. Bowen-Verhältnis
 
-![](figures/clos_wf-method_bowen.png)
+\#`{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_bowen.png") #`
 
 Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
@@ -154,7 +154,7 @@ Bowen-Zeitschritte behandelt und nicht als exakte Aufteilung von
 
 #### 4. Monin-Obukhov/Profile
 
-![](figures/clos_wf-method_monin_obukhov.png)
+\#`{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_monin_obukhov.png") #`
 
 Der Monin-Obukhov/Profile-Pfad ist in `fieldClim` kein Verfahren, das
 die verfügbare Energie automatisch auf \\L\\ und \\V\\ verteilt. Er
@@ -200,7 +200,7 @@ Partitionierungsansatz gelesen werden darf.
 
 #### 5. Penman
 
-![](figures/clos_wf-method_penman.png)
+\#`{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_penman.png") #`
 
 Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
 verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
