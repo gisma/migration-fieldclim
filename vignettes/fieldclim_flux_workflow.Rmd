@@ -83,9 +83,11 @@ Für die Paketfunktionen wird diese Notation auf `fieldClim`-Namen abgebildet:
 Die folgende Übersichtsgrafik zeigt die gemeinsame Messsituation: eine Wiesenstation mit Strahlungsbilanz, Bodenwärmestrom, Temperatur-, Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren greifen auf dieselbe Stationslogik zurück, verwenden daraus aber unterschiedliche Teilinformationen.
 
 ```{r method-overview-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
-knitr::include_graphics("figures/Overview_meadow_station.png")
+knitr::include_graphics("figures/station.png")
 ```
 
+
+![](figures/fieldClim_theory.svg)
 Die Verfahren sind nicht als gleichartige Messverfahren zu lesen. Sie sind unterschiedliche Rechenpfade mit unterschiedlicher Nähe zur Energiebilanz, zu Gradienten und zu Profilannahmen. Für die eigentliche Auswertung wird der Paketpfad `turb_flux_bulk_residual()` verwendet.
 
 | Methode | Hauptfrage | Direkte Eingänge | Ergebnis | Rolle im Workflow |

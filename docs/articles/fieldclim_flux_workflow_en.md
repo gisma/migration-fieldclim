@@ -56,7 +56,9 @@ estimate one flux and compute the other as a residual, and some use
 measured vertical profiles without forcing closure against available
 energy.
 
-![](figures/Overview_meadow_station.png)
+![](figures/station.png)
+
+![](figures/fieldClim_theory.svg)
 
 | Method | Main question | Direct inputs | Output | Role in the workflow |
 |----|----|----|----|----|

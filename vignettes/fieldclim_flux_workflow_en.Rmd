@@ -89,8 +89,11 @@ for energy-closing or residual methods in valid finite cases. This relation is n
 All methods use the same station concept, but they do not answer the same question. Some methods partition the available energy, some estimate one flux and compute the other as a residual, and some use measured vertical profiles without forcing closure against available energy.
 
 ```{r method-overview-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"}
-knitr::include_graphics("figures/Overview_meadow_station.png")
+knitr::include_graphics("figures/station.png")
 ```
+
+![](figures/fieldClim_theory.svg)
+
 
 | Method | Main question | Direct inputs | Output | Role in the workflow |
 |---|---|---|---|---|

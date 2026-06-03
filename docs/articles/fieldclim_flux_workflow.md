@@ -51,12 +51,12 @@ Feuchte- und Windmessungen in mehreren Höhen. Alle folgenden Verfahren
 greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
 unterschiedliche Teilinformationen.
 
-![](figures/Overview_meadow_station.png)
+![](figures/station.png)
 
-Die Verfahren sind nicht als gleichartige Messverfahren zu lesen. Sie
-sind unterschiedliche Rechenpfade mit unterschiedlicher Nähe zur
-Energiebilanz, zu Gradienten und zu Profilannahmen. Für die eigentliche
-Auswertung wird der Paketpfad
+![](figures/fieldClim_theory.svg) Die Verfahren sind nicht als
+gleichartige Messverfahren zu lesen. Sie sind unterschiedliche
+Rechenpfade mit unterschiedlicher Nähe zur Energiebilanz, zu Gradienten
+und zu Profilannahmen. Für die eigentliche Auswertung wird der Paketpfad
 [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
 verwendet.
 
