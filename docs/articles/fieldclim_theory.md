@@ -120,7 +120,7 @@ A simple non-meteorological way to read the problem is this: the
 equation tells us what should add up. The method decides what to do when
 not all parts are known.
 
-![](figures/method_families_closure_logic.svg)
+![](figures/fieldClim_theory.svg)
 
 ## Energy-balance closure approaches in fieldClim
 
