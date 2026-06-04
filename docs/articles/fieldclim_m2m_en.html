@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Choosing fieldClim Heat-Flux Methods by Measurement Design • fieldClim</title>
+<title>fieldClim: Choosing fieldClim Heat-Flux Methods by Measurement Design • fieldClim</title>
 <!-- mathjax math --><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script><script>
   window.MathJax = {
     chtml: {
@@ -18,7 +18,7 @@
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<meta property="og:title" content="Choosing fieldClim Heat-Flux Methods by Measurement Design">
+<meta property="og:title" content="fieldClim: Choosing fieldClim Heat-Flux Methods by Measurement Design">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -49,7 +49,7 @@
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_flux_workflow_en.html">fieldClim: Heat-flux workflow with package methods</a></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_workflow_steps_en.html">fieldClim: Follow-up workflows and additional package functions</a></li>
-    <li><a class="dropdown-item" href="../articles/fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by Measurement Design</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_m2m_en.html">fieldClim: Choosing fieldClim Heat-Flux Methods by Measurement Design</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (DE)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data.html">fieldClim: Manuelle Datenprüfung für Energiebilanz und Wärmeflussmethoden</a></li>
@@ -76,10 +76,10 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Choosing fieldClim Heat-Flux Methods by Measurement Design</h1>
-            <h3 data-toc-skip class="subtitle">A decision guide for
-station architecture, reference surface, target quantity, and defensible
-findings</h3>
+      <h1>fieldClim: Choosing fieldClim Heat-Flux Methods by Measurement Design</h1>
+            <h3 data-toc-skip class="subtitle">A decision guide for one-
+and two-height station setups, canopy-layer context, target quantity,
+and defensible findings</h3>
                         <h4 data-toc-skip class="author">Jörg Bendix,
 Chris Reudenbach</h4>
             
@@ -96,13 +96,13 @@ Chris Reudenbach</h4>
 </h2>
 <p>This page is a practical decision guide. Its starting point is not
 the question “Which heat-flux method is best?”, but the question “What
-measurement architecture do I have, what reference surface do I mean,
+measurement architecture do I have, which exchange context do I mean,
 and what kind of finding can I defend from this dataset?”</p>
-<p>The same energy-balance equation can be used in very different
-epistemic ways. A one-height station with radiation and soil heat flux
-supports a different interpretation than a two-height profile station. A
-tower above or within a canopy requires an explicit reference-surface
-decision before any flux interpretation is meaningful.</p>
+<p>The same energy-balance equation can be used in very different ways.
+A one-height station with radiation and soil heat flux supports a
+different interpretation than a two-height profile station. A tower
+above, within, or below a canopy requires an explicit canopy-layer
+interpretation before any flux statement is meaningful.</p>
 <p>The core notation used here is:</p>
 <p><span class="math display">\[
 A = Q^* - B
@@ -120,91 +120,96 @@ soil heat flux into the soil as a sign convention. The real soil heat
 flux can change direction; this is represented by the sign of B.</p>
 </div>
 <div class="section level2">
-<h2 id="evidence-base-and-reference-frame">Evidence base and reference frame<a class="anchor" aria-label="anchor" href="#evidence-base-and-reference-frame"></a>
+<h2 id="operational-selection-matrix">Operational selection matrix<a class="anchor" aria-label="anchor" href="#operational-selection-matrix"></a>
 </h2>
-<p>This page separates implementation evidence from physical reference
-evidence. Implementation evidence describes what the current
-<code>fieldClim</code> code, tests, and generated documentation actually
-do. The current audit reports that the Bulk path estimates sensible heat
-with a neutral bulk aerodynamic-resistance structure and then defines
-latent heat as an algebraic residual in the Bulk–Residual workflow. It
-also reports that the optional <code>ri_guard</code> is a diagnostic
-filter rather than a full stability correction, and that Bulk must not
-be described as MOST.</p>
-<p>Physical reference evidence defines the method families:
-available-energy partitioning, Bowen-ratio energy balance, aerodynamic
-resistance or bulk transfer, Penman-type latent heat estimation, and
-Monin–Obukhov or profile-gradient diagnostics. These references provide
-the comparison frame, but they do not prove that every package
-implementation is a complete canonical implementation.</p>
-<p>Priestley–Taylor is treated here as an available-energy partitioning
-approach for latent heat. In the original formulation, evaporation is
-parameterized from available energy and a coefficient, rather than
-derived from a measured humidity-gradient flux.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Priestley, C. H. B., &amp;amp; Taylor, R. J. (1972). &lt;em&gt;On
-the Assessment of Surface Heat Flux and Evaporation Using Large-Scale
-Parameters&lt;/em&gt;. Monthly Weather Review, 100(2), 81–92. DOI:
-10.1175/1520-0493(1972)100&amp;lt;0081:OTAOSH&amp;gt;2.3.CO;2.&lt;/p&gt;"><sup>1</sup></a> In
-<code>fieldClim</code>, this role is mirrored by estimating LE_PT from
-available energy and a surface-dependent coefficient, while H_PT is the
-complement.</p>
-<p>Bowen-ratio methods are treated as gradient-based energy partitioning
-methods. Their key assumption is that the ratio of sensible to latent
-heat can be inferred from temperature and humidity or vapour-pressure
-gradients under suitable measurement conditions.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Bowen, I. S. (1926). &lt;em&gt;The ratio of heat losses by
-conduction and by evaporation from any water surface&lt;/em&gt;. Physical
-Review, 27, 779–787.&lt;/p&gt;"><sup>2</sup></a> Because this ratio
-becomes fragile when gradients are small or noisy, Bowen-ratio
-calculations require rejection or filtering logic in practical
-applications.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Ohmura, A. (1982). &lt;em&gt;Objective Criteria for Rejecting
-Data for Bowen Ratio Flux Calculations&lt;/em&gt;. Journal of Applied
-Meteorology, 21(4), 595–598. DOI:
-10.1175/1520-0450(1982)021&amp;lt;0595:OCFRDF&amp;gt;2.0.CO;2.&lt;/p&gt;"><sup>3</sup></a></p>
-<p>Penman-type methods are treated as latent-heat or
-evaporation-oriented methods. They combine available energy with an
-aerodynamic drying-power term and therefore produce an LE estimate
-rather than a complete paired H/LE solution.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Penman, H. L. (1948). &lt;em&gt;Natural Evaporation from Open
-Water, Bare Soil and Grass&lt;/em&gt;. Proceedings of the Royal Society of
-London. Series A, 193(1032), 120–145. DOI: 10.1098/rspa.1948.0037.&lt;/p&gt;"><sup>4</sup></a> This is why the Penman
-remainder is described here as an unresolved remainder, not as sensible
-heat.</p>
-<p>Monin–Obukhov Similarity Theory is the canonical reference frame for
-surface-layer profile-gradient and stability-based flux
-interpretation.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Monin, A. S., &amp;amp; Obukhov, A. M. (1954). &lt;em&gt;Basic
-laws of turbulent mixing in the surface layer of the atmosphere&lt;/em&gt;.
-Trudy Geofizicheskogo Instituta AN SSSR, 24, 163–187.&lt;/p&gt;"><sup>5</sup></a> In this page, however, the package method
-is deliberately called Monin/Profile diagnostic. This avoids overstating
-the implementation as a fully validated canonical MOST solution. Foken’s
-review of MOST provides the theoretical reference frame, but it is not
-evidence that the package implementation satisfies all canonical
-requirements.<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Foken, T. (2006). &lt;em&gt;50 Years of the Monin–Obukhov
-Similarity Theory&lt;/em&gt;. Boundary-Layer Meteorology, 119, 431–447. DOI:
-10.1007/s10546-006-9048-6.&lt;/p&gt;"><sup>6</sup></a></p>
-<p>The tables below are therefore decision-support tools, not a
-validation hierarchy. The implementation evidence tells us what the
-package computes. The micrometeorological references tell us which
-physical method family the computation resembles. Neither replaces
-independent field validation.</p>
+<p>This table is the practical entry point. It tells you what to run and
+what kind of statement can be defended from the dataset.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+</colgroup>
+<thead><tr class="header">
+<th>Measurement situation</th>
+<th>First decision</th>
+<th>Main method choice</th>
+<th>Secondary comparison</th>
+<th>Defensible finding</th>
+<th>Avoid claiming</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>One height plus Q* and B over a defined surface</td>
+<td>Treat as available-energy and LE-oriented setup</td>
+<td>Penman or Priestley–Taylor</td>
+<td>Available-energy diagnostics</td>
+<td>LE-oriented estimate, empirical partition, or unresolved
+remainder</td>
+<td>Direct gradient-based H</td>
+</tr>
+<tr class="even">
+<td>Two heights plus Q* and B over a defined surface</td>
+<td>Treat as two-height gradient setup</td>
+<td>Bulk–Residual for H and residual LE; Bowen if gradients are
+reliable</td>
+<td>Penman/PT comparison; Monin/Profile diagnostic</td>
+<td>Method-sensitive H/LE partition and closure behaviour</td>
+<td>Bulk closure as validation</td>
+</tr>
+<tr class="odd">
+<td>One height in canopy/tower context</td>
+<td>Define the canopy-layer context of that level</td>
+<td>Penman/PT only if Q* and B fit that layer</td>
+<td>Available-energy diagnostics</td>
+<td>Local ground, under-canopy, within-canopy, canopy-top, or
+above-canopy energy context</td>
+<td>Generic canopy flux</td>
+</tr>
+<tr class="even">
+<td>Two heights in canopy/tower context</td>
+<td>Define whether the target is within-canopy coupling, canopy-top
+exchange, or above-canopy exchange</td>
+<td>Bulk–Residual, Bowen, or Monin/Profile only with explicit height and
+roughness logic</td>
+<td>Penman/PT comparison if Q* and B are meaningful for the same
+layer</td>
+<td>Exchange diagnostics within or above the canopy layer</td>
+<td>Simple surface-layer flux without canopy-layer context</td>
+</tr>
+<tr class="odd">
+<td>Missing Q* or B</td>
+<td>Treat available energy as incomplete</td>
+<td>Profile-only diagnostics if two heights exist</td>
+<td>Penman only if required meteorology exists</td>
+<td>Incomplete flux comparison</td>
+<td>Energy-balance closure</td>
+</tr>
+</tbody>
+</table>
+<p>This table is not a validation hierarchy. It maps measurement design
+to defensible interpretation. A method is useful only if the dataset
+contains the information that the method actually uses.</p>
 </div>
 <div class="section level2">
-<h2 id="the-selection-problem">The selection problem<a class="anchor" aria-label="anchor" href="#the-selection-problem"></a>
+<h2 id="refinement-scheme">Refinement scheme<a class="anchor" aria-label="anchor" href="#refinement-scheme"></a>
 </h2>
-<p>A heat-flux method should be selected in three steps. First, define
-the reference surface. Second, identify the measurement architecture.
-Third, choose the target quantity or finding.</p>
-<p>This order matters. If the reference surface is unclear, the flux
-interpretation is underdefined. If the measurement architecture does not
-include vertical gradients, gradient-based methods are not defensible.
-If the target quantity is H, an LE-only method is not enough. If the
-target quantity is LE, a residual LE term is not the same as an
-independent evaporation estimate.</p>
+<p>After the operational table, the decision is refined in four steps:
+exchange context, measurement architecture, target finding, and method
+role. These steps prevent the common error of treating all methods as
+competing estimates of the same physical quantity.</p>
 <div class="section level3">
-<h3 id="step-1-define-the-reference-surface">Step 1: Define the reference surface<a class="anchor" aria-label="anchor" href="#step-1-define-the-reference-surface"></a>
+<h3 id="step-1-define-the-exchange-context">Step 1: Define the exchange context<a class="anchor" aria-label="anchor" href="#step-1-define-the-exchange-context"></a>
 </h3>
-<p>The reference surface is the surface to which the flux interpretation
-refers. Over a meadow or bare soil this is often straightforward. Over a
-forest, crop canopy, or tower profile it is not. A sensor above a
-canopy, a sensor within a canopy, and a sensor near the forest floor do
-not describe the same exchange surface.</p>
+<p>The exchange context is the physical layer to which the flux
+interpretation refers. Over short homogeneous surfaces such as meadow or
+bare soil, this is often straightforward. In canopy or tower setups it
+is not. A sensor near the forest floor, a sensor inside the canopy, a
+sensor near the canopy top, and a sensor above the canopy describe
+different exchange situations.</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -212,40 +217,45 @@ not describe the same exchange surface.</p>
 <col width="33%">
 </colgroup>
 <thead><tr class="header">
-<th>Reference situation</th>
+<th>Exchange context</th>
 <th>What must be clarified</th>
 <th>Consequence for method choice</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td>Short homogeneous surface, such as meadow or bare soil</td>
-<td>Sensor heights above the surface, Q*, B, wind exposure</td>
-<td>Bulk, Bowen, Priestley–Taylor, Penman, and profile diagnostics can
-be compared if data are available</td>
+<td>Sensor height above the surface, Q*, B, wind exposure</td>
+<td>One-height or two-height method choice is usually
+straightforward</td>
 </tr>
 <tr class="even">
 <td>Forest floor or under-canopy station</td>
-<td>Whether the target is ground microclimate or canopy exchange</td>
+<td>Whether the target is local ground microclimate or exchange with the
+canopy air space</td>
 <td>Available-energy and microclimate interpretation may be valid;
-above-canopy flux interpretation is not automatic</td>
+canopy-top exchange is not automatic</td>
 </tr>
 <tr class="odd">
-<td>Above-canopy tower</td>
-<td>Canopy-top reference, roughness length, displacement height,
-roughness sublayer</td>
-<td>Bulk and Monin/Profile become highly parameter- and
-reference-surface dependent</td>
+<td>Within-canopy layer</td>
+<td>Whether the target is vertical coupling or decoupling inside the
+canopy</td>
+<td>Treat primarily as canopy-layer exchange diagnosis, not as a simple
+surface-layer flux</td>
 </tr>
 <tr class="even">
-<td>Mixed within-canopy and above-canopy profile</td>
-<td>Whether the profile represents exchange, storage, or
-coupling/decoupling</td>
-<td>Treat primarily as process diagnosis, not as a simple surface-layer
-flux</td>
+<td>Canopy-top transition</td>
+<td>Whether the target is exchange across the canopy top</td>
+<td>Methods require explicit height and roughness interpretation</td>
 </tr>
 <tr class="odd">
-<td>Unknown or changing reference surface</td>
-<td>Reference level and surface properties are not defined</td>
+<td>Above-canopy layer</td>
+<td>Whether the target is exchange above the canopy</td>
+<td>Bulk and Monin/Profile become highly parameter- and reference-height
+dependent</td>
+</tr>
+<tr class="even">
+<td>Unknown canopy-layer context</td>
+<td>Exchange layer and reference height are not defined</td>
 <td>Do not report robust fluxes; report exploratory diagnostics
 only</td>
 </tr>
@@ -257,8 +267,11 @@ only</td>
 </h3>
 <p>The available station architecture controls which methods can be used
 defensibly. One height supports LE-oriented or available-energy
-interpretations. Two heights support direct H baselines and gradient
-partitioning.</p>
+interpretations. Two heights support gradient-based estimates and
+partitions. In the current fieldClim method set, profile-based heat-flux
+methods are effectively one- or two-height workflows. If more than two
+measurement heights exist, they must be reduced explicitly to a selected
+height pair before applying the two-height methods.</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -269,7 +282,7 @@ partitioning.</p>
 <thead><tr class="header">
 <th>Measurement architecture</th>
 <th>Data pattern</th>
-<th>Methods that are structurally supported</th>
+<th>Structurally supported methods</th>
 <th>Main finding type</th>
 </tr></thead>
 <tbody>
@@ -288,13 +301,21 @@ Penman</td>
 residual</td>
 </tr>
 <tr class="odd">
-<td>Canopy tower</td>
-<td>One or two relevant heights above, within, or below canopy; Q* and B
-may refer to different surfaces</td>
-<td>Only after reference-surface definition</td>
-<td>Canopy exchange or coupling/decoupling diagnosis</td>
+<td>One height in canopy/tower context</td>
+<td>One selected level within, below, near, or above canopy</td>
+<td>Priestley–Taylor, Penman, available-energy diagnostics if Q* and B
+fit the same context</td>
+<td>Local energy and microclimate interpretation</td>
 </tr>
 <tr class="even">
+<td>Two heights in canopy/tower context</td>
+<td>Two selected levels assigned to a canopy-layer exchange context</td>
+<td>Bulk–Residual, Bowen, Monin/Profile diagnostic only with explicit
+height and roughness logic</td>
+<td>Within-canopy coupling, canopy-top exchange, or above-canopy
+exchange diagnostics</td>
+</tr>
+<tr class="odd">
 <td>Missing Q* or B</td>
 <td>Profile information may exist, but available energy is
 incomplete</td>
@@ -365,13 +386,116 @@ empirical partitioning</td>
 </tbody>
 </table>
 </div>
+<div class="section level3">
+<h3 id="step-4-translate-method-output-into-a-finding">Step 4: Translate method output into a finding<a class="anchor" aria-label="anchor" href="#step-4-translate-method-output-into-a-finding"></a>
+</h3>
+<p>The final step is to translate the selected method into a defensible
+statement. This is where most interpretation errors occur. The same
+numerical output can mean a direct estimate, an empirical partition, a
+residual definition, or a diagnostic remainder.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Method</th>
+<th>What the method determines</th>
+<th>What the result means</th>
+<th>What the result does not prove</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>Priestley–Taylor</td>
+<td>LE_PT from available energy and empirical partitioning</td>
+<td>LE-oriented partition; H_PT is the complement</td>
+<td>Independent H or validation of alpha_PT</td>
+</tr>
+<tr class="even">
+<td>Bulk–Residual</td>
+<td>H_bulk from a two-height temperature gradient and exchange
+assumption</td>
+<td>Direct H estimate plus residual LE definition</td>
+<td>Physical validation of H_bulk or independent LE</td>
+</tr>
+<tr class="odd">
+<td>Bowen Ratio</td>
+<td>H/LE partition from gradient ratio beta</td>
+<td>Partition based on T/RH gradients</td>
+<td>Robustness under weak or noisy gradients</td>
+</tr>
+<tr class="even">
+<td>Penman</td>
+<td>LE_Penman</td>
+<td>LE-oriented estimate and unresolved energy remainder</td>
+<td>Paired H estimate</td>
+</tr>
+<tr class="odd">
+<td>Monin/Profile diagnostic</td>
+<td>H_MO and LE_MO from profile/stability logic</td>
+<td>Diagnostic profile result with visible residual</td>
+<td>Energy-balance closure or automatic MOST truth</td>
+</tr>
+<tr class="even">
+<td>Closure diagnostics</td>
+<td>R_E, closure ratio, open remainders</td>
+<td>Semantics of closure, residual, or open remainder</td>
+<td>New flux estimate</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 <div class="section level2">
-<h2 id="decision-scheme-by-dataset">Decision scheme by dataset<a class="anchor" aria-label="anchor" href="#decision-scheme-by-dataset"></a>
+<h2 id="evidence-base-and-reference-frame">Evidence base and reference frame<a class="anchor" aria-label="anchor" href="#evidence-base-and-reference-frame"></a>
 </h2>
-<div class="section level3">
-<h3 id="case-a-one-height-station-with-radiation-and-soil-heat-flux">Case A: One-height station with radiation and soil heat flux<a class="anchor" aria-label="anchor" href="#case-a-one-height-station-with-radiation-and-soil-heat-flux"></a>
-</h3>
+<p>This page separates implementation evidence from physical reference
+evidence. Implementation evidence describes what the current
+<code>fieldClim</code> code, tests, and generated documentation actually
+do. The current implementation audit reports that the Bulk path
+estimates sensible heat with a neutral bulk aerodynamic-resistance
+structure and then defines latent heat as an algebraic residual in the
+Bulk–Residual workflow. It also reports that the optional
+<code>ri_guard</code> is a diagnostic filter rather than a full
+stability correction, and that Bulk must not be described as MOST.</p>
+<p>Physical reference evidence defines the method families:
+available-energy partitioning, Bowen-ratio energy balance, aerodynamic
+resistance or bulk transfer, Penman-type latent heat estimation, and
+Monin–Obukhov or profile-gradient diagnostics. These references provide
+the comparison frame, but they do not prove that every package
+implementation is a complete canonical implementation.</p>
+<p>Priestley–Taylor is treated here as an available-energy partitioning
+approach for latent heat. In the original formulation, evaporation is
+parameterized from available energy and a coefficient rather than
+derived from a measured humidity-gradient flux <span class="citation">(Priestley and Taylor 1972)</span>. In fieldClim, this
+role is mirrored by estimating LE_PT from available energy and a
+surface-dependent coefficient, while H_PT is the complement.</p>
+<p>Bowen-ratio methods are treated as gradient-based energy partitioning
+methods. Their key assumption is that the ratio of sensible to latent
+heat can be inferred from temperature and humidity or vapour-pressure
+gradients under suitable measurement conditions <span class="citation">(<strong>bowen1926?</strong>)</span>. Because this
+ratio becomes fragile when gradients are small or noisy, Bowen-ratio
+calculations require rejection or filtering logic in practical
+applications <span class="citation">(<strong>ohmura1982?</strong>)</span>.</p>
+<p>Penman-type methods are treated as latent-heat or
+evaporation-oriented methods. They combine available energy with an
+aerodynamic drying-power term and therefore produce an LE estimate
+rather than a complete paired H/LE solution <span class="citation">(Penman 1948)</span>. This is why the Penman remainder
+is described here as an unresolved remainder, not as sensible heat.</p>
+<p>Monin–Obukhov Similarity Theory is the canonical reference frame for
+surface-layer profile-gradient and stability-based flux interpretation
+<span class="citation">(<strong>monin1954?</strong>)</span>. In this
+page, however, the package method is deliberately called Monin/Profile
+diagnostic. This avoids overstating the implementation as a fully
+validated canonical MOST solution. Foken’s review of MOST provides the
+theoretical reference frame, but it is not evidence that the package
+implementation satisfies all canonical requirements <span class="citation">(Foken 2006)</span>.</p>
+</div>
+<div class="section level2">
+<h2 id="case-a-one-height-station-with-radiation-and-soil-heat-flux">Case A: One-height station with radiation and soil heat flux<a class="anchor" aria-label="anchor" href="#case-a-one-height-station-with-radiation-and-soil-heat-flux"></a>
+</h2>
 <p>A one-height station can define available energy but cannot estimate
 H from a vertical air-temperature gradient. It can support
 Priestley–Taylor, Penman, and basic energy-balance interpretation.</p>
@@ -429,9 +553,9 @@ B. Latent heat was estimated using Penman or Priestley–Taylor. A direct
 gradient-based sensible heat estimate was not possible from this
 dataset.”</p>
 </div>
-<div class="section level3">
-<h3 id="case-b-two-height-station-over-a-defined-reference-surface">Case B: Two-height station over a defined reference surface<a class="anchor" aria-label="anchor" href="#case-b-two-height-station-over-a-defined-reference-surface"></a>
-</h3>
+<div class="section level2">
+<h2 id="case-b-two-height-station-over-a-defined-reference-surface">Case B: Two-height station over a defined reference surface<a class="anchor" aria-label="anchor" href="#case-b-two-height-station-over-a-defined-reference-surface"></a>
+</h2>
 <p>A two-height station is the first configuration that supports
 gradient-based interpretation. If T, RH, and u are measured at two known
 heights, the station can support Bulk, Bowen, and Monin/Profile
@@ -496,14 +620,21 @@ the vertical temperature gradient and defined latent heat as the
 remaining available energy. The resulting closure is algebraic and
 follows by definition.”</p>
 </div>
-<div class="section level3">
-<h3 id="case-c-tower-above-or-within-canopy">Case C: Tower above or within canopy<a class="anchor" aria-label="anchor" href="#case-c-tower-above-or-within-canopy"></a>
-</h3>
-<p>A canopy tower must not be treated like a simple meadow profile
-unless the reference surface is explicitly defined. Above-canopy
-measurements may describe exchange above the canopy. Within-canopy
-gradients may describe coupling, storage, or decoupling rather than a
-surface-layer flux.</p>
+<div class="section level2">
+<h2 id="case-c-canopy-layer-and-tower-setup">Case C: Canopy-layer and tower setup<a class="anchor" aria-label="anchor" href="#case-c-canopy-layer-and-tower-setup"></a>
+</h2>
+<p>A canopy or tower setup is not just a question of sensor height above
+ground. The central question is which exchange layer is being
+interpreted: the under-canopy air space, the within-canopy layer, the
+canopy-top transition, or the above-canopy layer. A sensor pair inside
+the canopy, across the canopy top, or above the canopy represents
+different physical processes.</p>
+<p>If one relevant height is used, the result mainly describes the local
+microclimate and available-energy state at that level. If two relevant
+heights are used, Bulk–Residual, Bowen, or Monin/Profile diagnostics can
+be used only after the height pair has been assigned to a canopy-layer
+interpretation. The result should then be reported as exchange or
+coupling diagnostics, not as a generic surface-layer flux.</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -512,44 +643,61 @@ surface-layer flux.</p>
 <col width="25%">
 </colgroup>
 <thead><tr class="header">
-<th>Tower situation</th>
+<th>Canopy / tower situation</th>
 <th>First decision</th>
 <th>Method role</th>
 <th>Reportable finding</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>Both levels above canopy</td>
-<td>Define canopy-top or aerodynamic reference</td>
-<td>Bulk as cautious baseline; Monin/Profile diagnostic</td>
-<td>Above-canopy exchange comparison</td>
-</tr>
-<tr class="even">
-<td>One level inside canopy and one above canopy</td>
-<td>Define whether exchange or coupling is the target</td>
-<td>Diagnostic only</td>
-<td>Canopy coupling or decoupling signal</td>
-</tr>
-<tr class="odd">
-<td>Forest-floor station under canopy</td>
-<td>Define ground as reference</td>
-<td>Available energy and microclimate state near ground</td>
+<td>One height near forest floor or below canopy</td>
+<td>Define local ground or under-canopy context</td>
+<td>Penman, Priestley–Taylor, available-energy diagnostics if Q* and B
+fit that context</td>
 <td>Local under-canopy energy context</td>
 </tr>
 <tr class="even">
-<td>Unknown reference surface</td>
+<td>One height within canopy</td>
+<td>Define local within-canopy context</td>
+<td>Penman, Priestley–Taylor, available-energy diagnostics if Q* and B
+fit that context</td>
+<td>Local within-canopy energy context</td>
+</tr>
+<tr class="odd">
+<td>Two heights within canopy</td>
+<td>Define whether the target is vertical coupling inside the
+canopy</td>
+<td>Diagnostic only; Bulk/Bowen only with caution</td>
+<td>Within-canopy coupling or decoupling signal</td>
+</tr>
+<tr class="even">
+<td>One height within canopy and one height above canopy</td>
+<td>Define whether the target is canopy-top exchange</td>
+<td>Bulk–Residual, Bowen, or Monin/Profile only with explicit height and
+roughness logic</td>
+<td>Canopy-top exchange diagnostic</td>
+</tr>
+<tr class="odd">
+<td>Two heights above canopy</td>
+<td>Define the above-canopy reference layer</td>
+<td>Bulk–Residual, Bowen, or Monin/Profile diagnostic</td>
+<td>Above-canopy exchange comparison</td>
+</tr>
+<tr class="even">
+<td>Unknown canopy-layer context</td>
 <td>Do not force flux interpretation</td>
 <td>Exploratory diagnostics only</td>
 <td>Flux interpretation remains underdefined</td>
 </tr>
 </tbody>
 </table>
-<p>A defensible wording is: “The interpretation depends on the chosen
-reference surface. Above-canopy gradients can support an exchange
-diagnostic if roughness and reference-height assumptions are explicit;
-within-canopy gradients should be treated primarily as coupling or
-decoupling diagnostics.”</p>
-</div>
+<p>A defensible wording is: “The interpretation depends on the
+canopy-layer exchange context. Within-canopy gradients describe coupling
+or decoupling inside the canopy. Gradients across the canopy top may
+support canopy-top exchange diagnostics if height and roughness
+assumptions are explicit. Above-canopy gradients may support
+above-canopy exchange comparison, but should not be treated as generic
+surface-layer fluxes without context.”</p>
 </div>
 <div class="section level2">
 <h2 id="method-roles-in-the-implemented-canon">Method roles in the implemented canon<a class="anchor" aria-label="anchor" href="#method-roles-in-the-implemented-canon"></a>
@@ -615,60 +763,6 @@ H_bulk</td>
 <td>No flux is computed</td>
 <td>Interpreting method semantics</td>
 <td>Diagnostic only</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level2">
-<h2 id="operational-selection-matrix">Operational selection matrix<a class="anchor" aria-label="anchor" href="#operational-selection-matrix"></a>
-</h2>
-<p>This table is the practical tool for deciding what to run and what to
-report.</p>
-<table class="table">
-<colgroup>
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
-</colgroup>
-<thead><tr class="header">
-<th>Measurement architecture</th>
-<th>Main method choice</th>
-<th>Secondary comparison</th>
-<th>Reportable finding</th>
-<th>Avoid claiming</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td>One height plus Q*, B</td>
-<td>Penman or Priestley–Taylor</td>
-<td>Available-energy diagnostics</td>
-<td>LE-oriented estimate or partition</td>
-<td>Direct gradient-based H</td>
-</tr>
-<tr class="even">
-<td>Two heights plus Q*, B</td>
-<td>Bulk–Residual for H and residual LE; Bowen if gradients are
-reliable</td>
-<td>Penman/PT comparison; Monin/Profile diagnostic</td>
-<td>Method-sensitive H/LE partition</td>
-<td>Bulk closure as validation</td>
-</tr>
-<tr class="odd">
-<td>One or two heights in canopy/tower context</td>
-<td>Reference-surface diagnosis first</td>
-<td>Bulk–Residual, Bowen, or Monin/Profile only with explicit
-height/roughness logic</td>
-<td>Ground, canopy, or above-canopy diagnostic interpretation</td>
-<td>Simple surface-layer flux without reference definition</td>
-</tr>
-<tr class="even">
-<td>Missing Q* or B</td>
-<td>Profile-only diagnostics if two heights exist</td>
-<td>Penman if required meteorology exists</td>
-<td>Incomplete flux comparison</td>
-<td>Energy-balance closure</td>
 </tr>
 </tbody>
 </table>
@@ -763,11 +857,26 @@ gradients. Penman estimates latent heat and leaves the remaining energy
 unresolved. Monin/Profile provides a process-oriented diagnostic and
 keeps the residual visible.</p>
 </div>
-<div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<div class="section level2 unnumbered">
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-foken2006" class="csl-entry">
+Foken, Thomas. 2006. <span>“50 Years of the Monin–Obukhov Similarity
+Theory.”</span> <em>Boundary-Layer Meteorology</em> 119: 431–47. <a href="https://doi.org/10.1007/s10546-006-9048-6" class="external-link">https://doi.org/10.1007/s10546-006-9048-6</a>.
 </div>
-
+<div id="ref-penman1948" class="csl-entry">
+Penman, Howard L. 1948. <span>“Natural Evaporation from Open Water, Bare
+Soil and Grass.”</span> <em>Proceedings of the Royal Society of London.
+Series A</em> 193 (1032): 120–45. <a href="https://doi.org/10.1098/rspa.1948.0037" class="external-link">https://doi.org/10.1098/rspa.1948.0037</a>.
+</div>
+<div id="ref-priestley1972" class="csl-entry">
+Priestley, C. H. B., and R. J. Taylor. 1972. <span>“On the Assessment of
+Surface Heat Flux and Evaporation Using Large-Scale Parameters.”</span>
+<em>Monthly Weather Review</em> 100 (2): 81–92. <a href="https://doi.org/10.1175/1520-0493(1972)100%3C0081:OTAOSH%3E2.3.CO;2" class="external-link">https://doi.org/10.1175/1520-0493(1972)100&lt;0081:OTAOSH&gt;2.3.CO;2</a>.
+</div>
+</div>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

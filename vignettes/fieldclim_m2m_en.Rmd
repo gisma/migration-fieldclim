@@ -1,8 +1,9 @@
 ---
-title: "Choosing fieldClim Heat-Flux Methods by Measurement Design"
-subtitle: "A decision guide for station architecture, reference surface, target quantity, and defensible findings"
+title: "fieldClim: Choosing fieldClim Heat-Flux Methods by Measurement Design"
+subtitle: "A decision guide for one- and two-height station setups, canopy-layer context, target quantity, and defensible findings"
 author: "Jörg Bendix, Chris Reudenbach"
 date: "2026-06-01"
+bibliography: fieldclim-methods.bib
 format:
   html:
     toc: true
@@ -16,9 +17,9 @@ execute:
 
 ## Purpose
 
-This page is a practical decision guide. Its starting point is not the question “Which heat-flux method is best?”, but the question “What measurement architecture do I have, what reference surface do I mean, and what kind of finding can I defend from this dataset?”
+This page is a practical decision guide. Its starting point is not the question “Which heat-flux method is best?”, but the question “What measurement architecture do I have, which exchange context do I mean, and what kind of finding can I defend from this dataset?”
 
-The same energy-balance equation can be used in very different epistemic ways. A one-height station with radiation and soil heat flux supports a different interpretation than a two-height profile station. A tower above or within a canopy requires an explicit reference-surface decision before any flux interpretation is meaningful.
+The same energy-balance equation can be used in very different ways. A one-height station with radiation and soil heat flux supports a different interpretation than a two-height profile station. A tower above, within, or below a canopy requires an explicit canopy-layer interpretation before any flux statement is meaningful.
 
 The core notation used here is:
 
@@ -36,49 +37,47 @@ $$
 
 Here, Q* means net radiation, B means soil heat flux, A means available energy, H means sensible heat flux, LE means latent heat flux, and R_E means the residual or non-closed energy term. Positive B means soil heat flux into the soil as a sign convention. The real soil heat flux can change direction; this is represented by the sign of B.
 
-## Evidence base and reference frame
+## Operational selection matrix
 
-This page separates implementation evidence from physical reference evidence. Implementation evidence describes what the current `fieldClim` code, tests, and generated documentation actually do. The current audit reports that the Bulk path estimates sensible heat with a neutral bulk aerodynamic-resistance structure and then defines latent heat as an algebraic residual in the Bulk–Residual workflow. It also reports that the optional `ri_guard` is a diagnostic filter rather than a full stability correction, and that Bulk must not be described as MOST.
+This table is the practical entry point. It tells you what to run and what kind of statement can be defended from the dataset.
 
-Physical reference evidence defines the method families: available-energy partitioning, Bowen-ratio energy balance, aerodynamic resistance or bulk transfer, Penman-type latent heat estimation, and Monin–Obukhov or profile-gradient diagnostics. These references provide the comparison frame, but they do not prove that every package implementation is a complete canonical implementation.
+| Measurement situation | First decision | Main method choice | Secondary comparison | Defensible finding | Avoid claiming |
+|---|---|---|---|---|---|
+| One height plus Q* and B over a defined surface | Treat as available-energy and LE-oriented setup | Penman or Priestley–Taylor | Available-energy diagnostics | LE-oriented estimate, empirical partition, or unresolved remainder | Direct gradient-based H |
+| Two heights plus Q* and B over a defined surface | Treat as two-height gradient setup | Bulk–Residual for H and residual LE; Bowen if gradients are reliable | Penman/PT comparison; Monin/Profile diagnostic | Method-sensitive H/LE partition and closure behaviour | Bulk closure as validation |
+| One height in canopy/tower context | Define the canopy-layer context of that level | Penman/PT only if Q* and B fit that layer | Available-energy diagnostics | Local ground, under-canopy, within-canopy, canopy-top, or above-canopy energy context | Generic canopy flux |
+| Two heights in canopy/tower context | Define whether the target is within-canopy coupling, canopy-top exchange, or above-canopy exchange | Bulk–Residual, Bowen, or Monin/Profile only with explicit height and roughness logic | Penman/PT comparison if Q* and B are meaningful for the same layer | Exchange diagnostics within or above the canopy layer | Simple surface-layer flux without canopy-layer context |
+| Missing Q* or B | Treat available energy as incomplete | Profile-only diagnostics if two heights exist | Penman only if required meteorology exists | Incomplete flux comparison | Energy-balance closure |
 
-Priestley–Taylor is treated here as an available-energy partitioning approach for latent heat. In the original formulation, evaporation is parameterized from available energy and a coefficient, rather than derived from a measured humidity-gradient flux.[^priestley1972] In `fieldClim`, this role is mirrored by estimating LE_PT from available energy and a surface-dependent coefficient, while H_PT is the complement.
+This table is not a validation hierarchy. It maps measurement design to defensible interpretation. A method is useful only if the dataset contains the information that the method actually uses.
 
-Bowen-ratio methods are treated as gradient-based energy partitioning methods. Their key assumption is that the ratio of sensible to latent heat can be inferred from temperature and humidity or vapour-pressure gradients under suitable measurement conditions.[^bowen1926] Because this ratio becomes fragile when gradients are small or noisy, Bowen-ratio calculations require rejection or filtering logic in practical applications.[^ohmura1982]
+## Refinement scheme
 
-Penman-type methods are treated as latent-heat or evaporation-oriented methods. They combine available energy with an aerodynamic drying-power term and therefore produce an LE estimate rather than a complete paired H/LE solution.[^penman1948] This is why the Penman remainder is described here as an unresolved remainder, not as sensible heat.
+After the operational table, the decision is refined in four steps: exchange context, measurement architecture, target finding, and method role. These steps prevent the common error of treating all methods as competing estimates of the same physical quantity.
 
-Monin–Obukhov Similarity Theory is the canonical reference frame for surface-layer profile-gradient and stability-based flux interpretation.[^monin1954] In this page, however, the package method is deliberately called Monin/Profile diagnostic. This avoids overstating the implementation as a fully validated canonical MOST solution. Foken’s review of MOST provides the theoretical reference frame, but it is not evidence that the package implementation satisfies all canonical requirements.[^foken2006]
+### Step 1: Define the exchange context
 
-The tables below are therefore decision-support tools, not a validation hierarchy. The implementation evidence tells us what the package computes. The micrometeorological references tell us which physical method family the computation resembles. Neither replaces independent field validation.
+The exchange context is the physical layer to which the flux interpretation refers. Over short homogeneous surfaces such as meadow or bare soil, this is often straightforward. In canopy or tower setups it is not. A sensor near the forest floor, a sensor inside the canopy, a sensor near the canopy top, and a sensor above the canopy describe different exchange situations.
 
-## The selection problem
-
-A heat-flux method should be selected in three steps. First, define the reference surface. Second, identify the measurement architecture. Third, choose the target quantity or finding.
-
-This order matters. If the reference surface is unclear, the flux interpretation is underdefined. If the measurement architecture does not include vertical gradients, gradient-based methods are not defensible. If the target quantity is H, an LE-only method is not enough. If the target quantity is LE, a residual LE term is not the same as an independent evaporation estimate.
-
-### Step 1: Define the reference surface
-
-The reference surface is the surface to which the flux interpretation refers. Over a meadow or bare soil this is often straightforward. Over a forest, crop canopy, or tower profile it is not. A sensor above a canopy, a sensor within a canopy, and a sensor near the forest floor do not describe the same exchange surface.
-
-| Reference situation | What must be clarified | Consequence for method choice |
+| Exchange context | What must be clarified | Consequence for method choice |
 |---|---|---|
-| Short homogeneous surface, such as meadow or bare soil | Sensor heights above the surface, Q*, B, wind exposure | Bulk, Bowen, Priestley–Taylor, Penman, and profile diagnostics can be compared if data are available |
-| Forest floor or under-canopy station | Whether the target is ground microclimate or canopy exchange | Available-energy and microclimate interpretation may be valid; above-canopy flux interpretation is not automatic |
-| Above-canopy tower | Canopy-top reference, roughness length, displacement height, roughness sublayer | Bulk and Monin/Profile become highly parameter- and reference-surface dependent |
-| Mixed within-canopy and above-canopy profile | Whether the profile represents exchange, storage, or coupling/decoupling | Treat primarily as process diagnosis, not as a simple surface-layer flux |
-| Unknown or changing reference surface | Reference level and surface properties are not defined | Do not report robust fluxes; report exploratory diagnostics only |
+| Short homogeneous surface, such as meadow or bare soil | Sensor height above the surface, Q*, B, wind exposure | One-height or two-height method choice is usually straightforward |
+| Forest floor or under-canopy station | Whether the target is local ground microclimate or exchange with the canopy air space | Available-energy and microclimate interpretation may be valid; canopy-top exchange is not automatic |
+| Within-canopy layer | Whether the target is vertical coupling or decoupling inside the canopy | Treat primarily as canopy-layer exchange diagnosis, not as a simple surface-layer flux |
+| Canopy-top transition | Whether the target is exchange across the canopy top | Methods require explicit height and roughness interpretation |
+| Above-canopy layer | Whether the target is exchange above the canopy | Bulk and Monin/Profile become highly parameter- and reference-height dependent |
+| Unknown canopy-layer context | Exchange layer and reference height are not defined | Do not report robust fluxes; report exploratory diagnostics only |
 
 ### Step 2: Identify the measurement architecture
 
-The available station architecture controls which methods can be used defensibly. One height supports LE-oriented or available-energy interpretations. Two heights support direct H baselines and gradient partitioning.
+The available station architecture controls which methods can be used defensibly. One height supports LE-oriented or available-energy interpretations. Two heights support gradient-based estimates and partitions. In the current fieldClim method set, profile-based heat-flux methods are effectively one- or two-height workflows. If more than two measurement heights exist, they must be reduced explicitly to a selected height pair before applying the two-height methods.
 
-| Measurement architecture | Data pattern | Methods that are structurally supported | Main finding type |
+| Measurement architecture | Data pattern | Structurally supported methods | Main finding type |
 |---|---|---|---|
 | One height with Q* and B | T, RH, u at one height; Q*; B | Priestley–Taylor, Penman, available-energy diagnostics | LE-oriented estimate, partition, or unresolved remainder |
 | Two heights with Q* and B | T, RH, u at two heights; Q*; B | Bulk–Residual, Bowen, Monin/Profile diagnostic, Priestley–Taylor, Penman | H baseline, H/LE partition, method comparison, diagnostic residual |
-| Canopy tower | One or two relevant heights above, within, or below canopy; Q* and B may refer to different surfaces | Only after reference-surface definition | Canopy exchange or coupling/decoupling diagnosis |
+| One height in canopy/tower context | One selected level within, below, near, or above canopy | Priestley–Taylor, Penman, available-energy diagnostics if Q* and B fit the same context | Local energy and microclimate interpretation |
+| Two heights in canopy/tower context | Two selected levels assigned to a canopy-layer exchange context | Bulk–Residual, Bowen, Monin/Profile diagnostic only with explicit height and roughness logic | Within-canopy coupling, canopy-top exchange, or above-canopy exchange diagnostics |
 | Missing Q* or B | Profile information may exist, but available energy is incomplete | Profile-only diagnostics or partial Penman-type comparison | Incomplete flux interpretation |
 
 ### Step 3: Choose the target finding
@@ -94,9 +93,34 @@ The target finding determines the method role. The same dataset can support seve
 | Formal closure demonstration | Bulk–Residual, Priestley–Taylor, Bowen | H + LE equals A because of definition or partition assumption | Formal closure proves physical accuracy |
 | Open residual diagnosis | Penman remainder, Monin/Profile residual | The unresolved part remains visible | The residual is automatically a known physical flux |
 
-## Decision scheme by dataset
+### Step 4: Translate method output into a finding
 
-### Case A: One-height station with radiation and soil heat flux
+The final step is to translate the selected method into a defensible statement. This is where most interpretation errors occur. The same numerical output can mean a direct estimate, an empirical partition, a residual definition, or a diagnostic remainder.
+
+| Method | What the method determines | What the result means | What the result does not prove |
+|---|---|---|---|
+| Priestley–Taylor | LE_PT from available energy and empirical partitioning | LE-oriented partition; H_PT is the complement | Independent H or validation of alpha_PT |
+| Bulk–Residual | H_bulk from a two-height temperature gradient and exchange assumption | Direct H estimate plus residual LE definition | Physical validation of H_bulk or independent LE |
+| Bowen Ratio | H/LE partition from gradient ratio beta | Partition based on T/RH gradients | Robustness under weak or noisy gradients |
+| Penman | LE_Penman | LE-oriented estimate and unresolved energy remainder | Paired H estimate |
+| Monin/Profile diagnostic | H_MO and LE_MO from profile/stability logic | Diagnostic profile result with visible residual | Energy-balance closure or automatic MOST truth |
+| Closure diagnostics | R_E, closure ratio, open remainders | Semantics of closure, residual, or open remainder | New flux estimate |
+
+## Evidence base and reference frame
+
+This page separates implementation evidence from physical reference evidence. Implementation evidence describes what the current `fieldClim` code, tests, and generated documentation actually do. The current implementation audit reports that the Bulk path estimates sensible heat with a neutral bulk aerodynamic-resistance structure and then defines latent heat as an algebraic residual in the Bulk–Residual workflow. It also reports that the optional `ri_guard` is a diagnostic filter rather than a full stability correction, and that Bulk must not be described as MOST.
+
+Physical reference evidence defines the method families: available-energy partitioning, Bowen-ratio energy balance, aerodynamic resistance or bulk transfer, Penman-type latent heat estimation, and Monin–Obukhov or profile-gradient diagnostics. These references provide the comparison frame, but they do not prove that every package implementation is a complete canonical implementation.
+
+Priestley–Taylor is treated here as an available-energy partitioning approach for latent heat. In the original formulation, evaporation is parameterized from available energy and a coefficient rather than derived from a measured humidity-gradient flux [@priestley1972]. In fieldClim, this role is mirrored by estimating LE_PT from available energy and a surface-dependent coefficient, while H_PT is the complement.
+
+Bowen-ratio methods are treated as gradient-based energy partitioning methods. Their key assumption is that the ratio of sensible to latent heat can be inferred from temperature and humidity or vapour-pressure gradients under suitable measurement conditions [@bowen1926]. Because this ratio becomes fragile when gradients are small or noisy, Bowen-ratio calculations require rejection or filtering logic in practical applications [@ohmura1982].
+
+Penman-type methods are treated as latent-heat or evaporation-oriented methods. They combine available energy with an aerodynamic drying-power term and therefore produce an LE estimate rather than a complete paired H/LE solution [@penman1948]. This is why the Penman remainder is described here as an unresolved remainder, not as sensible heat.
+
+Monin–Obukhov Similarity Theory is the canonical reference frame for surface-layer profile-gradient and stability-based flux interpretation [@monin1954]. In this page, however, the package method is deliberately called Monin/Profile diagnostic. This avoids overstating the implementation as a fully validated canonical MOST solution. Foken’s review of MOST provides the theoretical reference frame, but it is not evidence that the package implementation satisfies all canonical requirements [@foken2006].
+
+## Case A: One-height station with radiation and soil heat flux
 
 A one-height station can define available energy but cannot estimate H from a vertical air-temperature gradient. It can support Priestley–Taylor, Penman, and basic energy-balance interpretation.
 
@@ -126,7 +150,7 @@ U_Penman is an unresolved energy remainder. It can contain sensible heat, closur
 
 A defensible wording is: “Available energy was quantified as A = Q* − B. Latent heat was estimated using Penman or Priestley–Taylor. A direct gradient-based sensible heat estimate was not possible from this dataset.”
 
-### Case B: Two-height station over a defined reference surface
+## Case B: Two-height station over a defined reference surface
 
 A two-height station is the first configuration that supports gradient-based interpretation. If T, RH, and u are measured at two known heights, the station can support Bulk, Bowen, and Monin/Profile diagnostics, in addition to Priestley–Taylor and Penman.
 
@@ -159,18 +183,22 @@ This does not validate H_bulk. It only states how LE_res was defined.
 
 A defensible wording is: “Bulk–Residual estimated sensible heat from the vertical temperature gradient and defined latent heat as the remaining available energy. The resulting closure is algebraic and follows by definition.”
 
-### Case C: Tower above or within canopy
+## Case C: Canopy-layer and tower setup
 
-A canopy tower must not be treated like a simple meadow profile unless the reference surface is explicitly defined. Above-canopy measurements may describe exchange above the canopy. Within-canopy gradients may describe coupling, storage, or decoupling rather than a surface-layer flux.
+A canopy or tower setup is not just a question of sensor height above ground. The central question is which exchange layer is being interpreted: the under-canopy air space, the within-canopy layer, the canopy-top transition, or the above-canopy layer. A sensor pair inside the canopy, across the canopy top, or above the canopy represents different physical processes.
 
-| Tower situation | First decision | Method role | Reportable finding |
+If one relevant height is used, the result mainly describes the local microclimate and available-energy state at that level. If two relevant heights are used, Bulk–Residual, Bowen, or Monin/Profile diagnostics can be used only after the height pair has been assigned to a canopy-layer interpretation. The result should then be reported as exchange or coupling diagnostics, not as a generic surface-layer flux.
+
+| Canopy / tower situation | First decision | Method role | Reportable finding |
 |---|---|---|---|
-| Both levels above canopy | Define canopy-top or aerodynamic reference | Bulk as cautious baseline; Monin/Profile diagnostic | Above-canopy exchange comparison |
-| One level inside canopy and one above canopy | Define whether exchange or coupling is the target | Diagnostic only | Canopy coupling or decoupling signal |
-| Forest-floor station under canopy | Define ground as reference | Available energy and microclimate state near ground | Local under-canopy energy context |
-| Unknown reference surface | Do not force flux interpretation | Exploratory diagnostics only | Flux interpretation remains underdefined |
+| One height near forest floor or below canopy | Define local ground or under-canopy context | Penman, Priestley–Taylor, available-energy diagnostics if Q* and B fit that context | Local under-canopy energy context |
+| One height within canopy | Define local within-canopy context | Penman, Priestley–Taylor, available-energy diagnostics if Q* and B fit that context | Local within-canopy energy context |
+| Two heights within canopy | Define whether the target is vertical coupling inside the canopy | Diagnostic only; Bulk/Bowen only with caution | Within-canopy coupling or decoupling signal |
+| One height within canopy and one height above canopy | Define whether the target is canopy-top exchange | Bulk–Residual, Bowen, or Monin/Profile only with explicit height and roughness logic | Canopy-top exchange diagnostic |
+| Two heights above canopy | Define the above-canopy reference layer | Bulk–Residual, Bowen, or Monin/Profile diagnostic | Above-canopy exchange comparison |
+| Unknown canopy-layer context | Do not force flux interpretation | Exploratory diagnostics only | Flux interpretation remains underdefined |
 
-A defensible wording is: “The interpretation depends on the chosen reference surface. Above-canopy gradients can support an exchange diagnostic if roughness and reference-height assumptions are explicit; within-canopy gradients should be treated primarily as coupling or decoupling diagnostics.”
+A defensible wording is: “The interpretation depends on the canopy-layer exchange context. Within-canopy gradients describe coupling or decoupling inside the canopy. Gradients across the canopy top may support canopy-top exchange diagnostics if height and roughness assumptions are explicit. Above-canopy gradients may support above-canopy exchange comparison, but should not be treated as generic surface-layer fluxes without context.”
 
 ## Method roles in the implemented canon
 
@@ -184,17 +212,6 @@ The methods are not competitors in a single accuracy ranking. They determine dif
 | Penman | LE_Penman | U_Penman remains open | Latent heat or evaporation comparison | No direct H |
 | Monin/Profile diagnostic | H_MO and LE_MO from profile/stability logic | R_E,MO remains visible | Profile and stability diagnosis | Input- and parameter-intensive; not force-closed |
 | Closure diagnostics | R_E, closure ratio, open remainders | No flux is computed | Interpreting method semantics | Diagnostic only |
-
-## Operational selection matrix
-
-This table is the practical tool for deciding what to run and what to report.
-
-| Measurement architecture | Main method choice | Secondary comparison | Reportable finding | Avoid claiming |
-|---|---|---|---|---|
-| One height plus Q*, B | Penman or Priestley–Taylor | Available-energy diagnostics | LE-oriented estimate or partition | Direct gradient-based H |
-| Two heights plus Q*, B | Bulk–Residual for H and residual LE; Bowen if gradients are reliable | Penman/PT comparison; Monin/Profile diagnostic | Method-sensitive H/LE partition | Bulk closure as validation |
-| One or two heights in canopy/tower context | Reference-surface diagnosis first | Bulk–Residual, Bowen, or Monin/Profile only with explicit height/roughness logic | Ground, canopy, or above-canopy diagnostic interpretation | Simple surface-layer flux without reference definition |
-| Missing Q* or B | Profile-only diagnostics if two heights exist | Penman if required meteorology exists | Incomplete flux comparison | Energy-balance closure |
 
 ## Method-specific decision notes
 
@@ -269,17 +286,4 @@ Its value is that R_E,MO remains visible. Its limitation is that the result is i
 A heat-flux method should be selected by measurement design and target quantity. Priestley–Taylor partitions available energy through an empirical latent-heat formulation. Bulk–Residual estimates sensible heat from a two-height gradient and defines latent heat as the residual. Bowen partitions available energy through temperature and humidity gradients. Penman estimates latent heat and leaves the remaining energy unresolved. Monin/Profile provides a process-oriented diagnostic and keeps the residual visible.
 
 
-
 ## References
-
-[^priestley1972]: Priestley, C. H. B., & Taylor, R. J. (1972). *On the Assessment of Surface Heat Flux and Evaporation Using Large-Scale Parameters*. Monthly Weather Review, 100(2), 81–92. DOI: 10.1175/1520-0493(1972)100<0081:OTAOSH>2.3.CO;2.
-
-[^bowen1926]: Bowen, I. S. (1926). *The ratio of heat losses by conduction and by evaporation from any water surface*. Physical Review, 27, 779–787.
-
-[^ohmura1982]: Ohmura, A. (1982). *Objective Criteria for Rejecting Data for Bowen Ratio Flux Calculations*. Journal of Applied Meteorology, 21(4), 595–598. DOI: 10.1175/1520-0450(1982)021<0595:OCFRDF>2.0.CO;2.
-
-[^penman1948]: Penman, H. L. (1948). *Natural Evaporation from Open Water, Bare Soil and Grass*. Proceedings of the Royal Society of London. Series A, 193(1032), 120–145. DOI: 10.1098/rspa.1948.0037.
-
-[^monin1954]: Monin, A. S., & Obukhov, A. M. (1954). *Basic laws of turbulent mixing in the surface layer of the atmosphere*. Trudy Geofizicheskogo Instituta AN SSSR, 24, 163–187.
-
-[^foken2006]: Foken, T. (2006). *50 Years of the Monin–Obukhov Similarity Theory*. Boundary-Layer Meteorology, 119, 431–447. DOI: 10.1007/s10546-006-9048-6.
