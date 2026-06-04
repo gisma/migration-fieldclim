@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -100,6 +101,12 @@ Bodenwärmestrom und verfügbare Energie.</p>
 die Messspalten und die Energiebilanz-Terme so zu verstehen, dass der
 anschließende <code>fieldClim</code>-Workflow auf einer geprüften
 Datenbasis aufsetzt.</p>
+<p>Eine systematische Auswahlhilfe für die Frage, welcher Rechenweg zu
+welcher Messarchitektur passt, findet sich in der Methodenauswahlseite
+<a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. Diese Vignette bereitet dafür die Mess- und
+Energiebilanzgrößen vor; die eigentliche Anwendung der Paketmethoden
+erfolgt in der zweiten Workflow-Vignette.</p>
 <p>Diese Vignette umfasst die manuellen Schritte 0 bis 4:</p>
 <table class="table">
 <colgroup>
@@ -145,17 +152,24 @@ Energie?</td>
 <p>Der eigentliche Paketworkflow mit
 <code><a href="../reference/build_weather_station.html">build_weather_station()</a></code>,
 <code><a href="../reference/inspect_weather_station_inputs.html">inspect_weather_station_inputs()</a></code> und den Wärmeflussmethoden
-wird in der zweiten Vignette fortgesetzt.</p>
+wird in der zweiten Vignette fortgesetzt. Diese erste Vignette bleibt
+bewusst bei Datenprüfung, Strahlungskomponenten, Bodenwärmestrom und
+verfügbarer Energie.</p>
 </div>
 <div class="section level2">
 <h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
 </h2>
-<p>Die Vorlesungsfolien verwenden für die bodennahe Energiebilanz die
-Größen <code>Q*</code>, <code>B</code>, <code>L</code> und
-<code>V</code>. Diese Vignette behält diese Notation im Erklärungsteil
-bei. Erst an der Schnittstelle zum Datensatz und zu
-<code>fieldClim</code> wird auf die spezifischen Paket- und Spaltennamen
-des <code>fieldClim</code> Pakets gemappt.</p>
+<p>Diese Vignette verwendet für die bodennahe Energiebilanz dieselbe
+Referenznotation wie die Methodenauswahlseite: <code>Q*</code> ist die
+Netto-Strahlung, <code>B</code> ist der Bodenwärmestrom,
+<code>A = Q* - B</code> ist die verfügbare Energie, <code>H</code> ist
+der fühlbare Wärmestrom, <code>LE</code> ist der latente Wärmestrom und
+<code>R_E</code> ist der Residual- oder nicht geschlossene
+Energieterm.</p>
+<p>Die langwellige Strahlung wird davon getrennt notiert:
+<code>L_down</code>, <code>L_up</code> und <code>L*</code> bezeichnen
+langwellige Strahlungskomponenten. Dieses <code>L</code> ist nicht der
+fühlbare Wärmestrom.</p>
 <p><img src="figures/anchor_mesoklima_p45.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p46.png" class="r-plt" alt="" width="100%"></p>
 <table class="table">
 <colgroup>
@@ -165,7 +179,7 @@ des <code>fieldClim</code> Pakets gemappt.</p>
 <col width="25%">
 </colgroup>
 <thead><tr class="header">
-<th>Theoriegröße</th>
+<th>Referenzgröße</th>
 <th>Bedeutung</th>
 <th>Code-Variable in dieser Vignette</th>
 <th>Feld im Datensatz oder Paket</th>
@@ -188,16 +202,30 @@ des <code>fieldClim</code> Pakets gemappt.</p>
 </td>
 </tr>
 <tr class="odd">
-<td><code>L</code></td>
-<td>fühlbarer Wärmestrom</td>
-<td><code>L</code></td>
-<td><code>sensible_*</code></td>
+<td><code>A = Q* - B</code></td>
+<td>verfügbare Energie</td>
+<td>
+<code>Q_minus_B</code>, <code>available_energy</code>
+</td>
+<td><code>rad_bal - soil_flux</code></td>
 </tr>
 <tr class="even">
-<td><code>V</code></td>
+<td><code>H</code></td>
+<td>fühlbarer Wärmestrom</td>
+<td>hier noch nicht berechnet</td>
+<td><code>sensible_*</code></td>
+</tr>
+<tr class="odd">
+<td><code>LE</code></td>
 <td>latenter Wärmestrom</td>
-<td><code>V</code></td>
+<td>hier noch nicht berechnet</td>
 <td><code>latent_*</code></td>
+</tr>
+<tr class="even">
+<td><code>R_E = Q* - B - H - LE</code></td>
+<td>Residualterm / nicht geschlossener Energieterm</td>
+<td>hier noch nicht berechnet</td>
+<td>Closure-Diagnostik</td>
 </tr>
 <tr class="odd">
 <td><code>S</code></td>
@@ -209,7 +237,7 @@ des <code>fieldClim</code> Pakets gemappt.</p>
 </table>
 <p>Die Arbeitsbilanz lautet in der Theorie-Notation:</p>
 <p><span class="math display">\[
-Q^{*} = B + L + V + S
+Q^{*} = B + H + LE + S
 \]</span></p>
 <p>Der Speicherterm <code>S</code> wird in diesem Beispieldatensatz
 nicht separat berechnet. Das bedeutet nicht, dass Speicherung nicht
@@ -222,12 +250,15 @@ S \approx 0
 \]</span></p>
 <p>Damit wird:</p>
 <p><span class="math display">\[
-Q^{*} - B = L + V
+Q^{*} - B = H + LE
 \]</span></p>
 <p>und für die Residualrechnung:</p>
 <p><span class="math display">\[
-V = Q^{*} - B - L
+LE = Q^{*} - B - H
 \]</span></p>
+<p>Diese Residualformel wird hier nur als Energiebilanzlogik eingeführt.
+Die konkrete Schätzung von <code>H</code> und <code>LE</code> erfolgt
+erst in der zweiten Workflow-Vignette über die Paketmethoden.</p>
 <p>Mit dem Ausdruck <strong>Kontrolle aus Einzelkomponenten</strong>
 wird eine arithmetische Prüfung bezeichnet: Aus kurzwelliger und
 langwelliger Bilanz wird eine zweite Zeitreihe für <code>Q*</code>
@@ -298,7 +329,8 @@ prüfen</td>
 </tr>
 <tr class="odd">
 <td>Wärmeflüsse</td>
-<td>fühlbare und latente Wärmeflüsse schätzen</td>
+<td>fühlbare (<code>H</code>) und latente (<code>LE</code>) Wärmeflüsse
+schätzen</td>
 <td>
 <code>sensible_*</code>, <code>latent_*</code>
 </td>
@@ -310,6 +342,10 @@ prüfen</td>
 </tr>
 </tbody>
 </table>
+<p>Diese Vignette nutzt diese Paketebenen noch nicht zur
+Flussberechnung. Sie prüft nur die Eingangsgrößen, die später von
+<code><a href="../reference/build_weather_station.html">build_weather_station()</a></code> und den Wärmeflussmethoden
+verwendet werden.</p>
 <p>Die Workflow-Schritte behandeln nicht jede der verfügbaren
 Einzelfunktion isoliert. Vielmehr soll die Abfolge die vorhandenen
 Funktionsgruppen in einen Arbeitsablauf gebracht werden: vom
@@ -448,7 +484,8 @@ Bilanz <code>K_star</code> ist deshalb der Teil der Sonnenenergie, der
 nach der Reflexion tatsächlich im System Oberfläche-Atmosphäre
 verbleibt. Dieser Schritt erklärt anschaulich, warum Albedo keine
 Nebengröße ist: Schon kleine Änderungen der Reflexion verändern die
-verfügbare Energie für Erwärmung, Bodenwärmestrom und Verdunstung.</p>
+verfügbare Energie für Bodenwärmestrom, fühlbare Wärme und latente
+Wärme.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">alpha</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#005AB5"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"Albedo [-]"</span>, main <span class="op">=</span> <span class="st">"Effektive Albedo"</span><span class="op">)</span></span>
@@ -503,6 +540,9 @@ Stefan-Boltzmann-Logik, Emissionsvermögen und atmosphärische
 Gegenstrahlung. Für die Stationsdaten wird daraus die langwellige
 Bilanz.</p>
 <p><img src="figures/anchor_mesoklima_p39.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p41.png" class="r-plt" alt="" width="100%"></p>
+<p>Hier steht <code>L</code> für longwave radiation, nicht für fühlbare
+Wärme. Fühlbare Wärme wird in der Referenznotation dieser Vignette als
+<code>H</code> bezeichnet.</p>
 <p><span class="math display">\[
 L^{*} = L_{down} - L_{up}
 \]</span></p>
@@ -513,7 +553,7 @@ Q^{*} = K^{*} + L^{*}
 <code class="sourceCode R"><span><span class="co"># Langwellige Gegenstrahlung aus der Atmosphäre.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_down</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">LDnCo</span></span>
 <span></span>
-<span><span class="co"># Langwellige Ausstrahlung der Oberfläche.</span></span>
+<span><span class="co"># Langwellige Ausstrahlung der Oberfläche aus der Messspalte.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_up</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">LUpCo</span></span>
 <span></span>
 <span><span class="co"># Langwellige Bilanz.</span></span>
@@ -553,6 +593,12 @@ oder verliert. Für Nicht-Meteorolog:innen ist der zentrale Punkt:
 Kurzwellige Strahlung erklärt vor allem den Tagesantrieb durch die
 Sonne; langwellige Strahlung erklärt, warum die Oberfläche auch nachts
 energetisch aktiv bleibt.</p>
+<p>In diesem Datensatz wird <code>L_up</code> als vorhandene Messspalte
+verwendet. Es wird hier keine Oberflächentemperatur berechnet. Die
+paketinterne Modellfunktion <code><a href="../reference/rad_lw_out.html">rad_lw_out()</a></code> würde für eine
+modellierte langwellige Ausstrahlung eine bereitgestellte
+<code>surface_temp</code> benötigen; diese Vignette rekonstruiert
+<code>L_up</code> aber nicht aus <code>surface_temp</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="kontrolle-von-q-aus-einzelkomponenten">Kontrolle von Q* aus Einzelkomponenten<a class="anchor" aria-label="anchor" href="#kontrolle-von-q-aus-einzelkomponenten"></a>
@@ -561,12 +607,17 @@ energetisch aktiv bleibt.</p>
 Energiebilanz. In der Theorie steht <code>Q*</code> als Strahlungsbilanz
 auf der linken Seite der bodennahen Energiebilanz:</p>
 <p><span class="math display">\[
-0 = Q^{*} - B - L - V
+R_E = Q^{*} - B - H - LE
 \]</span></p>
 <p>In dieser Vignette entspricht:</p>
 <table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
 <thead><tr class="header">
-<th>Theorie</th>
+<th>Referenzgröße</th>
 <th>Datensatz / Paket</th>
 <th>Bedeutung</th>
 </tr></thead>
@@ -586,21 +637,26 @@ auf der linken Seite der bodennahen Energiebilanz:</p>
 <td>Bodenwärmestrom</td>
 </tr>
 <tr class="odd">
-<td><code>L</code></td>
-<td>
-<code>H</code>, <code>sensible_*</code>
-</td>
+<td><code>H</code></td>
+<td><code>sensible_*</code></td>
 <td>fühlbarer Wärmestrom</td>
 </tr>
 <tr class="even">
-<td><code>V</code></td>
-<td>
-<code>LE</code>, <code>latent_*</code>
-</td>
+<td><code>LE</code></td>
+<td><code>latent_*</code></td>
 <td>latenter Wärmestrom</td>
+</tr>
+<tr class="odd">
+<td><code>R_E</code></td>
+<td>Closure-Diagnostik</td>
+<td>Residualterm / nicht geschlossene Energie</td>
 </tr>
 </tbody>
 </table>
+<p>In dieser Vignette werden <code>H</code>, <code>LE</code> und
+<code>R_E</code> noch nicht berechnet. Sie werden nur als Referenzgrößen
+eingeführt, damit klar ist, welche Bedeutung <code>Q*</code> und
+<code>B</code> für die zweite Workflow-Vignette haben.</p>
 <p>Theoretisch kann <code>Q*</code> aus kurzwelligen und langwelligen
 Einzelkomponenten gebildet werden:</p>
 <p><span class="math display">\[
@@ -613,10 +669,10 @@ L^{*} = L_\downarrow - L_\uparrow
 Q^{*} = K^{*} + L^{*}
 \]</span></p>
 <p>Im Datensatz liegt aber zusätzlich bereits eine Spalte
-<code>rad_net</code> vor. Deshalb wird hier nicht einfach eine neue
-Netto-Strahlung “rekonstruiert”, sondern geprüft, ob die vorhandene
-Spalte <code>rad_net</code> und die Summe aus Einzelkomponenten dieselbe
-Bilanzebene beschreiben.</p>
+<code>rad_net</code> vor. Deshalb wird hier keine neue Netto-Strahlung
+als Ersatzwert erzeugt. Die Komponentensumme dient nur als
+Kontrollgröße: Sie prüft, ob <code>rad_net</code> und
+<code>K* + L*</code> dieselbe Bilanzebene beschreiben.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Kurzwellige Komponenten:</span></span>
 <span><span class="co"># K_down ist die einfallende kurzwellige Strahlung.</span></span>
@@ -793,7 +849,8 @@ prüfen<a class="anchor" aria-label="anchor" href="#schritt-4-bodenw%C3%A4rmestr
 Wärmeleitungsproblem. In den Caldern-Daten wird <code>B</code> direkt
 als <code>heatflux_soil</code> verwendet.</p>
 <p><img src="figures/anchor_mesoklima_p47.png" class="r-plt" alt="" width="100%"><img src="figures/anchor_mesoklima_p50.png" class="r-plt" alt="" width="100%"></p>
-<p>Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:</p>
+<p>Die verfügbare Energie für fühlbaren Wärmestrom <code>H</code> und
+latenten Wärmestrom <code>LE</code> ist:</p>
 <p><span class="math display">\[
 Q^{*} - B
 \]</span></p>
@@ -804,7 +861,7 @@ Q^{*} - B
 <span><span class="co"># Theoriegröße B: gemessener Bodenwärmestrom.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">B</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">heatflux_soil</span></span>
 <span></span>
-<span><span class="co"># Energie, die für L und V verfügbar bleibt.</span></span>
+<span><span class="co"># Energie, die für H und LE verfügbar bleibt.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="einzelplots-2">Einzelplots<a class="anchor" aria-label="anchor" href="#einzelplots-2"></a>
@@ -833,7 +890,7 @@ dass Energie in den Boden geht und damit nicht mehr für die turbulenten
 Flüsse in die Luft zur Verfügung steht. <code>Q_star - B</code> ist
 deshalb die eigentliche Arbeitsgröße für die energiegebundenen Methoden.
 Sie sagt: So viel Energie bleibt nach Abzug des Bodenanteils für
-fühlbaren und latenten Wärmestrom übrig.</p>
+<code>H</code> und <code>LE</code> übrig.</p>
 </div>
 <div class="section level3">
 <h3 id="zusammengesetzter-plot-1">Zusammengesetzter Plot<a class="anchor" aria-label="anchor" href="#zusammengesetzter-plot-1"></a>
@@ -859,11 +916,15 @@ fühlbaren und latenten Wärmestrom übrig.</p>
 <h2 id="übergang-zur-zweiten-vignette">Übergang zur zweiten Vignette<a class="anchor" aria-label="anchor" href="#%C3%BCbergang-zur-zweiten-vignette"></a>
 </h2>
 <p>Bis hierher wurden die Messdaten und die zentralen
-Energiebilanzgrößen geprüft. Die Größen <code>Q_star</code> und
-<code>B</code> sind damit als Arbeitsterme vorbereitet. Die zweite
-Vignette überführt denselben Datensatz in ein
+Energiebilanzgrößen geprüft. Die Größen <code>Q_star</code>,
+<code>B</code> und <code>Q_minus_B</code> sind damit als Arbeitsterme
+vorbereitet. Die zweite Vignette überführt denselben Datensatz in ein
 <code>weather_station</code>-Objekt und nutzt darauf die Paketmethoden
-für Wärmeflüsse.</p>
+für <code>H</code> und <code>LE</code>.</p>
+<p>Die Auswahl des passenden Rechenwegs hängt von Messarchitektur und
+Zielgröße ab. Dafür verweist diese Vignette auf die Methodenauswahlseite
+<a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

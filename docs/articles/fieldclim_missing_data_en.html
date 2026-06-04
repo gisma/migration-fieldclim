@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -91,18 +92,86 @@ Chris Reudenbach</h4>
 <div class="section level2">
 <h2 id="purpose">Purpose<a class="anchor" aria-label="anchor" href="#purpose"></a>
 </h2>
-<p>This tutorial shows how to inspect station data before heat-flux
-calculations. The goal is to learn the inspection workflow, not to
-repair the dataset.</p>
+<p>This tutorial shows how to inspect station data before
+<code>H</code>/<code>LE</code> heat-flux calculations. The goal is to
+learn the inspection workflow, not to repair the dataset.</p>
 <p><code>fieldClim</code> does not repair, fill, impute, interpolate or
 complete the data. It reports missingness, gap blocks, variable classes,
 quality-control flags and method readiness. The first decision is the
 variable type and the gap length, because method suitability depends on
 what is missing and how the gap is structured. Quality control comes
 before any external gap-filling workflow.</p>
+<p>A systematic decision guide for matching calculation paths to
+measurement architecture is provided in <a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. This vignette prepares the data and
+energy-balance inputs for that decision; the actual application of
+heat-flux methods is continued in the second workflow vignette.</p>
 <p>The sections below repeat the same tutorial pattern: run a command,
 inspect a compact original output, then read a cleaned table and
 interpretation.</p>
+</div>
+<div class="section level2">
+<h2 id="reference-notation">Reference notation<a class="anchor" aria-label="anchor" href="#reference-notation"></a>
+</h2>
+<p>This vignette uses the same reference notation as the
+method-selection page. <code>Q*</code> is net radiation, <code>B</code>
+is soil heat flux, <code>A = Q* - B</code> is available energy,
+<code>H</code> is sensible heat flux, <code>LE</code> is latent heat
+flux, and <code>R_E</code> is the residual or non-closed energy
+term.</p>
+<p>The R column names used in this vignette are not renamed. The package
+fields <code>rad_bal</code> and <code>soil_flux</code> are mapped to
+<code>Q*</code> and <code>B</code>; later package outputs named
+<code>sensible_*</code> correspond to <code>H</code>, and outputs named
+<code>latent_*</code> correspond to <code>LE</code>.</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th>Reference quantity</th>
+<th>Meaning</th>
+<th>
+<code>fieldClim</code> field or later output</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>Q*</code></td>
+<td>net radiation</td>
+<td><code>rad_bal</code></td>
+</tr>
+<tr class="even">
+<td><code>B</code></td>
+<td>soil heat flux</td>
+<td><code>soil_flux</code></td>
+</tr>
+<tr class="odd">
+<td><code>A = Q* - B</code></td>
+<td>available energy</td>
+<td><code>rad_bal - soil_flux</code></td>
+</tr>
+<tr class="even">
+<td><code>H</code></td>
+<td>sensible heat flux</td>
+<td><code>sensible_*</code></td>
+</tr>
+<tr class="odd">
+<td><code>LE</code></td>
+<td>latent heat flux</td>
+<td><code>latent_*</code></td>
+</tr>
+<tr class="even">
+<td><code>R_E = Q* - B - H - LE</code></td>
+<td>residual / non-closed energy term</td>
+<td>closure diagnostics</td>
+</tr>
+</tbody>
+</table>
+<p>This first inspection vignette does not compute <code>H</code>,
+<code>LE</code> or <code>R_E</code>. It checks the input fields that
+later determine whether these quantities can be interpreted.</p>
 </div>
 <div class="section level2">
 <h2 id="example-dataset">Example dataset<a class="anchor" aria-label="anchor" href="#example-dataset"></a>
@@ -384,11 +453,11 @@ table.</p>
 <code>rad_bal</code>, <code>v1</code> and <code>soil_flux</code>. The
 most consequential fields for heat-flux calculations are
 <code>rad_bal</code> and <code>soil_flux</code>, because together they
-define available energy as <code>Rn - G</code>. Missing <code>v1</code>
+define available energy as <code>Q* - B</code>. Missing <code>v1</code>
 affects aerodynamic and profile-related methods. Missing
 <code>hum1</code> affects humidity-gradient and Penman-type
 calculations. Missing <code>t1</code> affects profile methods and
-Bulk-Residual sensible heat.</p>
+Bulk-Residual estimates of <code>H</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="inspect-gap-blocks">Inspect gap blocks<a class="anchor" aria-label="anchor" href="#inspect-gap-blocks"></a>
@@ -520,7 +589,7 @@ timestamps and duration for reading.</p>
 <p>A single missing five-minute value is a row-level interruption. A
 30-60 minute gap starts to affect subdaily interpretation. The
 multi-hour <code>soil_flux</code> gap is more serious because it affects
-available energy <code>Rn - G</code>. Wind gaps can affect
+available energy <code>Q* - B</code>. Wind gaps can affect
 Bulk-Residual, Penman and profile-based methods. Humidity gaps affect
 Bowen, Monin-Obukhov/Profile and Penman-type paths.</p>
 </div>
@@ -593,7 +662,7 @@ invent wind speed.</td>
 <td align="left"><code>soil_flux</code></td>
 <td align="left">A long continuous soil heat-flux gap.</td>
 <td align="left">Soil heat flux is subtracted from net radiation in
-<code>Rn - G</code>.</td>
+<code>A = Q* - B</code>.</td>
 <td align="left">Reports the long gap and affected energy-balance
 methods. It does not replace soil heat flux.</td>
 </tr>
@@ -785,7 +854,7 @@ consequences for this dataset.</p>
 <td align="left">Yes</td>
 <td align="left">t1, hum1, rad_bal, soil_flux</td>
 <td align="left">If <code>rad_bal</code>, <code>soil_flux</code> or
-<code>temp</code> is missing at a timestep, <code>Rn - G</code> or
+<code>temp</code> is missing at a timestep, <code>A = Q* - B</code> or
 temperature input is unavailable.</td>
 </tr>
 <tr class="even">
@@ -817,7 +886,8 @@ metadata</td>
 energy-input gaps also affect partitioning.</td>
 </tr>
 <tr class="odd">
-<td align="left">Penman-type latent heat</td>
+<td align="left">Penman-type <code>LE</code>
+</td>
 <td align="left">radiation, soil heat flux, temperature, humidity, wind
 and site metadata</td>
 <td align="left">No</td>
@@ -840,8 +910,8 @@ humidity, wind and site metadata; it returns latent heat only.</td>
 </table>
 <p>Priestley-Taylor uses <code>rad_bal</code>, <code>soil_flux</code>,
 <code>temp</code> and <code>surface_type</code>. If <code>rad_bal</code>
-or <code>soil_flux</code> is missing at a timestep, <code>Rn - G</code>
-is unavailable.</p>
+or <code>soil_flux</code> is missing at a timestep,
+<code>A = Q* - B</code> is unavailable.</p>
 <p>Bulk-Residual uses temperature difference, wind and heights for
 <code>H_bulk</code>, plus <code>rad_bal</code> and
 <code>soil_flux</code> for residual <code>LE</code>. With the optional
@@ -852,7 +922,7 @@ humidity affects the gradient ratio.</p>
 Missing or invalid profile values directly affect the profile
 calculation.</p>
 <p>Penman uses radiation, soil heat flux, temperature, humidity, wind
-and site metadata. It returns latent heat only.</p>
+and site metadata. It returns <code>LE</code> only.</p>
 </div>
 <div class="section level2">
 <h2 id="external-continuation-boundary">External continuation boundary<a class="anchor" aria-label="anchor" href="#external-continuation-boundary"></a>
@@ -945,8 +1015,9 @@ information.</p>
 type and gap length. A short temperature gap, a radiation gap, a missing
 wind profile and a long soil-flux gap do not have the same consequences
 for later calculations. The inspection output therefore helps identify
-which variables require review and which method families are
-affected.</p>
+which variables require review and which method families are affected.
+The method-selection page then determines which calculation path can be
+interpreted from the inspected measurement architecture.</p>
 <p><code>fieldClim</code> does not fill, impute, interpolate, complete
 or replace missing values. It reports the problem. Any decision to
 repair or reconstruct data must be made outside <code>fieldClim</code>,

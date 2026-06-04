@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -92,11 +93,18 @@ Chris Reudenbach</h4>
 <h2 id="ziel-dieser-vignette">Ziel dieser Vignette<a class="anchor" aria-label="anchor" href="#ziel-dieser-vignette"></a>
 </h2>
 <p>Diese Vignette ergänzt die Workflow-Vignette zur Energiebilanz. Dort
-steht der zusammenhängende Caldern-Workflow mit <span class="math inline">\(Q^{*}\)</span>, <span class="math inline">\(B\)</span>, <span class="math inline">\(L\)</span>
-und <span class="math inline">\(V\)</span> im Zentrum. Diese Seite zeigt
-die weiteren Paketfunktionen als <strong>Anschlussworkflows</strong>:
-Strahlungsprüfung, modellierte Strahlung, Bodenparameter,
-meteorologische Hilfsgrößen, Stabilitätsgrößen und Objektkontrolle.</p>
+steht der zusammenhängende Caldern-Workflow mit <span class="math inline">\(Q^{*}\)</span>, <span class="math inline">\(B\)</span>, <span class="math inline">\(H\)</span>
+und <span class="math inline">\(LE\)</span> im Zentrum. Diese Seite
+zeigt die weiteren Paketfunktionen als
+<strong>Anschlussworkflows</strong>: Strahlungsprüfung, modellierte
+Strahlung, Bodenparameter, meteorologische Hilfsgrößen,
+Stabilitätsgrößen und Objektkontrolle.</p>
+<p>Eine systematische Auswahlhilfe für die Frage, welcher Rechenweg zu
+welcher Messarchitektur passt, findet sich in der Methodenauswahlseite
+<a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. Diese Vignette ergänzt diese Logik durch
+ausführbare Anschlussbeispiele zu Strahlung, Boden, Hilfsgrößen,
+Stabilität und Objektkontrolle.</p>
 <p>Der Text ist kein zweiter Methodenvergleich. Die zentrale Frage
 lautet hier: Welche Funktionsgruppen gibt es neben dem Hauptworkflow,
 wofür sind sie praktisch nützlich, und welche Einschränkungen muss man
@@ -171,6 +179,15 @@ geplottet und exportiert?</td>
 Mini-Beispielen. Sie ersetzt keine vollständige physikalische Ableitung
 und auch keine Validierung gegen unabhängige Flussmessungen. Sie soll
 zeigen, welche Paketfunktionen zu welchen Arbeitsschritten passen.</p>
+<p>Die Vignette verwendet für Energieflüsse die Referenznotation der
+Methodenauswahlseite: <code>Q*</code> ist die Netto-Strahlung,
+<code>B</code> ist der Bodenwärmestrom, <code>A = Q* - B</code> ist die
+verfügbare Energie, <code>H</code> ist der fühlbare Wärmestrom,
+<code>LE</code> ist der latente Wärmestrom und <code>R_E</code> ist der
+Residual- oder nicht geschlossene Energieterm. Die langwellige Strahlung
+bleibt davon getrennt: <code>L_down</code>, <code>L_up</code> und
+<code>L*</code> bezeichnen longwave radiation und nicht den fühlbaren
+Wärmestrom.</p>
 </div>
 <div class="section level2">
 <h2 id="gemeinsamer-daten--und-objektaufbau">Gemeinsamer Daten- und Objektaufbau<a class="anchor" aria-label="anchor" href="#gemeinsamer-daten--und-objektaufbau"></a>
@@ -357,8 +374,10 @@ kurzwellige Strahlung [W/m²]</li>
 <span class="math inline">\(K_{\uparrow}\)</span>: reflektierte
 kurzwellige Strahlung [W/m²]</li>
 </ul>
-<p>Die langwellige Bilanz wird hier in derselben Richtung
-geschrieben:</p>
+<p>Die langwellige Bilanz wird hier in derselben Richtung geschrieben.
+Hier steht <code>L</code> für longwave radiation, nicht für fühlbare
+Wärme. Fühlbare Wärme wird in der Referenznotation dieser Vignette als
+<code>H</code> bezeichnet.</p>
 <p><span class="math display">\[
 L^{*} = L_{\downarrow} - L_{\uparrow}
 \]</span></p>
@@ -395,6 +414,7 @@ vergleichen<a class="anchor" aria-label="anchor" href="#komponenten-berechnen-un
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">K_star_from_components</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">K_down</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">K_up</span></span>
 <span></span>
 <span><span class="co"># Langwellige Komponenten aus Messspalten.</span></span>
+<span><span class="co"># L steht hier für longwave radiation, nicht für fühlbare Wärme.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_down</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">LDnCo</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_up</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">LUpCo</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_star_down_minus_up</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_down</span> <span class="op">-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_up</span></span>
@@ -490,7 +510,8 @@ arbeiten, wenn klar ist, welche Strahlungsgröße als Arbeitsgröße
 verwendet wird. Wenn <code>rad_net</code>, <code>RsNet + RlNet</code>
 und <code>K* + L*</code> auseinanderlaufen, wird nicht automatisch eine
 neue Netto-Strahlung gebaut. Dann wird zuerst dokumentiert, welche
-Spalte welche Bilanzebene repräsentiert.</p>
+Spalte welche Bilanzebene repräsentiert. <code>L*</code> meint hier
+ausschließlich die langwellige Strahlungsbilanz.</p>
 </div>
 <div class="section level3">
 <h3 id="strahlungsreihe-für-weitere-rechnungen-festlegen">1.3 Strahlungsreihe für weitere Rechnungen festlegen<a class="anchor" aria-label="anchor" href="#strahlungsreihe-f%C3%BCr-weitere-rechnungen-festlegen"></a>
@@ -580,7 +601,7 @@ Vorzeichenkonventionen.</p>
 <h2 id="workflow-baustein-2-strahlung-modellieren-statt-nur-messen">Workflow-Baustein 2: Strahlung modellieren statt nur messen<a class="anchor" aria-label="anchor" href="#workflow-baustein-2-strahlung-modellieren-statt-nur-messen"></a>
 </h2>
 <p>Die Strahlungsfunktionen können Messwerte plausibilisieren oder
-fehlende Strahlungskomponenten modellieren. Der Paketworkflow folgt
+fehlende Strahlungskomponenten modellieren. Die Funktionslogik folgt
 dabei einer Kette:</p>
 <table class="table">
 <colgroup>
@@ -634,6 +655,8 @@ Aerosoltransmission</td>
 <span><span class="va">valley</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
 <span><span class="va">surface_type</span> <span class="op">&lt;-</span> <span class="st">"field"</span></span>
 <span><span class="va">surface_temp</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
+<span><span class="co"># surface_temp ist hier ein explizit gesetzter Modellinput für langwellige Strahlung.</span></span>
+<span><span class="co"># Es ist keine automatisch gemessene Standardgröße jeder Klimastation.</span></span>
 <span></span>
 <span><span class="co"># Solare und topographische Teilgrößen.</span></span>
 <span><span class="fu"><a href="../reference/sol_elevation.html">sol_elevation</a></span><span class="op">(</span><span class="va">example_time</span>, <span class="va">lon</span>, <span class="va">lat</span><span class="op">)</span></span>
@@ -765,7 +788,7 @@ realistische Größenordnungen liefern.</p>
 <h2 id="workflow-baustein-3-bodenparameter-und-bodenwärmestrom">Workflow-Baustein 3: Bodenparameter und Bodenwärmestrom<a class="anchor" aria-label="anchor" href="#workflow-baustein-3-bodenparameter-und-bodenw%C3%A4rmestrom"></a>
 </h2>
 <p>Der Bodenwärmestrom kann gemessen oder aus Temperaturgradient, Tiefe,
-Feuchte und Bodenart geschätzt werden. Der Paketworkflow lautet:</p>
+Feuchte und Bodenart geschätzt werden. Der Rechenweg lautet:</p>
 <p><span class="math display">\[
 B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2}
 \]</span></p>
@@ -1028,10 +1051,12 @@ begrenzen Situationen, in denen Nenner nahe null, nicht endliche
 Zwischenwerte oder extrem empfindliche Profilbedingungen auftreten.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Bowen mit und ohne cap.</span></span>
+<span><span class="co"># Codevariable V_* entspricht in der Referenznotation LE.</span></span>
 <span><span class="va">V_bowen_no_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/latent_bowen.html">latent_bowen</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
 <span><span class="va">V_bowen_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/latent_bowen.html">latent_bowen</a></span><span class="op">(</span><span class="va">ws</span>, cap <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Monin-Obukhov mit und ohne cap.</span></span>
+<span><span class="co"># Codevariable L_* entspricht in der Referenznotation H.</span></span>
 <span><span class="va">L_monin_no_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensible_monin.html">sensible_monin</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
 <span><span class="va">L_monin_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensible_monin.html">sensible_monin</a></span><span class="op">(</span><span class="va">ws</span>, cap <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
@@ -1114,16 +1139,16 @@ für weitere Analysen exportiert werden.</p>
 Flussmodell. Sie fasst bereits berechnete Ergebnisfelder eines
 <code>weather_station</code>-Objekts als Energiebilanzdiagnostik
 zusammen. Ausgangspunkt ist die verfügbare Energie
-<code>rad_bal - soil_flux</code>. Für Verfahren mit gepaarten sensiblen
-und latenten Wärmeflüssen berechnet sie den Schließungsrest
-<code>available_energy - sensible - latent</code>. Für Penman wird kein
-künstlicher sensibler Wärmefluss erzeugt; stattdessen wird der offene
-Ergänzungsterm <code>unresolved_complement</code> ausgegeben.
-Monin-Obukhov/Profile-Ergebnisse werden diagnostisch gelesen und nicht
-auf Bilanzschluss gezwungen.</p>
-<p>Bulk-Residual ist deshalb kein einheitlich „einfacher“ Ansatz.
+<code>rad_bal - soil_flux</code>. Für Verfahren mit gepaarten
+<code>H</code>- und <code>LE</code>-Flüssen berechnet sie den
+Schließungsrest <code>available_energy - sensible - latent</code>. Für
+Penman wird kein künstlicher <code>H</code>-Fluss erzeugt; stattdessen
+wird der offene Ergänzungsterm <code>unresolved_complement</code>
+ausgegeben. Monin-Obukhov/Profile-Ergebnisse werden diagnostisch gelesen
+und nicht auf Bilanzschluss gezwungen.</p>
+<p>Bulk–Residual ist deshalb kein einheitlich „einfacher“ Ansatz.
 Einfach oder profilnah ist vor allem die Schätzung von
-<code>sensible_bulk</code>. Mit
+<code>sensible_bulk</code>, also von <code>H_bulk</code>. Mit
 <code>exchange_velocity = "wind_mean"</code> wird eine einfache mittlere
 Windgeschwindigkeit verwendet. Mit
 <code>exchange_velocity = "u_star_profile"</code> nutzt die Schätzung
@@ -1133,11 +1158,12 @@ Profil-Austauschlogik. Mit
 Austauschgeschwindigkeit über eine Rauigkeitslänge bestimmt. Die
 Energiebilanz wird aber weiterhin residual geschlossen:
 <code>latent_bulk_residual</code> ist der Rest aus
-<code>rad_bal - soil_flux - sensible_bulk</code>. Bulk kann damit in der
+<code>rad_bal - soil_flux - sensible_bulk</code>, also
+<code>LE_res = Q* - B - H_bulk</code>. Bulk kann damit in der
 <code>H</code>-Schätzung profilnaher werden und trotzdem bei
 <code>LE</code> residual schließen.</p>
 <p>In diesem Workflow liegt mit <code>ws_pt</code> der bereits
-berechnete Priestley-Taylor-Pfad vor. Deshalb wird die Diagnose hier nur
+berechnete Priestley–Taylor-Pfad vor. Deshalb wird die Diagnose hier nur
 für <code>priestley_taylor</code> aufgerufen.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">closure_diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">ws_pt</span>, methods <span class="op">=</span> <span class="st">"priestley_taylor"</span><span class="op">)</span></span>
@@ -1171,18 +1197,20 @@ für <code>priestley_taylor</code> aufgerufen.</p>
 <span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-open-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
-<p>Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
-sondern den jeweils offenen oder residualisierten Term. Bei
-Bulk-Residual ist dies <code>latent_bulk_residual</code>: Die latente
-Wärme wird nach der Schätzung von <code>sensible_bulk</code> als Rest
-aus <code>rad_bal - soil_flux - sensible_bulk</code> berechnet. Bei
-Penman ist es der offene Ergänzungsterm nach Abzug von
-<code>latent_penman</code>; dieser Term ist nicht automatisch fühlbarer
-Wärmestrom. Bei Monin-Obukhov/Profile ist es der diagnostische
+<p>Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren. Je
+nach Rechenweg zeigt er einen residual definierten latenten Wärmestrom,
+einen offenen Ergänzungsterm oder einen diagnostischen Bilanzrest. Bei
+Bulk–Residual ist dies <code>latent_bulk_residual</code>: Die latente
+Wärme (<code>LE_res</code>) wird nach der Schätzung von
+<code>sensible_bulk</code> (<code>H_bulk</code>) als Rest aus
+<code>rad_bal - soil_flux - sensible_bulk</code> berechnet. Bei Penman
+ist es der offene Ergänzungsterm nach Abzug von
+<code>latent_penman</code>; dieser Term ist nicht automatisch
+<code>H</code>. Bei Monin-Obukhov/Profile ist es der diagnostische
 Bilanzrest <code>rad_bal - soil_flux - sensible - latent</code>.
-Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+Priestley–Taylor und Bowen erscheinen hier nicht, weil sie die
 verfügbare Energie partitionieren und keinen expliziten offenen Term
-ausgeben. Im hier gezeigten Priestley-Taylor-Pfad bleibt dieser Plot
+ausgeben. Im hier gezeigten Priestley–Taylor-Pfad bleibt dieser Plot
 deshalb leer.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
@@ -1193,12 +1221,13 @@ deshalb leer.</p>
 <p><img src="fieldclim_workflow_steps_files/figure-html/closure-diagnostics-check-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Der Schließungscheck zeigt
 <code>rad_bal - soil_flux - sensible - latent</code> für Verfahren mit
-gepaarten Flüssen. Bei Priestley-Taylor, Bowen und Bulk-Residual sind
-Werte nahe null methodisch erwartbar. Das zeigt formalen Bilanzschluss,
-aber keine physikalische Validierung. Bei Monin-Obukhov/Profile ist ein
+gepaarten <code>H</code>- und <code>LE</code>-Flüssen. Bei
+Priestley–Taylor, Bowen und Bulk–Residual sind Werte nahe null
+methodisch erwartbar. Das zeigt formalen Bilanzschluss, aber keine
+physikalische Validierung. Bei Monin-Obukhov/Profile ist ein
 nicht-nulliger Wert diagnostisch und zeigt die Differenz zwischen
 Profilfluss-Schätzung und verfügbarer Energie. Penman wird hier nicht
-gezeigt, weil kein gepaarter sensibler Wärmefluss berechnet wird.</p>
+gezeigt, weil kein gepaarter <code>H</code>-Fluss berechnet wird.</p>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
 <span>  <span class="va">closure_diag</span>,</span>
@@ -1214,7 +1243,7 @@ schlechteren Methodenwerte, sondern Hinweise auf instabile Quotienten,
 meist bei kleiner verfügbarer Energie oder stark abweichenden
 Profilflüssen. Die Tabelle oberhalb enthält die nicht beschnittenen
 Diagnosewerte. Penman wird im Quotientenplot nicht dargestellt, weil
-<code>fieldClim</code> für Penman keinen gepaarten sensiblen Wärmefluss
+<code>fieldClim</code> für Penman keinen gepaarten <code>H</code>-Fluss
 ausgibt.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Ergebnisobjekt in eine Tabelle überführen.</span></span>
@@ -1299,7 +1328,8 @@ berechnet werden.</li>
 <li>Bodenwärmestrom kann gemessen oder aus Bodenparametern geschätzt
 werden.</li>
 <li>Feuchte-, Druck- und Temperaturfunktionen liefern wichtige
-Zwischengrößen.</li>
+Zwischengrößen für spätere <code>H</code>- und
+<code>LE</code>-Rechenwege.</li>
 <li>Turbulenz- und Stabilitätsfunktionen sind Diagnosewerkzeuge.</li>
 <li>Caps und Fallbacks sind Schutzmechanismen, keine automatische
 fachliche Validierung.</li>

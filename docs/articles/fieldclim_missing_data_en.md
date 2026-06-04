@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This tutorial shows how to inspect station data before heat-flux
-calculations. The goal is to learn the inspection workflow, not to
-repair the dataset.
+This tutorial shows how to inspect station data before `H`/`LE`
+heat-flux calculations. The goal is to learn the inspection workflow,
+not to repair the dataset.
 
 `fieldClim` does not repair, fill, impute, interpolate or complete the
 data. It reports missingness, gap blocks, variable classes,
@@ -13,9 +13,42 @@ variable type and the gap length, because method suitability depends on
 what is missing and how the gap is structured. Quality control comes
 before any external gap-filling workflow.
 
+A systematic decision guide for matching calculation paths to
+measurement architecture is provided in [Choosing fieldClim Heat-Flux
+Methods by Measurement
+Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md).
+This vignette prepares the data and energy-balance inputs for that
+decision; the actual application of heat-flux methods is continued in
+the second workflow vignette.
+
 The sections below repeat the same tutorial pattern: run a command,
 inspect a compact original output, then read a cleaned table and
 interpretation.
+
+## Reference notation
+
+This vignette uses the same reference notation as the method-selection
+page. `Q*` is net radiation, `B` is soil heat flux, `A = Q* - B` is
+available energy, `H` is sensible heat flux, `LE` is latent heat flux,
+and `R_E` is the residual or non-closed energy term.
+
+The R column names used in this vignette are not renamed. The package
+fields `rad_bal` and `soil_flux` are mapped to `Q*` and `B`; later
+package outputs named `sensible_*` correspond to `H`, and outputs named
+`latent_*` correspond to `LE`.
+
+| Reference quantity | Meaning | `fieldClim` field or later output |
+|----|----|----|
+| `Q*` | net radiation | `rad_bal` |
+| `B` | soil heat flux | `soil_flux` |
+| `A = Q* - B` | available energy | `rad_bal - soil_flux` |
+| `H` | sensible heat flux | `sensible_*` |
+| `LE` | latent heat flux | `latent_*` |
+| `R_E = Q* - B - H - LE` | residual / non-closed energy term | closure diagnostics |
+
+This first inspection vignette does not compute `H`, `LE` or `R_E`. It
+checks the input fields that later determine whether these quantities
+can be interpreted.
 
 ## Example dataset
 
@@ -212,10 +245,10 @@ The same result is easier to read as a compact interpretation table.
 In this dataset, the affected fields are `temp`, `t1`, `rh`, `hum1`,
 `rad_bal`, `v1` and `soil_flux`. The most consequential fields for
 heat-flux calculations are `rad_bal` and `soil_flux`, because together
-they define available energy as `Rn - G`. Missing `v1` affects
+they define available energy as `Q* - B`. Missing `v1` affects
 aerodynamic and profile-related methods. Missing `hum1` affects
 humidity-gradient and Penman-type calculations. Missing `t1` affects
-profile methods and Bulk-Residual sensible heat.
+profile methods and Bulk-Residual estimates of `H`.
 
 ## Inspect gap blocks
 
@@ -268,7 +301,7 @@ and duration for reading.
 A single missing five-minute value is a row-level interruption. A 30-60
 minute gap starts to affect subdaily interpretation. The multi-hour
 `soil_flux` gap is more serious because it affects available energy
-`Rn - G`. Wind gaps can affect Bulk-Residual, Penman and profile-based
+`Q* - B`. Wind gaps can affect Bulk-Residual, Penman and profile-based
 methods. Humidity gaps affect Bowen, Monin-Obukhov/Profile and
 Penman-type paths.
 
@@ -283,7 +316,7 @@ explains why the consequence differs by variable type.
 | Humidity | `rh`, `hum1` | A short humidity gap and one invalid relative-humidity value. | Humidity affects Bowen, Monin-Obukhov/Profile and Penman-type inputs. | Reports the gap and QC flag. It does not correct humidity values. |
 | Radiation | `rad_bal` | A medium net-radiation gap and a suspicious shortwave value in the source data. | Radiation controls available energy for energy-balance methods. | Reports affected radiation fields. It does not substitute modeled radiation. |
 | Wind speed | `v1` | A medium wind-speed gap and one negative wind-speed value. | Wind controls aerodynamic and profile-based methods. | Reports the gap and negative-wind flag. It does not invent wind speed. |
-| Soil heat flux | `soil_flux` | A long continuous soil heat-flux gap. | Soil heat flux is subtracted from net radiation in `Rn - G`. | Reports the long gap and affected energy-balance methods. It does not replace soil heat flux. |
+| Soil heat flux | `soil_flux` | A long continuous soil heat-flux gap. | Soil heat flux is subtracted from net radiation in `A = Q* - B`. | Reports the long gap and affected energy-balance methods. It does not replace soil heat flux. |
 
 This table is not a ranking of filling methods. It is a reading guide
 for the inspection output. The key research-based point is that variable
@@ -379,15 +412,15 @@ consequences for this dataset.
 
 | Method | Required field groups | Structurally available? | Fields with gaps | What this means for this dataset |
 |:---|:---|:---|:---|:---|
-| Bowen-ratio | temperature and humidity gradients, heights, `rad_bal`, `soil_flux` | Yes | t1, hum1, rad_bal, soil_flux | If `rad_bal`, `soil_flux` or `temp` is missing at a timestep, `Rn - G` or temperature input is unavailable. |
+| Bowen-ratio | temperature and humidity gradients, heights, `rad_bal`, `soil_flux` | Yes | t1, hum1, rad_bal, soil_flux | If `rad_bal`, `soil_flux` or `temp` is missing at a timestep, `A = Q* - B` or temperature input is unavailable. |
 | Bulk-Residual | temperature difference, wind, heights, `rad_bal`, `soil_flux` | Yes | t1, v1, rad_bal, soil_flux | Gaps in `t1`, `v1`, `rad_bal` or `soil_flux` affect `H_bulk` or residual `LE` at those rows. |
 | Bulk-Residual with Richardson guard | Bulk-Residual inputs plus two wind heights | Yes | t1, v1, rad_bal, soil_flux | Two wind heights exist, but the same wind and energy-input gaps still matter row by row. |
 | Monin-Obukhov/Profile | temperature, humidity and wind profiles plus site metadata | Yes | t1, hum1, v1 | Missing or invalid humidity affects the gradient ratio; energy-input gaps also affect partitioning. |
-| Penman-type latent heat | radiation, soil heat flux, temperature, humidity, wind and site metadata | No | v1, temp, rad_bal, soil_flux, hum1 | Missing or invalid profile values directly affect the diagnostic profile calculation. |
+| Penman-type `LE` | radiation, soil heat flux, temperature, humidity, wind and site metadata | No | v1, temp, rad_bal, soil_flux, hum1 | Missing or invalid profile values directly affect the diagnostic profile calculation. |
 | Priestley-Taylor | `rad_bal`, `soil_flux`, `temp`, `surface_type` | Yes | temp, rad_bal, soil_flux | Penman uses radiation, soil heat flux, temperature, humidity, wind and site metadata; it returns latent heat only. |
 
 Priestley-Taylor uses `rad_bal`, `soil_flux`, `temp` and `surface_type`.
-If `rad_bal` or `soil_flux` is missing at a timestep, `Rn - G` is
+If `rad_bal` or `soil_flux` is missing at a timestep, `A = Q* - B` is
 unavailable.
 
 Bulk-Residual uses temperature difference, wind and heights for
@@ -402,7 +435,7 @@ Missing or invalid profile values directly affect the profile
 calculation.
 
 Penman uses radiation, soil heat flux, temperature, humidity, wind and
-site metadata. It returns latent heat only.
+site metadata. It returns `LE` only.
 
 ## External continuation boundary
 
@@ -432,7 +465,9 @@ The example shows why missing data must be interpreted by variable type
 and gap length. A short temperature gap, a radiation gap, a missing wind
 profile and a long soil-flux gap do not have the same consequences for
 later calculations. The inspection output therefore helps identify which
-variables require review and which method families are affected.
+variables require review and which method families are affected. The
+method-selection page then determines which calculation path can be
+interpreted from the inspected measurement architecture.
 
 `fieldClim` does not fill, impute, interpolate, complete or replace
 missing values. It reports the problem. Any decision to repair or

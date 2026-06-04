@@ -12,6 +12,14 @@ Messspalten und die Energiebilanz-Terme so zu verstehen, dass der
 anschließende `fieldClim`-Workflow auf einer geprüften Datenbasis
 aufsetzt.
 
+Eine systematische Auswahlhilfe für die Frage, welcher Rechenweg zu
+welcher Messarchitektur passt, findet sich in der Methodenauswahlseite
+[Choosing fieldClim Heat-Flux Methods by Measurement
+Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md).
+Diese Vignette bereitet dafür die Mess- und Energiebilanzgrößen vor; die
+eigentliche Anwendung der Paketmethoden erfolgt in der zweiten
+Workflow-Vignette.
+
 Diese Vignette umfasst die manuellen Schritte 0 bis 4:
 
 | Schritt | Leitfrage | Charakter |
@@ -26,28 +34,37 @@ Der eigentliche Paketworkflow mit
 [`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md),
 [`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md)
 und den Wärmeflussmethoden wird in der zweiten Vignette fortgesetzt.
+Diese erste Vignette bleibt bewusst bei Datenprüfung,
+Strahlungskomponenten, Bodenwärmestrom und verfügbarer Energie.
 
 ## Notation
 
-Die Vorlesungsfolien verwenden für die bodennahe Energiebilanz die
-Größen `Q*`, `B`, `L` und `V`. Diese Vignette behält diese Notation im
-Erklärungsteil bei. Erst an der Schnittstelle zum Datensatz und zu
-`fieldClim` wird auf die spezifischen Paket- und Spaltennamen des
-`fieldClim` Pakets gemappt.
+Diese Vignette verwendet für die bodennahe Energiebilanz dieselbe
+Referenznotation wie die Methodenauswahlseite: `Q*` ist die
+Netto-Strahlung, `B` ist der Bodenwärmestrom, `A = Q* - B` ist die
+verfügbare Energie, `H` ist der fühlbare Wärmestrom, `LE` ist der
+latente Wärmestrom und `R_E` ist der Residual- oder nicht geschlossene
+Energieterm.
+
+Die langwellige Strahlung wird davon getrennt notiert: `L_down`, `L_up`
+und `L*` bezeichnen langwellige Strahlungskomponenten. Dieses `L` ist
+nicht der fühlbare Wärmestrom.
 
 ![](figures/anchor_mesoklima_p45.png)![](figures/anchor_mesoklima_p46.png)
 
-| Theoriegröße | Bedeutung | Code-Variable in dieser Vignette | Feld im Datensatz oder Paket |
+| Referenzgröße | Bedeutung | Code-Variable in dieser Vignette | Feld im Datensatz oder Paket |
 |----|----|----|----|
 | `Q*` | Strahlungsbilanz / Netto-Strahlung | `Q_star` | `rad_net`, `rad_bal` |
 | `B` | Bodenwärmestrom | `B` | `heatflux_soil`, `soil_flux` |
-| `L` | fühlbarer Wärmestrom | `L` | `sensible_*` |
-| `V` | latenter Wärmestrom | `V` | `latent_*` |
+| `A = Q* - B` | verfügbare Energie | `Q_minus_B`, `available_energy` | `rad_bal - soil_flux` |
+| `H` | fühlbarer Wärmestrom | hier noch nicht berechnet | `sensible_*` |
+| `LE` | latenter Wärmestrom | hier noch nicht berechnet | `latent_*` |
+| `R_E = Q* - B - H - LE` | Residualterm / nicht geschlossener Energieterm | hier noch nicht berechnet | Closure-Diagnostik |
 | `S` | Speicherterm | `S` | hier nicht separat gemessen |
 
 Die Arbeitsbilanz lautet in der Theorie-Notation:
 
-\\ Q^{\*} = B + L + V + S \\
+\\ Q^{\*} = B + H + LE + S \\
 
 Der Speicherterm `S` wird in diesem Beispieldatensatz nicht separat
 berechnet. Das bedeutet nicht, dass Speicherung nicht existiert. Es
@@ -60,11 +77,15 @@ Referenzrechnung wird deshalb gesetzt:
 
 Damit wird:
 
-\\ Q^{\*} - B = L + V \\
+\\ Q^{\*} - B = H + LE \\
 
 und für die Residualrechnung:
 
-\\ V = Q^{\*} - B - L \\
+\\ LE = Q^{\*} - B - H \\
+
+Diese Residualformel wird hier nur als Energiebilanzlogik eingeführt.
+Die konkrete Schätzung von `H` und `LE` erfolgt erst in der zweiten
+Workflow-Vignette über die Paketmethoden.
 
 Mit dem Ausdruck **Kontrolle aus Einzelkomponenten** wird eine
 arithmetische Prüfung bezeichnet: Aus kurzwelliger und langwelliger
@@ -88,8 +109,13 @@ Tabelle ausgeben.
 | Transmission | atmosphärische Dämpfung der Strahlung beschreiben | `trans_*` |
 | Boden | Wärmeleitfähigkeit, Dämpfung und Bodenwärmestrom behandeln | `soil_*` |
 | Feuchte, Druck, Temperatur | Hilfsgrößen für weitere Berechnungen bereitstellen | `hum_*`, `pres_*`, `temp_*` |
-| Wärmeflüsse | fühlbare und latente Wärmeflüsse schätzen | `sensible_*`, `latent_*` |
+| Wärmeflüsse | fühlbare (`H`) und latente (`LE`) Wärmeflüsse schätzen | `sensible_*`, `latent_*` |
 | Sammelworkflow | mehrere Wärmeflussmethoden in einem Schritt berechnen | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md) |
+
+Diese Vignette nutzt diese Paketebenen noch nicht zur Flussberechnung.
+Sie prüft nur die Eingangsgrößen, die später von
+[`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md)
+und den Wärmeflussmethoden verwendet werden.
 
 Die Workflow-Schritte behandeln nicht jede der verfügbaren
 Einzelfunktion isoliert. Vielmehr soll die Abfolge die vorhandenen
@@ -241,8 +267,8 @@ Sonneneinstrahlung zurückwirft. Die kurzwellige Bilanz `K_star` ist
 deshalb der Teil der Sonnenenergie, der nach der Reflexion tatsächlich
 im System Oberfläche-Atmosphäre verbleibt. Dieser Schritt erklärt
 anschaulich, warum Albedo keine Nebengröße ist: Schon kleine Änderungen
-der Reflexion verändern die verfügbare Energie für Erwärmung,
-Bodenwärmestrom und Verdunstung.
+der Reflexion verändern die verfügbare Energie für Bodenwärmestrom,
+fühlbare Wärme und latente Wärme.
 
 ``` r
 
@@ -306,6 +332,10 @@ Bilanz.
 
 ![](figures/anchor_mesoklima_p39.png)![](figures/anchor_mesoklima_p41.png)
 
+Hier steht `L` für longwave radiation, nicht für fühlbare Wärme.
+Fühlbare Wärme wird in der Referenznotation dieser Vignette als `H`
+bezeichnet.
+
 \\ L^{\*} = L\_{down} - L\_{up} \\
 
 \\ Q^{\*} = K^{\*} + L^{\*} \\
@@ -315,7 +345,7 @@ Bilanz.
 # Langwellige Gegenstrahlung aus der Atmosphäre.
 caldern$L_down <- caldern$LDnCo
 
-# Langwellige Ausstrahlung der Oberfläche.
+# Langwellige Ausstrahlung der Oberfläche aus der Messspalte.
 caldern$L_up <- caldern$LUpCo
 
 # Langwellige Bilanz.
@@ -363,22 +393,35 @@ der zentrale Punkt: Kurzwellige Strahlung erklärt vor allem den
 Tagesantrieb durch die Sonne; langwellige Strahlung erklärt, warum die
 Oberfläche auch nachts energetisch aktiv bleibt.
 
+In diesem Datensatz wird `L_up` als vorhandene Messspalte verwendet. Es
+wird hier keine Oberflächentemperatur berechnet. Die paketinterne
+Modellfunktion
+[`rad_lw_out()`](https://gisma.github.io/migration-fieldclim/reference/rad_lw_out.md)
+würde für eine modellierte langwellige Ausstrahlung eine bereitgestellte
+`surface_temp` benötigen; diese Vignette rekonstruiert `L_up` aber nicht
+aus `surface_temp`.
+
 ### Kontrolle von Q\* aus Einzelkomponenten
 
 Die Netto-Strahlung `Q*` ist der zentrale Eingang in die Energiebilanz.
 In der Theorie steht `Q*` als Strahlungsbilanz auf der linken Seite der
 bodennahen Energiebilanz:
 
-\\ 0 = Q^{\*} - B - L - V \\
+\\ R_E = Q^{\*} - B - H - LE \\
 
 In dieser Vignette entspricht:
 
-| Theorie | Datensatz / Paket                | Bedeutung            |
-|---------|----------------------------------|----------------------|
-| `Q*`    | `rad_net` bzw. `rad_bal`         | Netto-Strahlung      |
-| `B`     | `heatflux_soil` bzw. `soil_flux` | Bodenwärmestrom      |
-| `L`     | `H`, `sensible_*`                | fühlbarer Wärmestrom |
-| `V`     | `LE`, `latent_*`                 | latenter Wärmestrom  |
+| Referenzgröße | Datensatz / Paket | Bedeutung |
+|----|----|----|
+| `Q*` | `rad_net` bzw. `rad_bal` | Netto-Strahlung |
+| `B` | `heatflux_soil` bzw. `soil_flux` | Bodenwärmestrom |
+| `H` | `sensible_*` | fühlbarer Wärmestrom |
+| `LE` | `latent_*` | latenter Wärmestrom |
+| `R_E` | Closure-Diagnostik | Residualterm / nicht geschlossene Energie |
+
+In dieser Vignette werden `H`, `LE` und `R_E` noch nicht berechnet. Sie
+werden nur als Referenzgrößen eingeführt, damit klar ist, welche
+Bedeutung `Q*` und `B` für die zweite Workflow-Vignette haben.
 
 Theoretisch kann `Q*` aus kurzwelligen und langwelligen
 Einzelkomponenten gebildet werden:
@@ -390,9 +433,9 @@ Einzelkomponenten gebildet werden:
 \\ Q^{\*} = K^{\*} + L^{\*} \\
 
 Im Datensatz liegt aber zusätzlich bereits eine Spalte `rad_net` vor.
-Deshalb wird hier nicht einfach eine neue Netto-Strahlung
-“rekonstruiert”, sondern geprüft, ob die vorhandene Spalte `rad_net` und
-die Summe aus Einzelkomponenten dieselbe Bilanzebene beschreiben.
+Deshalb wird hier keine neue Netto-Strahlung als Ersatzwert erzeugt. Die
+Komponentensumme dient nur als Kontrollgröße: Sie prüft, ob `rad_net`
+und `K* + L*` dieselbe Bilanzebene beschreiben.
 
 ``` r
 
@@ -591,7 +634,8 @@ Wärmeleitungsproblem. In den Caldern-Daten wird `B` direkt als
 
 ![](figures/anchor_mesoklima_p47.png)![](figures/anchor_mesoklima_p50.png)
 
-Die verfügbare Energie für fühlbaren und latenten Wärmestrom ist:
+Die verfügbare Energie für fühlbaren Wärmestrom `H` und latenten
+Wärmestrom `LE` ist:
 
 \\ Q^{\*} - B \\
 
@@ -603,7 +647,7 @@ caldern$Q_star <- caldern$Q_star_measured
 # Theoriegröße B: gemessener Bodenwärmestrom.
 caldern$B <- caldern$heatflux_soil
 
-# Energie, die für L und V verfügbar bleibt.
+# Energie, die für H und LE verfügbar bleibt.
 caldern$Q_minus_B <- caldern$Q_star - caldern$B
 ```
 
@@ -639,7 +683,7 @@ ein positiver Bodenwärmestrom, dass Energie in den Boden geht und damit
 nicht mehr für die turbulenten Flüsse in die Luft zur Verfügung steht.
 `Q_star - B` ist deshalb die eigentliche Arbeitsgröße für die
 energiegebundenen Methoden. Sie sagt: So viel Energie bleibt nach Abzug
-des Bodenanteils für fühlbaren und latenten Wärmestrom übrig.
+des Bodenanteils für `H` und `LE` übrig.
 
 ### Zusammengesetzter Plot
 
@@ -668,7 +712,12 @@ par(op)
 ## Übergang zur zweiten Vignette
 
 Bis hierher wurden die Messdaten und die zentralen Energiebilanzgrößen
-geprüft. Die Größen `Q_star` und `B` sind damit als Arbeitsterme
-vorbereitet. Die zweite Vignette überführt denselben Datensatz in ein
-`weather_station`-Objekt und nutzt darauf die Paketmethoden für
-Wärmeflüsse.
+geprüft. Die Größen `Q_star`, `B` und `Q_minus_B` sind damit als
+Arbeitsterme vorbereitet. Die zweite Vignette überführt denselben
+Datensatz in ein `weather_station`-Objekt und nutzt darauf die
+Paketmethoden für `H` und `LE`.
+
+Die Auswahl des passenden Rechenwegs hängt von Messarchitektur und
+Zielgröße ab. Dafür verweist diese Vignette auf die Methodenauswahlseite
+[Choosing fieldClim Heat-Flux Methods by Measurement
+Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md).

@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -96,8 +97,14 @@ regulären Caldern-Beispieldatensatz auf und beginnt dort, wo die
 manuelle Datenprüfung endet: Die geprüften Spalten werden in ein
 <code>weather_station</code>-Objekt überführt und anschließend mit den
 <code>fieldClim</code>-Paketfunktionen ausgewertet.</p>
-<p>Der Schwerpunkt liegt nicht mehr auf der manuellen Kontrolle
-einzelner Messspalten, sondern auf der Paketlogik:</p>
+<p>Eine systematische Auswahlhilfe für die Frage, welcher Rechenweg zu
+welcher Messarchitektur passt, findet sich in der Methodenauswahlseite
+<a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. Diese Vignette setzt diese Logik praktisch am
+Caldern-Beispieldatensatz um.</p>
+<p>Der Schwerpunkt liegt hier nicht mehr auf der manuellen Kontrolle
+einzelner Messspalten, sondern auf der Auswertung mit Hilfe der
+Paketlogik:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -127,11 +134,12 @@ einzelner Messspalten, sondern auf der Paketlogik:</p>
 </tr>
 <tr class="even">
 <td>4</td>
-<td>Wie werden PT, Bulk-Residual, Bowen, Monin-Obukhov/Profile und
+<td>Wie werden PT, Bulk–Residual, Bowen, Monin-Obukhov/Profile und
 Penman verglichen?</td>
 <td>
 <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code>,
-<code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> und Einzelmethoden</td>
+<code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> und Einzelmethoden als
+unterschiedliche Rechenwege</td>
 </tr>
 </tbody>
 </table>
@@ -143,49 +151,81 @@ Vignette.</p>
 <div class="section level2">
 <h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
 </h2>
-<p>Die zweite Vignette verwendet dieselbe Notation wie die manuelle
-Datenprüfung. <code>Q_star</code> ist die Netto-Strahlung,
-<code>B</code> ist der Bodenwärmestrom, <code>L</code> ist der fühlbare
-Wärmestrom und <code>V</code> ist der latente Wärmestrom.</p>
+<p>Die zweite Vignette verwendet für Formeln die englische
+Referenznotation der Methodenauswahlseite: <code>Q*</code> ist die
+Netto-Strahlung, <code>B</code> ist der Bodenwärmestrom,
+<code>A = Q* - B</code> ist die verfügbare Energie, <code>H</code> ist
+der fühlbare Wärmestrom, <code>LE</code> ist der latente Wärmestrom und
+<code>R_E</code> ist der Residual- oder nicht geschlossene
+Energieterm.</p>
+<p>Die R-Code-Variablen im Tutorial bleiben davon unberührt.
+Variablennamen wie <code>L_pt</code>, <code>V_pt</code>,
+<code>L_bulk_pkg</code> oder <code>V_bulk_pkg</code> werden beibehalten,
+weil sie aus dem bestehenden Paket- und Tutorialworkflow stammen. In den
+Erläuterungen werden sie jedoch als <code>H</code> beziehungsweise
+<code>LE</code> interpretiert.</p>
 <p>Für die Paketfunktionen wird diese Notation auf
 <code>fieldClim</code>-Namen abgebildet:</p>
 <table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
 <thead><tr class="header">
-<th>Theoriegröße</th>
+<th>Referenzgröße</th>
 <th>Bedeutung</th>
 <th>
 <code>fieldClim</code>-Feld oder Ausgabe</th>
+<th>Tutorial-Codevariable</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>
-<code>Q_star</code> / <code>Q*</code>
-</td>
+<td><code>Q*</code></td>
 <td>Netto-Strahlung</td>
 <td><code>rad_bal</code></td>
+<td><code>Q_star</code></td>
 </tr>
 <tr class="even">
 <td><code>B</code></td>
 <td>Bodenwärmestrom</td>
 <td><code>soil_flux</code></td>
+<td><code>B</code></td>
 </tr>
 <tr class="odd">
-<td><code>L</code></td>
-<td>fühlbarer Wärmestrom</td>
-<td><code>sensible_*</code></td>
+<td><code>A = Q* - B</code></td>
+<td>verfügbare Energie</td>
+<td><code>rad_bal - soil_flux</code></td>
+<td><code>available_energy</code></td>
 </tr>
 <tr class="even">
-<td><code>V</code></td>
-<td>latenter Wärmestrom</td>
-<td><code>latent_*</code></td>
+<td><code>H</code></td>
+<td>fühlbarer Wärmestrom</td>
+<td><code>sensible_*</code></td>
+<td><code>L_*</code></td>
 </tr>
 <tr class="odd">
-<td><code>Q_star - B</code></td>
-<td>verfügbare turbulente Energie</td>
-<td><code>rad_bal - soil_flux</code></td>
+<td><code>LE</code></td>
+<td>latenter Wärmestrom</td>
+<td><code>latent_*</code></td>
+<td><code>V_*</code></td>
+</tr>
+<tr class="even">
+<td><code>R_E = Q* - B - H - LE</code></td>
+<td>Residualterm / nicht geschlossener Energieterm</td>
+<td>Ausgabe der Closure-Diagnostik</td>
+<td>
+<code>diff_*</code>, <code>closure_residual</code>
+</td>
 </tr>
 </tbody>
 </table>
+<p>Die Spaltennamen <code>L_*</code> und <code>V_*</code> werden im Code
+nicht umbenannt. Sie sind in diesem Tutorial als Arbeitsvariablen zu
+verstehen: <code>L_*</code> entspricht dem referenzierten
+<code>H</code>, <code>V_*</code> entspricht dem referenzierten
+<code>LE</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="schritt-1-methodenüberblick-und-rollen-der-verfahren">Schritt 1: Methodenüberblick und Rollen der Verfahren<a class="anchor" aria-label="anchor" href="#schritt-1-methoden%C3%BCberblick-und-rollen-der-verfahren"></a>
@@ -200,120 +240,155 @@ greifen auf dieselbe Stationslogik zurück, verwenden daraus aber
 unterschiedliche Teilinformationen.</p>
 <p><img src="figures/station.png" class="r-plt" alt="" width="100%"></p>
 <p><img src="figures/fieldClim_theory.svg"> Die Verfahren sind nicht
-als gleichartige Messverfahren zu lesen. Sie sind unterschiedliche
-Rechenpfade mit unterschiedlicher Nähe zur Energiebilanz, zu Gradienten
-und zu Profilannahmen. Für die eigentliche Auswertung wird der Paketpfad
-<code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> verwendet.</p>
-<table class="table">
+als gleichartige Analyseverfahren zu lesen. Sie sind unterschiedliche
+Rechenwege mit unterschiedlicher Nähe zur Energiebilanz, zu Gradienten
+und zu Profilannahmen. Die methodische Auswahl folgt der Logik der Seite
+<a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>: Entscheidend ist, welche Messarchitektur
+vorliegt und welche Größe interpretiert werden soll.</p>
+<p><code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> ist dabei nicht „die
+eigentliche Auswertung“, sondern nur der Bulk–Residual-Rechenweg. Dort
+wird zuerst <code>sensible_bulk</code> berechnet und anschließend
+<code>latent_bulk_residual</code> als Rest der verfügbaren Energie
+bestimmt.</p>
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
 </colgroup>
 <thead><tr class="header">
 <th>Methode</th>
 <th>Hauptfrage</th>
 <th>Direkte Eingänge</th>
-<th>Ergebnis</th>
+<th>Ergebnis im Code</th>
+<th>Referenznotation</th>
 <th>Rolle im Workflow</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>Priestley-Taylor</td>
-<td>Wie wird die verfügbare Energie stabil partitioniert?</td>
+<td>Priestley–Taylor</td>
+<td>Wie wird die verfügbare Energie über eine empirische
+Verdunstungsparametrisierung aufgeteilt?</td>
 <td>
-<code>Q_star</code>, <code>B</code>, Parameter</td>
+<code>rad_bal</code>, <code>soil_flux</code>, <code>temp</code>,
+<code>surface_type</code>
+</td>
 <td>
 <code>L_pt</code>, <code>V_pt</code>
 </td>
-<td>erster, energiegebundener Paketpfad</td>
+<td>
+<code>H_PT</code>, <code>LE_PT</code>
+</td>
+<td>energiegebundene Partitionierung</td>
 </tr>
 <tr class="even">
-<td>Bulk-Residual</td>
-<td>Wie schätzt das Paket <code>L</code> aus Temperaturgradient und Wind
-und berechnet <code>V</code> als Residuum?</td>
+<td>Bulk–Residual</td>
+<td>Wie wird fühlbare Wärme aus Zwei-Höhen-Temperaturgradient und
+Austauschannahme geschätzt, und wie wird latente Wärme als Rest
+bestimmt?</td>
 <td>
-<code>weather_station</code>, <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>,
-<code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code>
+<code>t1</code>, <code>t2</code>, <code>v1</code>, optional
+<code>v2</code>, <code>z1</code>, <code>z2</code>, <code>rad_bal</code>,
+<code>soil_flux</code>
 </td>
 <td>
 <code>L_bulk_pkg</code>, <code>V_bulk_pkg</code>
 </td>
-<td>residualer Paketpfad, optional mit Richardson-Guard</td>
+<td>
+<code>H_bulk</code>, <code>LE_res</code>
+</td>
+<td>direkte <code>H</code>-Schätzung plus residuales
+<code>LE</code>
+</td>
 </tr>
 <tr class="odd">
 <td>Bowen-Verhältnis</td>
 <td>Wie teilt ein Temperatur-/Feuchtegradient die verfügbare Energie
 auf?</td>
-<td>Temperaturgradient, Feuchtegradient, <code>Q_star</code>,
-<code>B</code>
+<td>
+<code>t1</code>, <code>t2</code>, <code>hum1</code>,
+<code>hum2</code>, <code>z1</code>, <code>z2</code>,
+<code>rad_bal</code>, <code>soil_flux</code>
 </td>
 <td>
 <code>L_bowen</code>, <code>V_bowen</code>
 </td>
-<td>gradientenempfindliche Partitionierung</td>
+<td>
+<code>H_BR</code>, <code>LE_BR</code>
+</td>
+<td>gradientenbasierte Partitionierung</td>
 </tr>
 <tr class="even">
 <td>Monin-Obukhov/Profile</td>
-<td>Wie reagieren Profilmethoden auf Gradienten und Stabilität?</td>
-<td>Windprofil, Temperaturprofil, Feuchteprofil,
-Stabilitätsdiagnostik</td>
+<td>Was ergeben Temperatur-, Feuchte- und Windprofile als diagnostische
+Profilflüsse?</td>
+<td>
+<code>t1</code>, <code>t2</code>, <code>hum1</code>,
+<code>hum2</code>, <code>v1</code>, <code>v2</code>, <code>z1</code>,
+<code>z2</code>, Rauigkeitskontext</td>
 <td>
 <code>L_monin</code>, <code>V_monin</code>
 </td>
-<td>profilbasiert, nicht bilanznormiert/energie-schließend</td>
+<td>
+<code>H_MO</code>, <code>LE_MO</code>
+</td>
+<td>Profil-/Stabilitätsdiagnose, nicht bilanzschließend</td>
 </tr>
 <tr class="odd">
 <td>Penman</td>
 <td>Wie groß ist der latente Wärmestrom aus Energie- und
 Verdunstungsantrieb?</td>
 <td>
-<code>Q_star</code>, <code>B</code>, Wind, Temperatur, Feuchte,
-Oberfläche</td>
+<code>rad_bal</code>, <code>soil_flux</code>, Meteorologie,
+Standort- und Oberflächenparameter</td>
 <td><code>V_penman</code></td>
-<td>LE-only Vergleichspfad</td>
+<td><code>LE_Penman</code></td>
+<td>
+<code>LE</code>-only Vergleichspfad</td>
 </tr>
 </tbody>
 </table>
 <div class="section level4">
-<h4 id="priestley-taylor">1. Priestley-Taylor<a class="anchor" aria-label="anchor" href="#priestley-taylor"></a>
+<h4 id="priestleytaylor">1. Priestley–Taylor<a class="anchor" aria-label="anchor" href="#priestleytaylor"></a>
 </h4>
-<p>#<code>{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_priestley_taylor.png") #</code></p>
-<p>Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad.
-Der Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
-keine empfindliche Aufteilung über kleine Feuchtegradienten.</p>
+<p>Priestley–Taylor ist in dieser Vignette ein energiegebundener
+Rechenweg. Der Ansatz bleibt direkt an die verfügbare Energie gebunden
+und benötigt keine Aufteilung über gemessene Feuchtegradienten.</p>
 <p><span class="math display">\[
-L + V = Q^{*} - B
+H + LE = Q^* - B
 \]</span></p>
 <p><span class="math display">\[
-V_{PT} \approx \alpha_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{*} - B)
+LE_{PT} = \alpha_{PT} \frac{sc}{sc + \gamma} (Q^* - B)
 \]</span></p>
 <p><span class="math display">\[
-L_{PT} = (Q^{*} - B) - V_{PT}
+H_{PT} = (Q^* - B) - LE_{PT}
 \]</span></p>
-<p>Der Vorteil dieses Pfads ist die Bilanzbindung: Wenn
-<code>Q_star</code> und <code>B</code> korrekt gesetzt sind, bleibt die
-Summe aus <code>L_PT</code> und <code>V_PT</code> auf der verfügbaren
-Energie.</p>
+<p>Die zentrale Eigenschaft dieses Rechenwegs ist die Bilanzbindung:
+Wenn <code>Q_star</code> und <code>B</code> korrekt gesetzt sind, bleibt
+die Summe aus <code>H_PT</code> und <code>LE_PT</code> auf der
+verfügbaren Energie. Im Code werden diese Größen später als
+<code>L_pt</code> und <code>V_pt</code> abgelegt. Das ist eine
+methodische Partitionierung, keine unabhängige Validierung der beiden
+Teilflüsse.</p>
 </div>
 <div class="section level4">
-<h4 id="bulk-residual-mit-optionalem-richardson-guard">2. Bulk-Residual mit optionalem Richardson-Guard<a class="anchor" aria-label="anchor" href="#bulk-residual-mit-optionalem-richardson-guard"></a>
+<h4 id="bulkresidual-mit-optionalem-richardson-guard">2. Bulk–Residual mit optionalem Richardson-Guard<a class="anchor" aria-label="anchor" href="#bulkresidual-mit-optionalem-richardson-guard"></a>
 </h4>
-<p>#<code>{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/Overview_meadow_station.png") #</code></p>
-<p>Der Paketpfad <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> nutzt eine
-einfache Bulk-Transfer-Schätzung für den fühlbaren Wärmestrom und
-berechnet den latenten Wärmestrom anschließend als Residuum. Die
-Grundlogik ist:</p>
+<p>Der Rechenweg <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> nutzt eine
+Bulk-Transfer-Schätzung für den fühlbaren Wärmestrom und berechnet den
+latenten Wärmestrom anschließend als Residuum. Die Grundlogik ist:</p>
 <p><span class="math display">\[
-L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
+H_{bulk} = \rho c_p \frac{t_1 - t_2}{r_a}
 \]</span></p>
 <p><span class="math display">\[
 r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
 \]</span></p>
 <p><span class="math display">\[
-V_{residual} = Q^{*} - B - L_{bulk}
+LE_{res} = Q^* - B - H_{bulk}
 \]</span></p>
 <p>Zusätzlich kann <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code> mit
 <code>stability_method = "ri_guard"</code> eine Gradient-Richardson-Zahl
@@ -327,20 +402,24 @@ Ri_g =
 <p>Der Guard ist nicht der Default. Er wird nur aktiviert, wenn
 <code>stability_method = "ri_guard"</code> gesetzt wird. Instabile,
 neutrale und moderat stabile Fälle behalten den neutralen Bulk-Wert.
-Sehr stabile, ungültige oder schwach geschwerte Fälle werden auf
-<code>NA</code> gesetzt. Wenn <code>L_bulk</code> dadurch
-<code>NA</code> wird, wird auch das Residuum <code>V_bulk</code>
-<code>NA</code>. Das verhindert, dass eine algebraische
-Residualschließung einen nicht belastbaren fühlbaren Wärmestrom
-verdeckt.</p>
-<p>Die aktuell eingebundene Bulk-Grafik zeigt noch die Grundlogik der
-früheren manuellen Referenz. Sie wird im nächsten Abbildungsschritt auf
-den Paketpfad mit optionalem Richardson-Guard umgestellt.</p>
+Sehr stabile, ungültige oder schwach gescherte Fälle werden auf
+<code>NA</code> gesetzt. Wenn <code>H_bulk</code> dadurch
+<code>NA</code> wird, wird auch das Residuum <code>LE_res</code>
+<code>NA</code>. Im Code entspricht das den Arbeitsvariablen
+<code>L_bulk_pkg</code> und <code>V_bulk_pkg</code>. Dadurch bleibt
+sichtbar, dass der neutrale Bulk-Ansatz für diese Zeitschritte nicht
+ausgewertet wurde.</p>
+<p>Der Guard ist eine Filteroption, keine Stabilitätskorrektur. Er macht
+Bulk–Residual nicht zu einem Monin-Obukhov-Verfahren.</p>
+<p>Die Bulk-Grafik ist als Darstellung des Rechenwegs zu lesen: Zuerst
+wird <code>H_bulk</code> aus Temperaturgradient und Austauschannahme
+geschätzt, anschließend wird <code>LE_res</code> als Rest bestimmt. Der
+optionale Richardson-Guard betrifft nur die Zulässigkeit einzelner
+Bulk-Zeitschritte.</p>
 </div>
 <div class="section level4">
 <h4 id="bowen-verhältnis">3. Bowen-Verhältnis<a class="anchor" aria-label="anchor" href="#bowen-verh%C3%A4ltnis"></a>
 </h4>
-<p>#<code>{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_bowen.png") #</code></p>
 <p>Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
 latenten Wärmestrom.</p>
@@ -351,29 +430,29 @@ latenten Wärmestrom.</p>
 Paketimplementierung ist spezifischer: Sie verwendet eine
 Potentialtemperaturdifferenz und eine absolute Feuchtedifferenz mit
 einem empirischen <code>fieldClim</code>-Koeffizienten. Deshalb wird
-Bowen in dieser Vignette als Paketpfad interpretiert, nicht als
-allgemeine textbook-Formel.</p>
+Bowen in dieser Vignette als Rechenweg des Pakets interpretiert, nicht
+als allgemeine textbook-Formel.</p>
 <p><span class="math display">\[
-L_{Bowen} = \frac{\beta}{1 + \beta} (Q^{*} - B)
+H_{BR} = \frac{\beta}{1 + \beta} (Q^* - B)
 \]</span></p>
 <p><span class="math display">\[
-V_{Bowen} = \frac{1}{1 + \beta} (Q^{*} - B)
+LE_{BR} = \frac{1}{1 + \beta} (Q^* - B)
 \]</span></p>
-<p>Der Ansatz ist für finite, nicht gekappte Fälle bilanzgebunden, aber
-stark gradientenempfindlich. Wenn Feuchtegradienten sehr klein werden,
-Vorzeichen wechseln, <code>beta</code> nicht endlich ist oder
-<code>1 + beta</code> nahe null liegt, können einzelne Zeitschritte
-stark ausschlagen. Gekappte oder nicht-endliche Fälle werden deshalb als
-nicht belastbare Bowen-Zeitschritte behandelt und nicht als exakte
-Aufteilung von <span class="math inline">\(Q^* - B\)</span>
-interpretiert.</p>
+<p>Der Rechenweg ist für finite, nicht gekappte Fälle bilanzgebunden,
+aber stark gradientenempfindlich. Im Code werden die Ergebnisse später
+als <code>L_bowen</code> und <code>V_bowen</code> abgelegt. Wenn
+Feuchtegradienten sehr klein werden, Vorzeichen wechseln,
+<code>beta</code> nicht endlich ist oder <code>1 + beta</code> nahe null
+liegt, können einzelne Zeitschritte stark ausschlagen. Gekappte oder
+nicht-endliche Fälle werden deshalb als nicht belastbare
+Bowen-Zeitschritte behandelt und nicht als exakte Aufteilung von <span class="math inline">\(Q^* - B\)</span> interpretiert.</p>
 </div>
 <div class="section level4">
-<h4 id="monin-obukhovprofile">4. Monin-Obukhov/Profile<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile"></a>
+<h4 id="monin-obukhovprofile-als-diagnostik">4. Monin-Obukhov/Profile als Diagnostik<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile-als-diagnostik"></a>
 </h4>
-<p>#<code>{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_monin_obukhov.png") #</code></p>
-<p>Der Monin-Obukhov/Profile-Pfad ist in <code>fieldClim</code> kein
-Verfahren, das die verfügbare Energie automatisch auf <span class="math inline">\(L\)</span> und <span class="math inline">\(V\)</span> verteilt. Er berechnet Wärmeflüsse aus
+<p>Der Monin-Obukhov/Profile-Rechenweg wird in dieser Vignette als
+Profil- und Stabilitätsdiagnostik gelesen. Er ist kein Verfahren, das
+die verfügbare Energie automatisch auf <span class="math inline">\(H\)</span> und <span class="math inline">\(LE\)</span> verteilt. Er berechnet Wärmeflüsse aus
 den gemessenen Unterschieden zwischen zwei Höhen: Temperatur, Feuchte,
 Wind und Messhöhe gehen direkt in die Profilrechnung ein. Deshalb
 reagiert der Ansatz besonders empfindlich, wenn diese Unterschiede sehr
@@ -386,22 +465,30 @@ auf 0 gesetzt. Wenn Messhöhen ungültig sind, Windwerte fehlen oder
 rechnerisch nicht auswertbare Profilzustände entstehen, gibt die
 Funktion für diese Zeitschritte <code>NA</code> zurück und erzeugt eine
 Warnung.</p>
-<p>Wichtig ist: Diese Absicherung macht den Monin-Obukhov/Profile-Pfad
-nicht zu einem bilanzschließenden Verfahren. Große, aber rechnerisch
-endliche Werte werden nicht automatisch auf <span class="math inline">\(Q^* - B\)</span> begrenzt. Deshalb müssen die
-Ergebnisse anschließend gegen die verfügbare Energie geprüft werden.
-Wenn <span class="math inline">\(L + V\)</span> deutlich größer oder
-kleiner als <span class="math inline">\(Q^* - B\)</span> ist, spricht
-das nicht sofort für ein reales Wärmeflussereignis, sondern für eine
-kritische Profil- oder Stabilitätssituation im Datensatz.</p>
+<p>Wichtig ist: Diese Absicherung macht den
+Monin-Obukhov/Profile-Rechenweg weder zu einem bilanzschließenden
+Verfahren noch zu einer automatisch validierten vollständigen
+MOST-Implementierung. Große, aber rechnerisch endliche Werte werden
+nicht automatisch auf <span class="math inline">\(Q^* - B\)</span>
+begrenzt. Deshalb müssen die Ergebnisse anschließend gegen die
+verfügbare Energie geprüft werden. Wenn <span class="math inline">\(H +
+LE\)</span> deutlich größer oder kleiner als <span class="math inline">\(Q^* - B\)</span> ist, spricht das nicht sofort für
+ein reales Wärmeflussereignis, sondern für eine kritische Profil- oder
+Stabilitätssituation im Datensatz.</p>
 <p>Für die Interpretation gilt deshalb: Monin-Obukhov/Profile-Werte
 werden nicht auf die verfügbare Energie <span class="math inline">\(Q^*
 - B\)</span> normiert. Es wird also nicht erwartet, dass</p>
 <p><span class="math display">\[
-L_{MO} + V_{MO} = Q^* - B
+H_{MO} + LE_{MO} = Q^* - B
 \]</span></p>
+<p>Der diagnostische Residualbezug lautet:</p>
+<p><span class="math display">\[
+R_{E,MO} = Q^* - B - H_{MO} - LE_{MO}
+\]</span></p>
+<p>Im Code werden <code>H_MO</code> und <code>LE_MO</code> später als
+<code>L_monin</code> und <code>V_monin</code> abgelegt.</p>
 <p>gilt. Die Gleichung dient hier nur als Plausibilitätsprüfung. Wenn
-<span class="math inline">\(L_{MO} + V_{MO}\)</span> deutlich von <span class="math inline">\(Q^* - B\)</span> abweicht, spricht das für
+<span class="math inline">\(H_{MO} + LE_{MO}\)</span> deutlich von <span class="math inline">\(Q^* - B\)</span> abweicht, spricht das für
 empfindliche oder problematische Profilbedingungen: kleine Temperatur-
 oder Feuchtegradienten, schwache Windunterschiede, ungünstige
 Stabilitätsannahmen oder 5-Minuten-Rauschen.</p>
@@ -413,21 +500,30 @@ Partitionierungsansatz gelesen werden darf.</p>
 <div class="section level4">
 <h4 id="penman">5. Penman<a class="anchor" aria-label="anchor" href="#penman"></a>
 </h4>
-<p>#<code>{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_penman.png") #</code></p>
 <p>Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
 verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
-Im aktuellen Paketpfad liefert Penman <code>V</code>, aber keinen
-eigenen fühlbaren Wärmestrom <code>L</code>.</p>
+Im aktuellen Rechenweg liefert Penman <code>LE</code>, im Code später
+<code>V_penman</code>, aber keinen eigenen fühlbaren Wärmestrom
+<code>H</code>.</p>
 <p><span class="math display">\[
-V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) +
+LE_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^* - B) +
 \frac{\gamma}{\Delta + \gamma} E_a
 \]</span></p>
 <p><span class="math display">\[
 E_a = f(u, e_s - e_a)
 \]</span></p>
-<p>Penman ist deshalb ein Vergleichs- und Prüfpfad für <code>V</code>,
-aber keine vollständige <code>L</code>/<code>V</code>-Partitionierung
-wie Priestley-Taylor oder Bowen.</p>
+<p>Da Penman keinen eigenen fühlbaren Wärmestrom berechnet, bleibt nach
+Abzug von <code>latent_penman</code> nur ein offener Rest:</p>
+<p><span class="math display">\[
+U_{Penman} = Q^* - B - LE_{Penman}
+\]</span></p>
+<p>Dieser Rest ist nicht automatisch <code>H</code>. Er kann fühlbare
+Wärme, Bilanzfehler, Eingangsdatenfehler und Modellabweichungen
+enthalten. Im Code wird <code>LE_Penman</code> später als
+<code>V_penman</code> abgelegt.</p>
+<p>Penman ist deshalb ein Vergleichs- und Prüfweg für <code>LE</code>,
+aber keine vollständige <code>H</code>/<code>LE</code>-Partitionierung
+wie Priestley–Taylor, Bowen oder Bulk–Residual.</p>
 </div>
 </div>
 </div>
@@ -464,7 +560,7 @@ strukturierte Datenbasis zugreifen.</p>
 <span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span>
 <span></span>
-<span>  <span class="co"># Paketnamen für Theoriegrößen:</span></span>
+<span>  <span class="co"># Paketnamen für Referenzgrößen:</span></span>
 <span>  <span class="co"># rad_bal entspricht Q*, soil_flux entspricht B.</span></span>
 <span>  rad_bal <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span>,</span>
 <span>  soil_flux <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span>,</span>
@@ -652,7 +748,7 @@ oder vollständig fehlend sind.</p>
 <p><strong>Interpretation.</strong> Diese Vorprüfung beantwortet noch
 nicht, ob die physikalischen Methoden für jeden Zeitschritt sinnvoll
 sind. Sie prüft zuerst die Eingangsstruktur: Sind die benötigten Felder
-für Priestley-Taylor, Bulk-Residual, Bowen, Monin-Obukhov/Profile und
+für Priestley–Taylor, Bulk–Residual, Bowen, Monin-Obukhov/Profile und
 Penman vorhanden? Gibt es fehlende oder teilweise fehlende Eingaben?
 Werden einfache QC-Probleme wie unmögliche Feuchtewerte oder negative
 Windgeschwindigkeiten gefunden?</p>
@@ -664,18 +760,20 @@ einzelnen Wärmeflussmethoden berechnet und interpretiert werden.</p>
 <h2 id="schritt-4-paketmethoden-für-wärmeflüsse">Schritt 4: Paketmethoden für Wärmeflüsse<a class="anchor" aria-label="anchor" href="#schritt-4-paketmethoden-f%C3%BCr-w%C3%A4rmefl%C3%BCsse"></a>
 </h2>
 <div class="section level3">
-<h3 id="priestley-taylor-als-erster-paketpfad">Priestley-Taylor als erster Paketpfad<a class="anchor" aria-label="anchor" href="#priestley-taylor-als-erster-paketpfad"></a>
+<h3 id="priestleytaylor-als-energiegebundener-rechenweg">Priestley–Taylor als energiegebundener Rechenweg<a class="anchor" aria-label="anchor" href="#priestleytaylor-als-energiegebundener-rechenweg"></a>
 </h3>
-<p>Priestley-Taylor nutzt die verfügbare Energie <code>Q* - B</code> und
+<p>Priestley–Taylor nutzt die verfügbare Energie <code>Q* - B</code> und
 eine empirische Verdunstungsparametrisierung. Der Vorteil im Einstieg
 ist nicht, dass die Methode „wahrer“ wäre, sondern dass sie keine
 instabilen Gradientenquotienten benötigt.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Nur den Priestley-Taylor-Pfad berechnen.</span></span>
+<code class="sourceCode R"><span><span class="co"># Nur den Priestley–Taylor-Pfad berechnen.</span></span>
 <span><span class="co"># Dieser Pfad ist als erster Paketvergleich stabiler als der volle Methodenworkflow.</span></span>
 <span><span class="va">flux_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">ws</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Ergebnisse zurück in den Auswertungsdatensatz schreiben.</span></span>
+<span><span class="co"># Die bestehenden Codevariablen L_* und V_* bleiben erhalten:</span></span>
+<span><span class="co"># L_* entspricht H, V_* entspricht LE.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">sensible_priestley_taylor</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">latent_priestley_taylor</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span></span></code></pre></div>
@@ -683,11 +781,11 @@ instabilen Gradientenquotienten benötigt.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: L"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley–Taylor: H"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: V"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley–Taylor: LE"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_files/figure-html/priestley-taylor-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -699,33 +797,34 @@ instabilen Gradientenquotienten benötigt.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>     ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_minus_B</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: Energieabschluss"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley–Taylor: Energieabschluss"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottom"</span>, inset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.35</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, bty <span class="op">=</span> <span class="st">"n"</span>,</span>
-<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"L + V nach PT"</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">cols_pt</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"H + LE nach PT"</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">cols_pt</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_files/figure-html/priestley-closure-plot-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> Priestley-Taylor ist hier der
-sauberste Einstieg in den Methodenvergleich. Die Methode nimmt die
-verfügbare Energie und teilt sie mit einem kompakten
-Verdunstungsparameter auf <code>L</code> und <code>V</code> auf. Im
-Ergebnis liegt der Tagesmittelwert für <code>L</code> bei 25.1 W/m² und
-für <code>V</code> bei 83.6 W/m². Zusammen ergibt das im Mittel genau
-die verfügbare Energie.</p>
+<p><strong>Interpretation.</strong> Priestley–Taylor ist hier der erste
+energiegebundene Vergleichsweg. Die Methode nimmt die verfügbare Energie
+und teilt sie mit einem kompakten Verdunstungsparameter auf
+<code>H</code> und <code>LE</code> auf. Im Code werden diese Größen als
+<code>L_pt</code> und <code>V_pt</code> abgelegt. Im Ergebnis liegt der
+Tagesmittelwert für <code>H</code> bei 25.1 W/m² und für <code>LE</code>
+bei 83.6 W/m². Zusammen ergibt das im Mittel die verfügbare Energie.</p>
 <p>Das macht PT nicht automatisch „richtiger“ als die anderen Methoden.
-Der Vorteil liegt in der Lesbarkeit: Wenn <code>Q_star</code> und
-<code>B</code> stimmen, ist der Energieabschluss sofort nachvollziehbar.
-Die Methode vermeidet kleine Feuchtegradienten, Windschere und
-Stabilitätsklassifikation. Deshalb eignet sie sich in dieser Vignette
-als erster Vergleichspfad: Sie zeigt, wie die Energiebilanz aussieht,
-bevor empfindlichere Profil- oder Gradientenmethoden hinzukommen.</p>
+Die Stärke liegt in der transparenten Bilanzbindung: Wenn
+<code>Q_star</code> und <code>B</code> stimmen, ist der Energieabschluss
+sofort nachvollziehbar. Die Methode vermeidet kleine Feuchtegradienten,
+Windschere und Stabilitätsklassifikation. Deshalb eignet sie sich in
+dieser Vignette als erster Vergleichspfad: Sie zeigt, wie die
+Energiebilanz aussieht, bevor empfindlichere Profil- oder
+Gradientenmethoden hinzukommen.</p>
 </div>
 <div class="section level3">
-<h3 id="bulk-residual-im-paket-mit-richardson-guard">Bulk-Residual im Paket mit Richardson-Guard<a class="anchor" aria-label="anchor" href="#bulk-residual-im-paket-mit-richardson-guard"></a>
+<h3 id="bulkresidual-im-paket-mit-richardson-guard">Bulk–Residual im Paket mit Richardson-Guard<a class="anchor" aria-label="anchor" href="#bulkresidual-im-paket-mit-richardson-guard"></a>
 </h3>
-<p>Der Bulk-Residual-Pfad wird jetzt als Paketmethode behandelt, nicht
+<p>Der Bulk–Residual-Pfad wird jetzt als Paketmethode behandelt, nicht
 mehr als separater manueller Workflow-Schritt. Für den Vergleich wird
 der optionale Richardson-Guard aktiviert, weil der Caldern-Datensatz
 zwei Temperatur- und Windhöhen enthält.</p>
@@ -748,40 +847,42 @@ zwei Temperatur- und Windhöhen enthält.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#666666"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk-Residual im Paket: L mit ri_guard"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk–Residual im Paket: H mit ri_guard"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk-Residual im Paket: V als Residuum"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk–Residual im Paket: LE als Residuum"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_files/figure-html/bulk-package-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> Der Bulk-Residual-Pfad arbeitet
-anders als PT. Zuerst wird <code>L</code> aus Temperaturunterschied und
-Wind abgeschätzt; erst danach wird <code>V</code> als Rest der
-Energiebilanz berechnet. Mit aktiviertem Richardson-Guard bleiben in
-diesem Datensatz nur 113 von 288 Zeitschritten als gültige
-Bulk-Residual-Werte übrig. Die Stabilitätszählung zeigt warum: 175
-Zeitschritte werden als sehr stabil klassifiziert und deshalb nicht als
-robuste neutrale Bulk-Flüsse weitergeführt.</p>
+<p><strong>Interpretation.</strong> Der Bulk–Residual-Rechenweg arbeitet
+anders als PT. Zuerst wird <code>H</code> aus Temperaturunterschied und
+Wind abgeschätzt; im Code wird diese Größe als <code>L_bulk_pkg</code>
+abgelegt. Erst danach wird <code>LE</code> als Rest der Energiebilanz
+berechnet; im Code ist dies <code>V_bulk_pkg</code>. Mit aktiviertem
+Richardson-Guard bleiben in diesem Datensatz nur 113 von 288
+Zeitschritten als gültige Bulk–Residual-Werte übrig. Die
+Stabilitätszählung zeigt warum: 175 Zeitschritte werden als sehr stabil
+klassifiziert und deshalb nicht als robuste neutrale Bulk-Flüsse
+weitergeführt.</p>
 <p>Das ist kein Fehler, sondern genau die Funktion des Guards. Der Guard
-macht aus Bulk-Residual kein vollständiges Monin-Obukhov-Verfahren und
+macht aus Bulk–Residual kein vollständiges Monin-Obukhov-Verfahren und
 korrigiert die gültigen Flüsse nicht. Er verhindert nur, dass ein
 neutraler Bulk-Ansatz dort scheinbar plausible Zahlen liefert, wo das
 Zwei-Höhen-Profil selbst sagt: Diese Situation ist sehr stabil, schwach
 geschert oder numerisch nicht belastbar. Für die gültigen Zeitschritte
-bleibt die Residualrechnung transparent: <code>V</code> ist der
+bleibt die Residualrechnung transparent: <code>LE</code> ist der
 Energierest nach <code>Q_star</code>, <code>B</code> und
-<code>L_bulk</code>.</p>
+<code>H_bulk</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="voller-methodenworkflow">Voller Methodenworkflow<a class="anchor" aria-label="anchor" href="#voller-methodenworkflow"></a>
 </h3>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Alle im Sammelworkflow verfügbaren Methoden berechnen.</span></span>
-<span><span class="co"># Bulk-Residual wurde oben separat berechnet, weil hier der Richardson-Guard</span></span>
+<span><span class="co"># Bulk–Residual wurde oben separat berechnet, weil hier der Richardson-Guard</span></span>
 <span><span class="co"># explizit verwendet wird.</span></span>
 <span><span class="va">flux_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
 <span></span>
@@ -790,11 +891,16 @@ Energierest nach <code>Q_star</code>, <code>B</code> und
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_monin</span> <span class="op">&lt;-</span> <span class="va">flux_all</span><span class="op">$</span><span class="va">sensible_monin</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">V_monin</span> <span class="op">&lt;-</span> <span class="va">flux_all</span><span class="op">$</span><span class="va">latent_monin</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">V_penman</span> <span class="op">&lt;-</span> <span class="va">flux_all</span><span class="op">$</span><span class="va">latent_penman</span></span></code></pre></div>
+<p>Der Sammelworkflow <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> berechnet die
+Standardmethoden mit ihren Standardoptionen. Der guarded
+Bulk–Residual-Rechenweg wird deshalb separat geführt und in den
+folgenden Tabellen als <code>Bulk–Residual Paket (ri_guard)</code>
+ausgewiesen.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">L_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Methode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Priestley-Taylor"</span>,</span>
-<span>    <span class="st">"Bulk-Residual Paket (ri_guard)"</span>,</span>
+<span>    <span class="st">"Priestley–Taylor"</span>,</span>
+<span>    <span class="st">"Bulk–Residual Paket (ri_guard)"</span>,</span>
 <span>    <span class="st">"Bowen"</span>,</span>
 <span>    <span class="st">"Monin-Obukhov/Profile"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -808,8 +914,8 @@ Energierest nach <code>Q_star</code>, <code>B</code> und
 <span></span>
 <span><span class="va">V_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Methode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Priestley-Taylor"</span>,</span>
-<span>    <span class="st">"Bulk-Residual Paket (ri_guard)"</span>,</span>
+<span>    <span class="st">"Priestley–Taylor"</span>,</span>
+<span>    <span class="st">"Bulk–Residual Paket (ri_guard)"</span>,</span>
 <span>    <span class="st">"Bowen"</span>,</span>
 <span>    <span class="st">"Monin-Obukhov/Profile"</span>,</span>
 <span>    <span class="st">"Penman"</span></span>
@@ -826,42 +932,45 @@ Energierest nach <code>Q_star</code>, <code>B</code> und
 <span><span class="va">L_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">L_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">V_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">V_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">L_summary</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">L_summary</span><span class="op">)</span> <span class="op">==</span> <span class="st">"L_Mittel_W_m2"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"H_Mittel_W_m2"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_summary</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_summary</span><span class="op">)</span> <span class="op">==</span> <span class="st">"V_Mittel_W_m2"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"LE_Mittel_W_m2"</span></span>
+<span></span>
 <span><span class="va">L_summary</span></span>
-<span><span class="co">#&gt;                          Methode L_Mittel_W_m2</span></span>
-<span><span class="co">#&gt; 1               Priestley-Taylor          25.1</span></span>
-<span><span class="co">#&gt; 2 Bulk-Residual Paket (ri_guard)          90.9</span></span>
+<span><span class="co">#&gt;                          Methode H_Mittel_W_m2</span></span>
+<span><span class="co">#&gt; 1               Priestley–Taylor          25.1</span></span>
+<span><span class="co">#&gt; 2 Bulk–Residual Paket (ri_guard)          90.9</span></span>
 <span><span class="co">#&gt; 3                          Bowen         -21.1</span></span>
 <span><span class="co">#&gt; 4          Monin-Obukhov/Profile         104.2</span></span>
 <span><span class="va">V_summary</span></span>
-<span><span class="co">#&gt;                          Methode V_Mittel_W_m2</span></span>
-<span><span class="co">#&gt; 1               Priestley-Taylor          83.6</span></span>
-<span><span class="co">#&gt; 2 Bulk-Residual Paket (ri_guard)         188.7</span></span>
-<span><span class="co">#&gt; 3                          Bowen         129.8</span></span>
-<span><span class="co">#&gt; 4          Monin-Obukhov/Profile          52.7</span></span>
-<span><span class="co">#&gt; 5                         Penman          13.2</span></span></code></pre></div>
+<span><span class="co">#&gt;                          Methode LE_Mittel_W_m2</span></span>
+<span><span class="co">#&gt; 1               Priestley–Taylor           83.6</span></span>
+<span><span class="co">#&gt; 2 Bulk–Residual Paket (ri_guard)          188.7</span></span>
+<span><span class="co">#&gt; 3                          Bowen          129.8</span></span>
+<span><span class="co">#&gt; 4          Monin-Obukhov/Profile           52.7</span></span>
+<span><span class="co">#&gt; 5                         Penman           13.2</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Die Tabellen zeigen keine Rangfolge,
 sondern verschiedene Antworten auf verschiedene methodische Fragen.</p>
-<p>PT liefert mit 25.1 W/m² für <code>L</code> und 83.6 W/m² für
-<code>V</code> einen moderaten, energiegebundenen Referenzverlauf.</p>
-<p>Bulk-Residual liegt für die gültigen, nicht geguardeten Zeitschritte
-deutlich höher (<code>L</code>: 90.9 W/m², <code>V</code>: 188.7 W/m²),
+<p>PT liefert mit 25.1 W/m² für <code>H</code> und 83.6 W/m² für
+<code>LE</code> einen energiegebundenen Vergleichsverlauf.</p>
+<p>Bulk–Residual liegt für die gültigen, nicht geguardeten Zeitschritte
+deutlich höher (<code>H</code>: 90.9 W/m², <code>LE</code>: 188.7 W/m²),
 weil nur ein Teil des Tages nach dem Richardson-Screening übrig bleibt
 und diese gültigen Zeitpunkte nicht denselben Tagesmittelwert wie alle
 288 Messzeitpunkte repräsentieren.</p>
-<p>Bowen zeigt einen negativen Tagesmittelwert für <code>L</code> (-21.1
-W/m²), aber einen hohen latenten Anteil (129.8 W/m²). Das ist ein
-Hinweis darauf, dass Mittelwerte bei gradientenempfindlichen Methoden
-trügerisch sein können: Einzelne starke positive und negative
+<p>Bowen zeigt einen negativen Tagesmittelwert für <code>H</code> (-21.1
+W/m²), aber einen hohen latenten Anteil (<code>LE</code>: 129.8 W/m²).
+Das ist ein Hinweis darauf, dass Mittelwerte bei gradientenempfindlichen
+Methoden trügerisch sein können: Einzelne starke positive und negative
 Partitionierungen können sich im Mittel teilweise aufheben.</p>
-<p>Penman steht separat, weil es nur <code>V</code> liefert; der
+<p>Penman steht separat, weil es nur <code>LE</code> liefert; der
 Mittelwert von 13.2 W/m² ist daher kein vollständiges
 <code>L/V</code>-Paar.</p>
-<p>Monin-Obukhov/Profile liefert im Mittel etwa 104 W/m² fühlbaren und
-53 W/m² latenten Wärmestrom. Diese Werte entstehen aus Temperatur-,
+<p>Monin-Obukhov/Profile liefert im Mittel etwa 104 W/m² <code>H</code>
+und 53 W/m² <code>LE</code>. Diese Werte entstehen aus Temperatur-,
 Feuchte- und Windprofilen, nicht aus einer Aufteilung der verfügbaren
-Energie. Sie müssen deshalb anders gelesen werden als Priestley-Taylor,
-Bulk-Residual oder Bowen: Entscheidend ist nicht nur der Mittelwert,
-sondern ob <span class="math inline">\(L + V\)</span> zur verfügbaren
+Energie. Sie müssen deshalb anders gelesen werden als Priestley–Taylor,
+Bulk–Residual oder Bowen: Entscheidend ist nicht nur der Mittelwert,
+sondern ob <span class="math inline">\(H + LE\)</span> zur verfügbaren
 Energie <span class="math inline">\(Q^* - B\)</span> passt. Wenn große
 Abweichungen auftreten, spricht das für empfindliche Gradienten,
 schwache Windunterschiede oder Stabilitätsprobleme im Profilansatz.</p>
@@ -873,19 +982,19 @@ schwache Windunterschiede oder Stabilitätsprobleme im Profilansatz.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Priestley-Taylor"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Priestley–Taylor"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#666666"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Bulk-Residual Paket mit ri_guard"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Bulk–Residual Paket mit ri_guard"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bowen</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#009E73"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Bowen"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Bowen"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_monin</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#D55E00"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_files/figure-html/methods-single-L-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -895,34 +1004,34 @@ schwache Windunterschiede oder Stabilitätsprobleme im Profilansatz.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Priestley-Taylor"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Priestley–Taylor"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#666666"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Bulk-Residual Paket mit ri_guard"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Bulk–Residual Paket mit ri_guard"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_bowen</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#009E73"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Bowen"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Bowen"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_monin</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#D55E00"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_penman</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#0072B2"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Penman"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Zeit"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Penman"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_files/figure-html/methods-single-V-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Die Einzelplots sind bewusst
-getrennt. In einer gemeinsamen Grafik würden die empfindlichen Methoden
-die Achsen dominieren und ruhigere Verläufe unsichtbar machen. Hier
-sieht man stattdessen pro Methode, wann Vorzeichenwechsel,
+getrennt. In einer gemeinsamen Grafik würden die empfindlichen
+Rechenwege die Achsen dominieren und ruhigere Verläufe unsichtbar
+machen. Hier sieht man stattdessen pro Methode, wann Vorzeichenwechsel,
 <code>NA</code>-Abschnitte oder starke Ausschläge auftreten. Besonders
-wichtig ist der Bulk-Residual-Plot: Unterbrechungen sind dort nicht
+wichtig ist der Bulk–Residual-Plot: Unterbrechungen sind dort nicht
 automatisch Datenlücken, sondern häufig die direkte Folge des
 Richardson-Guards. Bei Bowen und Monin-Obukhov/Profile sind starke
 Ausschläge dagegen eher Hinweise auf empfindliche Gradienten- oder
@@ -933,19 +1042,20 @@ Stabilitätsbedingungen.</p>
 </h3>
 <p>Die folgenden Ergebnisse sind nicht nur ein Methodenvergleich. Sie
 sind auch eine Konsistenzprüfung der Energiebilanz.</p>
-<p>Die Theorie schreibt die bodennahe Energiebilanz als:</p>
+<p>Die Referenznotation schreibt die bodennahe Energiebilanz als:</p>
 <p><span class="math display">\[
-0 = Q^{*} - B - L - V
+R_E = Q^* - B - H - LE
 \]</span></p>
-<p>Für energiegebundene oder residuale Methoden gilt näherungsweise
-beziehungsweise konstruktiv:</p>
+<p>Für energiepartitionierende oder residuale Methoden gilt je nach
+Rechenweg per Annahme oder per Definition:</p>
 <p><span class="math display">\[
-L + V \approx Q^{*} - B
+H + LE \approx Q^* - B
 \]</span></p>
 <p>Diese Beziehung prüft, ob die berechneten turbulenten Wärmeflüsse
-energetisch zur verfügbaren Energie passen. Für Monin-Obukhov/Profile
-ist sie keine Closure-Erwartung, sondern nur eine
-Plausibilitätsdiagnose.</p>
+energetisch zur verfügbaren Energie passen. Sie prüft nicht, ob die
+methodische Aufteilung in <code>H</code> und <code>LE</code>
+physikalisch validiert ist. Für Monin-Obukhov/Profile ist sie keine
+Closure-Erwartung, sondern nur eine Plausibilitätsdiagnose.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="st">"Q_star"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="st">"Q_star_measured"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -987,12 +1097,12 @@ Plausibilitätsdiagnose.</p>
 <span></span>
 <span><span class="va">energy_consistency</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
 <span>  <span class="fu">energy_row</span><span class="op">(</span></span>
-<span>    <span class="st">"Bulk-Residual Paket (ri_guard)"</span>,</span>
+<span>    <span class="st">"Bulk–Residual Paket (ri_guard)"</span>,</span>
 <span>    <span class="va">caldern</span><span class="op">$</span><span class="va">LV_bulk_pkg</span>,</span>
 <span>    <span class="va">caldern</span><span class="op">$</span><span class="va">available_energy</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  <span class="fu">energy_row</span><span class="op">(</span></span>
-<span>    <span class="st">"Priestley-Taylor"</span>,</span>
+<span>    <span class="st">"Priestley–Taylor"</span>,</span>
 <span>    <span class="va">caldern</span><span class="op">$</span><span class="va">LV_pt</span>,</span>
 <span>    <span class="va">caldern</span><span class="op">$</span><span class="va">available_energy</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -1011,8 +1121,8 @@ Plausibilitätsdiagnose.</p>
 <span><span class="va">energy_consistency</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">energy_consistency</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">energy_consistency</span></span>
 <span><span class="co">#&gt;                          Methode Mittel_L_plus_V Mittel_Q_star_minus_B</span></span>
-<span><span class="co">#&gt; 1 Bulk-Residual Paket (ri_guard)           279.6                 279.6</span></span>
-<span><span class="co">#&gt; 2               Priestley-Taylor           108.7                 108.7</span></span>
+<span><span class="co">#&gt; 1 Bulk–Residual Paket (ri_guard)           279.6                 279.6</span></span>
+<span><span class="co">#&gt; 2               Priestley–Taylor           108.7                 108.7</span></span>
 <span><span class="co">#&gt; 3                          Bowen           108.7                 108.7</span></span>
 <span><span class="co">#&gt; 4          Monin-Obukhov/Profile           156.9                 108.7</span></span>
 <span><span class="co">#&gt;   Mittlere_Abweichung Max_abs_Abweichung Gueltige_Zeitpunkte</span></span>
@@ -1023,14 +1133,14 @@ Plausibilitätsdiagnose.</p>
 <p><strong>Interpretation.</strong> Diese Tabelle ist die zentrale
 Konsistenzprüfung. Wichtig ist, dass der Mittelwert von
 <code>Q_star - B</code> jetzt methodenspezifisch über dieselben gültigen
-Zeitschritte berechnet wird wie <code>L + V</code>. Dadurch ist der
-Bulk-Residual-Pfad fair lesbar: Er hat nur 113 gültige Zeitpunkte, weil
-der Guard sehr stabile oder ungültige Situationen entfernt. Für genau
-diese gültigen Zeitpunkte schließt der residuale Pfad jedoch
+Zeitschritte berechnet wird wie <code>H + LE</code>. Dadurch ist der
+Bulk–Residual-Rechenweg fair lesbar: Er hat nur 113 gültige Zeitpunkte,
+weil der Guard sehr stabile oder ungültige Situationen entfernt. Für
+genau diese gültigen Zeitpunkte schließt der residuale Rechenweg jedoch
 erwartungsgemäß: mittlere und maximale Abweichung liegen bei 0
 beziehungsweise 0 W/m².</p>
-<p>Priestley-Taylor und Bowen schließen ebenfalls, weil beide Pfade die
-verfügbare Energie explizit aufteilen. Das bedeutet aber
+<p>Priestley–Taylor und Bowen schließen ebenfalls, weil beide Rechenwege
+die verfügbare Energie explizit aufteilen. Das bedeutet aber
 Unterschiedliches: Bei PT ist die Partitionierung relativ robust
 parametrisiert; bei Bowen kann sie trotz perfektem Energieabschluss
 durch kleine Feuchtegradienten oder Nennerprobleme einzelne extreme
@@ -1047,7 +1157,7 @@ Bilanzpartition gelesen werden dürfen.</p>
 <p>Die Extremwertdiagnose soll nicht alle auffälligen Zeitschritte
 ausgeben. Sie fasst zuerst zusammen, wo Extremwerte auftreten, und zeigt
 danach nur die stärksten Fälle. Zusätzlich wird der Richardson-Guard des
-Bulk-Paketpfads ausgewiesen.</p>
+Bulk–Residual-Rechenwegs ausgewiesen.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">threshold_flux</span> <span class="op">&lt;-</span> <span class="fl">600</span></span>
 <span></span>
@@ -1058,7 +1168,7 @@ Bulk-Paketpfads ausgewiesen.</p>
 <span><span class="va">extreme_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
-<span>    Methode <span class="op">=</span> <span class="st">"Bulk-Residual Paket (ri_guard)"</span>,</span>
+<span>    Methode <span class="op">=</span> <span class="st">"Bulk–Residual Paket (ri_guard)"</span>,</span>
 <span>    Fluss <span class="op">=</span> <span class="st">"L"</span>,</span>
 <span>    Wert <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk_pkg</span>,</span>
 <span>    dT_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dT_2_10</span>,</span>
@@ -1183,7 +1293,7 @@ Bulk-Paketpfads ausgewiesen.</p>
 <p><strong>Interpretation.</strong> Die Extremwertzählung zeigt, wo die
 problematischen 5-Minuten-Werte entstehen. Bowen erzeugt in diesem Lauf
 8 auffällige Werte oberhalb der Diagnosegrenze, Monin-Obukhov/Profile
-18. Der Bulk-Residual-Paketpfad erscheint hier nicht als
+18. Der Bulk–Residual-Rechenweg erscheint hier nicht als
 Extremwertlieferant, weil der Richardson-Guard kritische Profilzustände
 nicht als große Flüsse weiterrechnet, sondern als <code>NA</code>
 ausweist.</p>
@@ -1226,7 +1336,7 @@ automatisch ein reales Wärmeflussereignis.</p>
 <span>  lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  ylim <span class="op">=</span> <span class="va">ylim_closure</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Zeit"</span>,</span>
-<span>  ylab <span class="op">=</span> <span class="st">"(L + V) - (Q* - B) [W/m²]"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"(H + LE) - (Q* - B) [W/m²]"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Energetische Konsistenz: bilanzgebundene Pfade"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -1242,7 +1352,7 @@ automatisch ein reales Wärmeflussereignis.</p>
 <span>  bty <span class="op">=</span> <span class="st">"n"</span>,</span>
 <span>  legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"Bulk Paket ri_guard"</span>,</span>
-<span>    <span class="st">"Priestley-Taylor"</span>,</span>
+<span>    <span class="st">"Priestley–Taylor"</span>,</span>
 <span>    <span class="st">"Bowen"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  col <span class="op">=</span> <span class="va">cols_closure</span>,</span>
@@ -1254,12 +1364,13 @@ automatisch ein reales Wärmeflussereignis.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Diese Grafik trennt bewusst die
 energiegebundenen beziehungsweise residualen Pfade von
-Monin-Obukhov/Profile. Bei Bulk-Residual, PT und Bowen bedeutet Nähe zur
+Monin-Obukhov/Profile. Bei Bulk–Residual, PT und Bowen bedeutet Nähe zur
 Nulllinie: Die Summe aus <code>L</code> und <code>V</code> passt zur
-verwendeten verfügbaren Energie. Bei PT ist das konstruktiv, bei
-Bulk-Residual für gültige Zeitschritte ebenfalls, weil <code>V</code>
-als Rest berechnet wird. Bowen kann ebenfalls exakt schließen, solange
-der Nenner nicht geguardet oder nicht endlich ist.</p>
+verwendeten verfügbaren Energie. Bei PT ist das eine
+Partitionierungsannahme, bei Bulk–Residual für gültige Zeitschritte eine
+Residualdefinition, weil <code>LE</code> als Rest berechnet wird. Bowen
+kann ebenfalls exakt schließen, solange der Nenner nicht geguardet oder
+nicht endlich ist.</p>
 <p>Diese Nulllinie beweist aber nicht, dass jede einzelne
 Partitionierung physikalisch gut ist. Sie sagt nur: Die
 Energiebuchhaltung ist konsistent. Ob die Aufteilung in <code>L</code>
@@ -1288,7 +1399,7 @@ Extremwerte und Warnungen gelesen werden.</p>
 <span>  lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  ylim <span class="op">=</span> <span class="va">mo_ylim</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Zeit"</span>,</span>
-<span>  ylab <span class="op">=</span> <span class="st">"(L_MO + V_MO) - (Q* - B) [W/m²]"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"(H_MO + LE_MO) - (Q* - B) [W/m²]"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Monin-Obukhov/Profile: Plausibilitätsprüfung gegen Q* - B"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -1313,11 +1424,12 @@ Extremwerte und Warnungen gelesen werden.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Diese Grafik muss anders gelesen
-werden als die vorige. Monin-Obukhov/Profile berechnet <span class="math inline">\(L\)</span> und <span class="math inline">\(V\)</span> aus den gemessenen Unterschieden
-zwischen zwei Höhen: Temperatur, Feuchte, Wind und Messhöhe bestimmen
-das Ergebnis. Die Werte werden nicht nachträglich so angepasst, dass
-ihre Summe genau der verfügbaren Energie <span class="math inline">\(Q^*
-- B\)</span> entspricht.</p>
+werden als die vorige. Monin-Obukhov/Profile berechnet <code>H</code>
+und <code>LE</code> aus den gemessenen Unterschieden zwischen zwei
+Höhen: Temperatur, Feuchte, Wind und Messhöhe bestimmen das Ergebnis.
+Die Werte werden nicht nachträglich so angepasst, dass ihre Summe genau
+der verfügbaren Energie <span class="math inline">\(Q^* - B\)</span>
+entspricht.</p>
 <p>Die Paketfunktionen fangen inzwischen problematische Sonderfälle ab:
 Nullgradienten führen für den jeweiligen Fluss zu 0, ungültige Höhen
 oder Windwerte sowie nicht auswertbare Profilzustände führen zu
@@ -1381,16 +1493,17 @@ sichtbar, wie die vorhandenen Ergebnisfelder im Verhältnis zu
 <span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-open-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
-<p>Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
-sondern den jeweils offenen oder residualisierten Term. Bei
-Bulk-Residual ist dies <code>latent_bulk_residual</code>: Die latente
+<p>Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren. Er
+zeigt je nach Rechenweg einen residual definierten latenten Wärmestrom,
+einen offenen Ergänzungsterm oder einen diagnostischen Bilanzrest. Bei
+Bulk–Residual ist dies <code>latent_bulk_residual</code>: Die latente
 Wärme wird nach der Schätzung von <code>sensible_bulk</code> als Rest
 aus <code>rad_bal - soil_flux - sensible_bulk</code> berechnet. Bei
 Penman ist es der offene Ergänzungsterm nach Abzug von
-<code>latent_penman</code>; dieser Term ist nicht automatisch fühlbarer
-Wärmestrom. Bei Monin-Obukhov/Profile ist es der diagnostische
+<code>latent_penman</code>; dieser Term ist nicht automatisch
+<code>H</code>. Bei Monin-Obukhov/Profile ist es der diagnostische
 Bilanzrest <code>rad_bal - soil_flux - sensible - latent</code>.
-Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+Priestley–Taylor und Bowen erscheinen hier nicht, weil sie die
 verfügbare Energie partitionieren und keinen expliziten offenen Term
 ausgeben.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -1402,7 +1515,7 @@ ausgeben.</p>
 <p><img src="fieldclim_flux_workflow_files/figure-html/closure-flux-check-de-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>Der Schließungscheck zeigt
 <code>rad_bal - soil_flux - sensible - latent</code> für Verfahren mit
-gepaarten Flüssen. Bei Priestley-Taylor, Bowen und Bulk-Residual sind
+gepaarten Flüssen. Bei Priestley–Taylor, Bowen und Bulk–Residual sind
 Werte nahe null methodisch erwartbar. Das zeigt formalen Bilanzschluss,
 aber keine physikalische Validierung. Bei Monin-Obukhov/Profile ist ein
 nicht-nulliger Wert diagnostisch und zeigt die Differenz zwischen
@@ -1455,7 +1568,7 @@ Nenner <code>rad_bal - soil_flux</code> klein ist oder wenn
 profilbasierte Flüsse stark von der verfügbaren Energie abweichen. Sie
 sind Diagnosefälle, keine Rangliste der Verfahren.</p>
 <div class="section level4">
-<h4 id="bulk-residual-austauschgeschwindigkeit-und-residualschluss">Bulk-Residual: Austauschgeschwindigkeit und Residualschluss<a class="anchor" aria-label="anchor" href="#bulk-residual-austauschgeschwindigkeit-und-residualschluss"></a>
+<h4 id="bulkresidual-austauschgeschwindigkeit-und-residualschluss">Bulk–Residual: Austauschgeschwindigkeit und Residualschluss<a class="anchor" aria-label="anchor" href="#bulkresidual-austauschgeschwindigkeit-und-residualschluss"></a>
 </h4>
 <p>Der folgende Block hält den Residualschluss fest und variiert nur die
 Austauschgeschwindigkeit in der Schätzung von
@@ -1505,7 +1618,7 @@ neue Eingaben zu erfinden.</p>
 <span><span class="co">#&gt; 2  u_star_roughness    -2.69 142.27                0             1</span></span>
 <span><span class="co">#&gt; 3         wind_mean   -23.77 163.35                0             1</span></span></code></pre></div>
 <p>Die Tabelle zeigt den zentralen Unterschied. Der Schließungsquotient
-bleibt beim Bulk-Residual-Pfad nahe 1, weil
+bleibt beim Bulk–Residual-Rechenweg nahe 1, weil
 <code>latent_bulk_residual</code> immer als Rest aus
 <code>rad_bal - soil_flux - sensible_bulk</code> berechnet wird. Die
 eigentliche methodische Sensitivität liegt vorher in
@@ -1524,35 +1637,36 @@ physikalisch richtig ist.</p>
 unterschiedlich, weil sie nicht dieselbe Frage beantworten. Für diesen
 Caldern-Tag ergibt sich daraus eine klare Lesart:</p>
 <ul>
-<li>Priestley-Taylor ist der stabile Einstiegspfad. Er beantwortet: Wie
-lässt sich die verfügbare Energie ohne empfindliche Profilquotienten in
-<code>L</code> und <code>V</code> aufteilen?</li>
-<li>Bulk-Residual mit <code>ri_guard</code> beantwortet: Welche
-Zeitschritte erlauben eine einfache wind- und
-temperaturgradientenbasierte Schätzung von <code>L</code>, und wo sagt
-die Stabilitätsdiagnose, dass der neutrale Bulk-Ansatz nicht belastbar
-ist?</li>
+<li>Priestley–Taylor ist ein energiegebundener Rechenweg. Er
+beantwortet: Wie lässt sich die verfügbare Energie über eine empirische
+Verdunstungsparametrisierung in <code>H</code> und <code>LE</code>
+aufteilen?</li>
+<li>Bulk–Residual mit <code>ri_guard</code> beantwortet: Welche
+Zeitschritte erlauben eine wind- und temperaturgradientenbasierte
+Schätzung von <code>H</code>, und wie groß ist das daraus abgeleitete
+Residuum <code>LE_res</code>?</li>
 <li>Bowen beantwortet: Wie würde ein Temperatur-/Feuchtegradient die
-verfügbare Energie partitionieren? Die Methode kann energetisch
-schließen und trotzdem einzelne extreme Anteile erzeugen.</li>
-<li>Penman beantwortet nur die Frage nach <code>V</code>. Es ist kein
-vollständiges <code>L/V</code>-Paar und darf deshalb nicht wie PT, Bulk
-oder Bowen bilanziell verglichen werden.</li>
+verfügbare Energie in <code>H</code> und <code>LE</code> partitionieren?
+Der Rechenweg kann energetisch schließen und trotzdem einzelne extreme
+Anteile erzeugen.</li>
+<li>Penman beantwortet nur die Frage nach <code>LE</code>. Der offene
+Rest <code>U_Penman = Q* - B - LE_Penman</code> ist kein vollständiges
+<code>H</code>/<code>LE</code>-Paar und darf deshalb nicht wie PT,
+Bulk–Residual oder Bowen bilanziell verglichen werden.</li>
 <li>Monin-Obukhov/Profile beantwortet eine Profilfrage: Was ergeben
 Temperatur-, Feuchte- und Windunterschiede zwischen zwei Höhen, wenn sie
-als turbulenter Austausch interpretiert werden? Große Ausschläge,
-<code>NA</code>-Werte oder Abweichungen von <span class="math inline">\(Q^* - B\)</span> sind deshalb keine bloßen
-Störungen. Sie zeigen, dass Gradienten, Windschere oder
-Stabilitätsannahmen für diese Zeitschritte kritisch sind.</li>
+als turbulenter Austausch interpretiert werden? Der Rechenweg ist
+diagnostisch und nicht bilanzschließend.</li>
 </ul>
-<p>Die wichtigste praktische Konsequenz lautet: Der Methodenvergleich
-ist keine Suche nach der einen „besten“ Kurve. Er zeigt, welche Annahmen
-bei denselben Stationsdaten stabil sind und welche Annahmen zu
-Diagnosefällen führen. Für eine robuste Auswertung sollte PT als
-Baseline gelesen werden, Bulk-Residual mit Guard als transparenter
-residualer Vergleich, Bowen als gradientenempfindliche Partitionierung,
-Penman als separater <code>V</code>-Vergleich und Monin-Obukhov/Profile
-als Diagnosepfad.</p>
+<p>Die wichtigste praktische Konsequenz lautet: Der Vergleich der
+Rechenwege ist keine Suche nach der einen „besten“ Kurve. Er zeigt,
+welche Annahmen bei denselben Stationsdaten stabil sind und welche
+Annahmen zu Diagnosefällen führen. PT wird als energiegebundene
+Partitionierung gelesen, Bulk–Residual als <code>H</code>-Schätzung mit
+residualem <code>LE</code>, Bowen als gradientenempfindliche
+Partitionierung, Penman als separater <code>LE</code>-Vergleich mit
+offenem Rest und Monin-Obukhov/Profile als Profil- und
+Stabilitätsdiagnostik.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

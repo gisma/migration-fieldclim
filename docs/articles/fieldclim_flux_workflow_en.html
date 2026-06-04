@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -96,6 +97,10 @@ starts after the manual data checks: the relevant columns have already
 been identified as net radiation, soil heat flux, temperature, humidity
 and wind inputs. They are now passed to a <code>weather_station</code>
 object and evaluated with <code>fieldClim</code> functions.</p>
+<p>A systematic decision guide for matching heat-flux methods to
+measurement architecture is provided in <a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. This vignette applies that logic to the Caldern
+example dataset.</p>
 <p>The focus is no longer the manual checking of individual measurement
 columns. The focus is package logic: how the station data are organized,
 how inputs are inspected, which method families are available, and how
@@ -133,7 +138,8 @@ their outputs should be compared.</p>
 Monin-Obukhov/Profile and Penman compared?</td>
 <td>
 <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code>,
-<code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> and method-specific outputs</td>
+<code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> and method-specific outputs as
+distinct calculation paths</td>
 </tr>
 </tbody>
 </table>
@@ -146,52 +152,79 @@ workflow.</p>
 <div class="section level2">
 <h2 id="notation">Notation<a class="anchor" aria-label="anchor" href="#notation"></a>
 </h2>
-<p>This vignette uses the same notation as the manual data-check
-vignette. <code>Q_star</code> is net radiation, <code>B</code> is soil
-heat flux, <code>L</code> is sensible heat flux and <code>V</code> is
-latent heat flux.</p>
+<p>This vignette uses the reference notation from the method-selection
+page. <code>Q*</code> is net radiation, <code>B</code> is soil heat
+flux, <code>A = Q* - B</code> is available energy, <code>H</code> is
+sensible heat flux, <code>LE</code> is latent heat flux, and
+<code>R_E</code> is the residual or non-closed energy term.</p>
+<p>The R code variables used in this tutorial are not renamed. Existing
+objects such as <code>L_pt</code>, <code>V_pt</code>,
+<code>L_bulk_pkg</code>, and <code>V_bulk_pkg</code> are kept because
+they belong to the current tutorial workflow. In the explanatory text,
+however, <code>L_*</code> is interpreted as <code>H</code>, and
+<code>V_*</code> is interpreted as <code>LE</code>.</p>
 <p>For package functions, this notation is mapped to
 <code>fieldClim</code> names:</p>
 <table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
 <thead><tr class="header">
-<th>Theoretical quantity</th>
+<th>Reference quantity</th>
 <th>Meaning</th>
 <th>
 <code>fieldClim</code> field or output</th>
+<th>Tutorial code variable</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td>
-<code>Q_star</code> / <code>Q*</code>
-</td>
+<td><code>Q*</code></td>
 <td>net radiation</td>
 <td><code>rad_bal</code></td>
+<td><code>Q_star</code></td>
 </tr>
 <tr class="even">
 <td><code>B</code></td>
 <td>soil heat flux</td>
 <td><code>soil_flux</code></td>
+<td><code>B</code></td>
 </tr>
 <tr class="odd">
-<td><code>L</code></td>
-<td>sensible heat flux</td>
-<td><code>sensible_*</code></td>
+<td><code>A = Q* - B</code></td>
+<td>available energy</td>
+<td><code>rad_bal - soil_flux</code></td>
+<td>
+<code>available_energy</code>, <code>Q_minus_B</code>
+</td>
 </tr>
 <tr class="even">
-<td><code>V</code></td>
-<td>latent heat flux</td>
-<td><code>latent_*</code></td>
+<td><code>H</code></td>
+<td>sensible heat flux</td>
+<td><code>sensible_*</code></td>
+<td><code>L_*</code></td>
 </tr>
 <tr class="odd">
-<td><code>Q_star - B</code></td>
-<td>available turbulent energy</td>
-<td><code>rad_bal - soil_flux</code></td>
+<td><code>LE</code></td>
+<td>latent heat flux</td>
+<td><code>latent_*</code></td>
+<td><code>V_*</code></td>
+</tr>
+<tr class="even">
+<td><code>R_E = Q* - B - H - LE</code></td>
+<td>residual / non-closed energy term</td>
+<td>closure diagnostic output</td>
+<td>
+<code>diff_*</code>, <code>closure_residual</code>
+</td>
 </tr>
 </tbody>
 </table>
 <p>The sign convention is:</p>
 <p><span class="math display">\[
-Q^{*} - B = L + V
+Q^* - B = H + LE
 \]</span></p>
 <p>for energy-closing or residual methods in valid finite cases. This
 relation is not imposed on all method families.</p>
@@ -200,132 +233,151 @@ relation is not imposed on all method families.</p>
 <h2 id="step-1-method-overview-and-role-of-each-path">Step 1: Method overview and role of each path<a class="anchor" aria-label="anchor" href="#step-1-method-overview-and-role-of-each-path"></a>
 </h2>
 <p>All methods use the same station concept, but they do not answer the
-same question. Some methods partition the available energy, some
-estimate one flux and compute the other as a residual, and some use
-measured vertical profiles without forcing closure against available
-energy.</p>
+same question. They are distinct calculation paths: some partition
+available energy, some estimate one flux and compute the other as a
+residual, and some use measured vertical profiles without forcing
+closure against available energy. The method choice follows the logic of
+<a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>: the measurement architecture and the target
+quantity determine what can be interpreted.</p>
 <p><img src="figures/station.png" class="r-plt" alt="" width="100%"></p>
 <p><img src="figures/fieldClim_theory.svg"></p>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
-<col width="20%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
+<col width="16%">
 </colgroup>
 <thead><tr class="header">
 <th>Method</th>
 <th>Main question</th>
 <th>Direct inputs</th>
-<th>Output</th>
+<th>Code output</th>
+<th>Reference notation</th>
 <th>Role in the workflow</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td>Priestley-Taylor</td>
-<td>How can available energy be partitioned in a stable way?</td>
+<td>How is available energy partitioned through an empirical evaporation
+parameterization?</td>
 <td>
-<code>Q_star</code>, <code>B</code>, parameter</td>
+<code>rad_bal</code>, <code>soil_flux</code>, <code>temp</code>,
+<code>surface_type</code>
+</td>
 <td>
 <code>L_pt</code>, <code>V_pt</code>
 </td>
-<td>first energy-bound package path</td>
+<td>
+<code>H_PT</code>, <code>LE_PT</code>
+</td>
+<td>available-energy partition</td>
 </tr>
 <tr class="even">
 <td>Bulk-Residual</td>
-<td>How does the package estimate <code>L</code> from temperature
-gradient and wind, and compute <code>V</code> as residual?</td>
+<td>How is sensible heat estimated from a two-height temperature
+gradient and exchange assumption, and how is latent heat derived as the
+residual?</td>
 <td>
-<code>weather_station</code>, <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code>,
-<code><a href="../reference/latent_bulk_residual.html">latent_bulk_residual()</a></code>
+<code>t1</code>, <code>t2</code>, <code>v1</code>, optional
+<code>v2</code>, <code>z1</code>, <code>z2</code>, <code>rad_bal</code>,
+<code>soil_flux</code>
 </td>
 <td>
 <code>L_bulk_pkg</code>, <code>V_bulk_pkg</code>
 </td>
-<td>residual package path, optionally screened by Richardson guard</td>
+<td>
+<code>H_bulk</code>, <code>LE_res</code>
+</td>
+<td>direct <code>H</code> estimate plus residual <code>LE</code>
+</td>
 </tr>
 <tr class="odd">
 <td>Bowen-ratio</td>
-<td>How does a temperature/humidity gradient partition available
+<td>How do temperature and humidity gradients partition available
 energy?</td>
-<td>temperature gradient, humidity gradient, <code>Q_star</code>,
-<code>B</code>
+<td>
+<code>t1</code>, <code>t2</code>, <code>hum1</code>,
+<code>hum2</code>, <code>z1</code>, <code>z2</code>,
+<code>rad_bal</code>, <code>soil_flux</code>
 </td>
 <td>
 <code>L_bowen</code>, <code>V_bowen</code>
 </td>
-<td>gradient-sensitive partitioning</td>
+<td>
+<code>H_BR</code>, <code>LE_BR</code>
+</td>
+<td>gradient-based partition</td>
 </tr>
 <tr class="even">
 <td>Monin-Obukhov/Profile</td>
-<td>How do profile methods react to gradients and stability?</td>
-<td>wind profile, temperature profile, humidity profile, stability
-diagnostics</td>
+<td>What do temperature, humidity and wind profiles imply as diagnostic
+profile fluxes?</td>
+<td>
+<code>t1</code>, <code>t2</code>, <code>hum1</code>,
+<code>hum2</code>, <code>v1</code>, <code>v2</code>, <code>z1</code>,
+<code>z2</code>, roughness context</td>
 <td>
 <code>L_monin</code>, <code>V_monin</code>
 </td>
-<td>profile-based, not energy-normalized</td>
+<td>
+<code>H_MO</code>, <code>LE_MO</code>
+</td>
+<td>profile/stability diagnostic, not force-closed</td>
 </tr>
 <tr class="odd">
 <td>Penman</td>
-<td>How large is latent heat flux from energy and aerodynamic drying
-power?</td>
+<td>How large is latent heat flux from available energy and aerodynamic
+drying power?</td>
 <td>
-<code>Q_star</code>, <code>B</code>, wind, temperature, humidity,
-surface</td>
+<code>rad_bal</code>, <code>soil_flux</code>, meteorology, site and
+surface parameters</td>
 <td><code>V_penman</code></td>
-<td>latent-heat-only comparison path</td>
+<td><code>LE_Penman</code></td>
+<td>
+<code>LE</code>-only comparison path</td>
 </tr>
 </tbody>
 </table>
 <div class="section level3">
 <h3 id="priestley-taylor">Priestley-Taylor<a class="anchor" aria-label="anchor" href="#priestley-taylor"></a>
 </h3>
+<p>Priestley-Taylor is an available-energy partition path in this
+vignette. It is directly bound to available energy and does not require
+a measured humidity-gradient ratio.</p>
+<p><span class="math display">\[
+H + LE = Q^* - B
+\]</span></p>
+<p><span class="math display">\[
+LE_{PT} = \alpha_{PT} \frac{sc}{sc + \gamma} (Q^* - B)
+\]</span></p>
+<p><span class="math display">\[
+H_{PT} = (Q^* - B) - LE_{PT}
+\]</span></p>
+<p>The defining property of this calculation path is energy bookkeeping.
+If <code>Q_star</code> and <code>B</code> are set correctly, the sum of
+<code>H_PT</code> and <code>LE_PT</code> remains tied to available
+energy. In the code, these quantities are stored as <code>L_pt</code>
+and <code>V_pt</code>. This is a method-specific partition, not an
+independent validation of both component fluxes.</p>
 </div>
-</div>
-<div class="section level2">
-<h2 id="r-method-pt-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_priestley_taylor-png">
-<code>{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_priestley_taylor.png") #</code><a class="anchor" aria-label="anchor" href="#r-method-pt-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_priestley_taylor-png"></a>
-</h2>
-<p>Priestley-Taylor is the stable first package path in this vignette.
-It is directly bound to available energy and does not require an
-unstable ratio of small humidity gradients.</p>
-<p><span class="math display">\[
-L + V = Q^{*} - B
-\]</span></p>
-<p><span class="math display">\[
-V_{PT} \approx \alpha_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{*} - B)
-\]</span></p>
-<p><span class="math display">\[
-L_{PT} = (Q^{*} - B) - V_{PT}
-\]</span></p>
-<p>The advantage of this path is energy bookkeeping. If
-<code>Q_star</code> and <code>B</code> are set correctly, the sum of
-<code>L_PT</code> and <code>V_PT</code> remains tied to the available
-energy. This does not prove that Priestley-Taylor is physically correct
-for every situation; it makes it a readable first comparison path.</p>
 <div class="section level3">
 <h3 id="bulk-residual-with-optional-richardson-guard">Bulk-Residual with optional Richardson guard<a class="anchor" aria-label="anchor" href="#bulk-residual-with-optional-richardson-guard"></a>
 </h3>
-</div>
-</div>
-<div class="section level2">
-<h2 id="r-method-bulk-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bulk_residual-png">
-<code>{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_bulk_residual.png") #</code><a class="anchor" aria-label="anchor" href="#r-method-bulk-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bulk_residual-png"></a>
-</h2>
-<p>The package path <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> first
-estimates sensible heat flux with a simplified bulk-transfer equation.
-Latent heat flux is then computed as the residual of the surface energy
-balance:</p>
+<p>The calculation path <code><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual()</a></code> first
+estimates sensible heat flux with a bulk-transfer equation. Latent heat
+flux is then computed as the residual of the surface energy balance:</p>
 <p><span class="math display">\[
-L_{bulk} = \rho c_p \frac{\Delta T}{r_a}
+H_{bulk} = \rho c_p \frac{t_1 - t_2}{r_a}
 \]</span></p>
 <p><span class="math display">\[
 r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}}
 \]</span></p>
 <p><span class="math display">\[
-V_{residual} = Q^{*} - B - L_{bulk}
+LE_{res} = Q^* - B - H_{bulk}
 \]</span></p>
 <p>In addition, <code><a href="../reference/sensible_bulk.html">sensible_bulk()</a></code> can compute a gradient
 Richardson number when <code>stability_method = "ri_guard"</code> is
@@ -340,18 +392,17 @@ Ri_g =
 <code>stability_method = "ri_guard"</code>. Unstable, neutral and
 moderately stable cases keep the neutral bulk value. Very stable,
 invalid or weak-shear cases are set to <code>NA</code>. If
-<code>L_bulk</code> becomes <code>NA</code>, the residual
-<code>V_bulk</code> also becomes <code>NA</code>. This prevents an
-algebraic residual from hiding a non-robust sensible heat estimate.</p>
+<code>H_bulk</code> becomes <code>NA</code>, the residual
+<code>LE_res</code> also becomes <code>NA</code>. In the code, these
+quantities are stored as <code>L_bulk_pkg</code> and
+<code>V_bulk_pkg</code>. This makes visible that the neutral Bulk
+estimate was not evaluated for those timesteps.</p>
+<p>The Richardson guard is a filter option, not a stability correction.
+It does not turn Bulk-Residual into a Monin-Obukhov method.</p>
+</div>
 <div class="section level3">
 <h3 id="bowen-ratio">Bowen-ratio<a class="anchor" aria-label="anchor" href="#bowen-ratio"></a>
 </h3>
-</div>
-</div>
-<div class="section level2">
-<h2 id="r-method-bowen-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bowen-png">
-<code>{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} # knitr::include_graphics("figures/en_clos_wf-method_bowen.png") #</code><a class="anchor" aria-label="anchor" href="#r-method-bowen-image-echofalse-fig-width9-fig-height6-out-width100-knitrinclude_graphicsfiguresen_clos_wf-method_bowen-png"></a>
-</h2>
 <p>The Bowen approach uses a ratio between temperature and humidity
 gradients. It partitions the available energy into sensible and latent
 heat flux.</p>
@@ -362,71 +413,88 @@ heat flux.</p>
 this simplified textbook notation. It uses a potential-temperature
 difference and an absolute-humidity difference with an empirical
 <code>fieldClim</code> coefficient. Therefore, Bowen is interpreted here
-as the implemented package path, not as a claim that the coefficient
+as the implemented calculation path, not as a claim that the coefficient
 form has been fully proven equivalent to every textbook Bowen
 formulation.</p>
 <p><span class="math display">\[
-L_{Bowen} = \frac{\beta}{1 + \beta} (Q^{*} - B)
+H_{BR} = \frac{\beta}{1 + \beta} (Q^* - B)
 \]</span></p>
 <p><span class="math display">\[
-V_{Bowen} = \frac{1}{1 + \beta} (Q^{*} - B)
+LE_{BR} = \frac{1}{1 + \beta} (Q^* - B)
 \]</span></p>
-<p>For finite, uncapped denominator cases, Bowen closes the available
-energy. It is nevertheless sensitive to gradients. If humidity gradients
-become very small, signs change, <code>beta</code> is not finite or
-<code>1 + beta</code> approaches zero, individual timesteps can produce
-strong excursions. Capped or non-finite cases should not be read as
-exact partitions of <span class="math display">\[Q^{*} - B\]</span>.</p>
+<p>For finite, uncapped denominator cases, the Bowen calculation path
+closes the available energy. In the code, the outputs are stored as
+<code>L_bowen</code> and <code>V_bowen</code>. It is nevertheless
+sensitive to gradients. If humidity gradients become very small, signs
+change, <code>beta</code> is not finite or <code>1 + beta</code>
+approaches zero, individual timesteps can produce strong excursions.
+Capped or non-finite cases should not be read as exact partitions of
+<span class="math display">\[Q^* - B\]</span>.</p>
+</div>
 <div class="section level3">
-<h3 id="monin-obukhovprofile">Monin-Obukhov/Profile<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile"></a>
+<h3 id="monin-obukhovprofile-as-diagnostic-path">Monin-Obukhov/Profile as diagnostic path<a class="anchor" aria-label="anchor" href="#monin-obukhovprofile-as-diagnostic-path"></a>
 </h3>
-<p>#<code>{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/en_clos_wf-method_monin_obukhov.png") #</code></p>
-<p>The Monin-Obukhov/Profile path in <code>fieldClim</code> is not a
-method that automatically partitions available energy into
-<code>L</code> and <code>V</code>. It calculates heat fluxes from
-measured differences between two heights: temperature, humidity, wind
-and measurement height directly determine the profile calculation. The
-method is therefore sensitive when gradients are small, noisy or
-contradictory.</p>
+<p>The Monin-Obukhov/Profile calculation path is interpreted here as a
+profile and stability diagnostic. It is not a method that automatically
+partitions available energy into <code>H</code> and <code>LE</code>. It
+calculates heat fluxes from measured differences between two heights:
+temperature, humidity, wind and measurement height directly determine
+the profile calculation. The method is therefore sensitive when
+gradients are small, noisy or contradictory.</p>
 <p>The current package version catches several problematic cases
 explicitly. If the temperature gradient between the two heights is zero,
 sensible heat flux is set to zero for that timestep. If the humidity
 gradient is zero, latent heat flux is set to zero. Invalid measurement
 heights, missing wind values or non-evaluable profile states return
 <code>NA</code> with a warning.</p>
-<p>This numerical guarding does not make Monin-Obukhov/Profile an
-energy-closing method. Large but finite values are not automatically
-limited to <span class="math display">\[Q^{*} - B\]</span>. The results
-must therefore be checked against available energy. Large deviations
-from available energy are primarily diagnostic information about profile
+<p>This numerical guarding makes Monin-Obukhov/Profile neither an
+energy-closing method nor an automatically validated full MOST
+implementation. Large but finite values are not automatically limited to
+<span class="math display">\[Q^* - B\]</span>. The results must
+therefore be checked against available energy. Large deviations from
+available energy are primarily diagnostic information about profile
 sensitivity, wind shear and stability assumptions.</p>
 <p>For interpretation, it is not expected that</p>
 <p><span class="math display">\[
-L_{MO} + V_{MO} = Q^{*} - B
+H_{MO} + LE_{MO} = Q^* - B
 \]</span></p>
-<p>holds. This relation is used only as a plausibility check. Large
-deviations point to critical profile conditions: small temperature or
-humidity gradients, weak wind differences, unfavorable stability
-assumptions or 5-minute noise.</p>
+<p>holds. This relation is used only as a plausibility check. The
+diagnostic residual relation is:</p>
+<p><span class="math display">\[
+R_{E,MO} = Q^* - B - H_{MO} - LE_{MO}
+\]</span></p>
+<p>In the code, <code>H_MO</code> and <code>LE_MO</code> are stored as
+<code>L_monin</code> and <code>V_monin</code>. Large deviations of
+<code>H_MO + LE_MO</code> from available energy point to critical
+profile conditions: small temperature or humidity gradients, weak wind
+differences, unfavorable stability assumptions or 5-minute noise.</p>
 </div>
 <div class="section level3">
 <h3 id="penman">Penman<a class="anchor" aria-label="anchor" href="#penman"></a>
 </h3>
-<p>#<code>{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/en_clos_wf-method_penman.png") #</code></p>
 <p>Penman is a combination approach for latent heat flux. It combines an
 energy term with an aerodynamic drying term. In the current package
-workflow, Penman returns <code>V</code>, but not a paired sensible heat
-flux <code>L</code>.</p>
+workflow, Penman returns <code>LE</code>, but not a paired sensible heat
+flux <code>H</code>. In the code, <code>LE_Penman</code> is stored as
+<code>V_penman</code>.</p>
 <p><span class="math display">\[
-V_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{*} - B) +
+LE_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^* - B) +
 \frac{\gamma}{\Delta + \gamma} E_a
 \]</span></p>
 <p><span class="math display">\[
 E_a = f(u, e_s - e_a)
 \]</span></p>
-<p>Penman is therefore a comparison path for <code>V</code>, not a
-complete <code>L</code>/<code>V</code> partitioning like
-Priestley-Taylor or Bowen.</p>
+<p>Because Penman does not compute a paired sensible heat flux,
+subtracting <code>latent_penman</code> from available energy leaves only
+an unresolved remainder:</p>
+<p><span class="math display">\[
+U_{Penman} = Q^* - B - LE_{Penman}
+\]</span></p>
+<p>This remainder is not automatically <code>H</code>. It can include
+sensible heat, closure error, input-data error and model mismatch.</p>
+<p>Penman is therefore a comparison path for <code>LE</code>, not a
+complete <code>H</code>/<code>LE</code> partitioning like
+Priestley-Taylor, Bowen or Bulk-Residual.</p>
 </div>
 </div>
 <div class="section level2">
@@ -463,7 +531,7 @@ data basis.</p>
 <span>  z1 <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  z2 <span class="op">=</span> <span class="fl">10</span>,</span>
 <span></span>
-<span>  <span class="co"># Package names for theoretical quantities:</span></span>
+<span>  <span class="co"># Package names for reference quantities:</span></span>
 <span>  <span class="co"># rad_bal corresponds to Q*, soil_flux corresponds to B.</span></span>
 <span>  rad_bal <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Q_star</span>,</span>
 <span>  soil_flux <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">B</span>,</span>
@@ -652,27 +720,29 @@ balance, available energy and heat-flux methods behave.</p>
 <h2 id="step-4-package-methods-for-heat-fluxes">Step 4: Package methods for heat fluxes<a class="anchor" aria-label="anchor" href="#step-4-package-methods-for-heat-fluxes"></a>
 </h2>
 <div class="section level3">
-<h3 id="priestley-taylor-as-first-package-path">Priestley-Taylor as first package path<a class="anchor" aria-label="anchor" href="#priestley-taylor-as-first-package-path"></a>
+<h3 id="priestley-taylor-as-available-energy-partition-path">Priestley-Taylor as available-energy partition path<a class="anchor" aria-label="anchor" href="#priestley-taylor-as-available-energy-partition-path"></a>
 </h3>
 <p>Priestley-Taylor uses available energy, <code>Q* - B</code>, and an
-empirical evaporation parameterization. Its advantage here is not that
-it is universally more correct. Its advantage is that it avoids unstable
-gradient quotients.</p>
+empirical evaporation parameterization. Its role here is not to be
+universally more correct, but to provide an energy-bound partition
+without measured humidity-gradient quotients.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">flux_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">ws</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">sensible_priestley_taylor</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span> <span class="op">&lt;-</span> <span class="va">flux_pt</span><span class="op">$</span><span class="va">latent_priestley_taylor</span></span>
-<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span></span></code></pre></div>
+<span><span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span> <span class="op">&lt;-</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span> <span class="op">+</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span></span>
+<span><span class="co"># The tutorial code variables L_* and V_* are kept:</span></span>
+<span><span class="co"># L_* corresponds to H, V_* corresponds to LE.</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: L"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: H"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: V"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: LE"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_en_files/figure-html/priestley-taylor-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -687,30 +757,33 @@ gradient quotients.</p>
 <span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Priestley-Taylor: energy closure"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_plus_V_pt</span>, col <span class="op">=</span> <span class="va">cols_pt</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/legend.html" class="external-link">legend</a></span><span class="op">(</span><span class="st">"bottom"</span>, inset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="op">-</span><span class="fl">0.35</span><span class="op">)</span>, horiz <span class="op">=</span> <span class="cn">TRUE</span>, bty <span class="op">=</span> <span class="st">"n"</span>,</span>
-<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"L + V from PT"</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">cols_pt</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span>       legend <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Q* - B"</span>, <span class="st">"H + LE from PT"</span><span class="op">)</span>, col <span class="op">=</span> <span class="va">cols_pt</span>, lty <span class="op">=</span> <span class="fl">1</span>, lwd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_en_files/figure-html/priestley-closure-plot-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
-<p><strong>Interpretation.</strong> Priestley-Taylor is the most
-readable first method in this comparison. It uses available energy and
-partitions it with a compact evaporation parameter. In this run, the
-daily mean for <code>L</code> is 25.1 W/m² and the daily mean for
-<code>V</code> is 83.6 W/m². Together, they close the available
-energy.</p>
+<p><strong>Interpretation.</strong> Priestley-Taylor is the first
+available-energy partition path in this comparison. It uses available
+energy and partitions it with a compact evaporation parameter. In the
+code, the resulting <code>H</code> and <code>LE</code> values are stored
+as <code>L_pt</code> and <code>V_pt</code>. In this run, the daily mean
+for <code>H</code> is 25.1 W/m² and the daily mean for <code>LE</code>
+is 83.6 W/m². Together, they close the available energy.</p>
 <p>That does not make PT automatically better than the other methods.
-Its strength here is interpretability: if <code>Q_star</code> and
-<code>B</code> are coherent, energy closure is immediately visible. The
-method avoids humidity-gradient ratios, wind shear and stability
-classification. It is therefore a useful baseline before more sensitive
-profile or gradient methods are added.</p>
+Its strength here is transparent energy bookkeeping: if
+<code>Q_star</code> and <code>B</code> are coherent, the partition can
+be checked immediately. The method avoids measured humidity-gradient
+ratios, wind shear and stability classification. It is therefore a
+useful comparison path before more sensitive profile or gradient methods
+are added.</p>
 </div>
 <div class="section level3">
 <h3 id="bulk-residual-with-richardson-guard">Bulk-Residual with Richardson guard<a class="anchor" aria-label="anchor" href="#bulk-residual-with-richardson-guard"></a>
 </h3>
-<p>The Bulk-Residual path is treated as a package method here. For this
-comparison, the optional Richardson guard is enabled because the Caldern
-dataset contains two temperature and wind heights.</p>
+<p>The Bulk-Residual calculation path is treated as a package method
+here. For this comparison, the optional Richardson guard is enabled
+because the Caldern dataset contains two temperature and wind
+heights.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">flux_bulk_guarded</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_bulk_residual.html">turb_flux_bulk_residual</a></span><span class="op">(</span></span>
 <span>  <span class="va">ws</span>,</span>
@@ -730,23 +803,24 @@ dataset contains two temperature and wind heights.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.5</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#666666"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk-Residual: L with ri_guard"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk-Residual: H with ri_guard"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk-Residual: V as residual"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"Bulk-Residual: LE as residual"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_en_files/figure-html/bulk-package-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> Bulk-Residual works differently from
-PT. It first estimates <code>L</code> from temperature difference and
-wind, and only then computes <code>V</code> as the energy-balance
-residual. With the Richardson guard enabled, only 113 of 288 timesteps
-remain as valid Bulk-Residual values. The stability count explains why:
-175 timesteps are classified as very stable and are therefore not
-treated as robust neutral bulk fluxes.</p>
+PT. It first estimates <code>H</code> from temperature difference and
+wind; in the code this is stored as <code>L_bulk_pkg</code>. It then
+computes <code>LE</code> as the energy-balance residual; in the code
+this is stored as <code>V_bulk_pkg</code>. With the Richardson guard
+enabled, only 113 of 288 timesteps remain as valid Bulk-Residual values.
+The stability count explains why: 175 timesteps are classified as very
+stable and are therefore not evaluated as neutral Bulk fluxes.</p>
 <p>This is not an error. It is the purpose of the guard. The guard does
 not turn Bulk-Residual into a full Monin-Obukhov method and it does not
 correct valid fluxes. It prevents a neutral bulk approach from returning
@@ -764,6 +838,10 @@ very stable, weak-shear or numerically non-robust conditions.</p>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_monin</span> <span class="op">&lt;-</span> <span class="va">flux_all</span><span class="op">$</span><span class="va">sensible_monin</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">V_monin</span> <span class="op">&lt;-</span> <span class="va">flux_all</span><span class="op">$</span><span class="va">latent_monin</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">V_penman</span> <span class="op">&lt;-</span> <span class="va">flux_all</span><span class="op">$</span><span class="va">latent_penman</span></span></code></pre></div>
+<p>The full workflow <code><a href="../reference/turb_flux_calc.html">turb_flux_calc()</a></code> computes the standard
+method outputs with their standard options. The guarded Bulk-Residual
+calculation path is therefore handled separately and is listed below as
+<code>Bulk-Residual package (ri_guard)</code>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">L_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -800,36 +878,40 @@ very stable, weak-shear or numerically non-robust conditions.</p>
 <span><span class="va">L_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">L_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">V_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">V_summary</span><span class="op">[</span>, <span class="op">-</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">L_summary</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">L_summary</span><span class="op">)</span> <span class="op">==</span> <span class="st">"Mean_L_W_m2"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"Mean_H_W_m2"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_summary</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">V_summary</span><span class="op">)</span> <span class="op">==</span> <span class="st">"Mean_V_W_m2"</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="st">"Mean_LE_W_m2"</span></span>
+<span></span>
 <span><span class="va">L_summary</span></span>
-<span><span class="co">#&gt;                             Method Mean_L_W_m2</span></span>
+<span><span class="co">#&gt;                             Method Mean_H_W_m2</span></span>
 <span><span class="co">#&gt; 1                 Priestley-Taylor        25.1</span></span>
 <span><span class="co">#&gt; 2 Bulk-Residual package (ri_guard)        90.9</span></span>
 <span><span class="co">#&gt; 3                            Bowen       -21.1</span></span>
 <span><span class="co">#&gt; 4            Monin-Obukhov/Profile       104.2</span></span>
 <span><span class="va">V_summary</span></span>
-<span><span class="co">#&gt;                             Method Mean_V_W_m2</span></span>
-<span><span class="co">#&gt; 1                 Priestley-Taylor        83.6</span></span>
-<span><span class="co">#&gt; 2 Bulk-Residual package (ri_guard)       188.7</span></span>
-<span><span class="co">#&gt; 3                            Bowen       129.8</span></span>
-<span><span class="co">#&gt; 4            Monin-Obukhov/Profile        52.7</span></span>
-<span><span class="co">#&gt; 5                           Penman        13.2</span></span></code></pre></div>
+<span><span class="co">#&gt;                             Method Mean_LE_W_m2</span></span>
+<span><span class="co">#&gt; 1                 Priestley-Taylor         83.6</span></span>
+<span><span class="co">#&gt; 2 Bulk-Residual package (ri_guard)        188.7</span></span>
+<span><span class="co">#&gt; 3                            Bowen        129.8</span></span>
+<span><span class="co">#&gt; 4            Monin-Obukhov/Profile         52.7</span></span>
+<span><span class="co">#&gt; 5                           Penman         13.2</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> These tables are not a ranking. They
 show different answers to different method questions.</p>
-<p>PT produces a moderate, energy-bound reference course with 25.1 W/m²
-for <code>L</code> and 83.6 W/m² for <code>V</code>.</p>
+<p>PT produces an energy-bound comparison course with 25.1 W/m² for
+<code>H</code> and 83.6 W/m² for <code>LE</code>.</p>
 <p>Bulk-Residual is higher for valid unguarded timesteps
-(<code>L</code>: 90.9 W/m², <code>V</code>: 188.7 W/m²), because only
+(<code>H</code>: 90.9 W/m², <code>LE</code>: 188.7 W/m²), because only
 part of the day remains after Richardson screening. These valid
 timesteps are not the same sample as all 288 measurements.</p>
-<p>Bowen produces a negative daily mean for <code>L</code> (-21.1 W/m²),
-but a high latent component (129.8 W/m²). This shows why simple means
-can be misleading for gradient-sensitive methods: strong positive and
-negative partitioning events can partly cancel each other.</p>
-<p>Penman is separate because it returns only <code>V</code>. Its mean
-of 13.2 W/m² is not a complete <code>L/V</code> pair.</p>
-<p>Monin-Obukhov/Profile returns a mean sensible heat flux of about
-104.2 W/m² and a mean latent heat flux of about 52.7 W/m². These values
-come from temperature, humidity and wind profiles, not from partitioning
+<p>Bowen produces a negative daily mean for <code>H</code> (-21.1 W/m²),
+but a high latent component (<code>LE</code>: 129.8 W/m²). This shows
+why simple means can be misleading for gradient-sensitive methods:
+strong positive and negative partitioning events can partly cancel each
+other.</p>
+<p>Penman is separate because it returns only <code>LE</code>. Its mean
+of 13.2 W/m² is not a complete <code>H/LE</code> pair.</p>
+<p>Monin-Obukhov/Profile returns a mean <code>H</code> of about 104.2
+W/m² and a mean <code>LE</code> of about 52.7 W/m². These values come
+from temperature, humidity and wind profiles, not from partitioning
 available energy. They must be read differently from PT, Bulk-Residual
 or Bowen.</p>
 </div>
@@ -840,19 +922,19 @@ or Bowen.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#CC79A7"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Priestley-Taylor"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Priestley-Taylor"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#666666"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Bulk-Residual with ri_guard"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Bulk-Residual with ri_guard"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_bowen</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#009E73"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Bowen"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Bowen"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">L_monin</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#D55E00"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"L: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"H: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_en_files/figure-html/methods-single-L-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
@@ -862,36 +944,36 @@ or Bowen.</p>
 <code class="sourceCode R"><span><span class="va">op</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">1</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3.2</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_pt</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#56B4E9"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Priestley-Taylor"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Priestley-Taylor"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_bulk_pkg</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#666666"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Bulk-Residual with ri_guard"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Bulk-Residual with ri_guard"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_bowen</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#009E73"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Bowen"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Bowen"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_monin</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#D55E00"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Monin-Obukhov/Profile"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">V_penman</span>, type <span class="op">=</span> <span class="st">"l"</span>, col <span class="op">=</span> <span class="st">"#0072B2"</span>, lwd <span class="op">=</span> <span class="fl">2</span>,</span>
-<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"V: Penman"</span><span class="op">)</span></span>
+<span>     xlab <span class="op">=</span> <span class="st">"Time"</span>, ylab <span class="op">=</span> <span class="st">"W/m²"</span>, main <span class="op">=</span> <span class="st">"LE: Penman"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/abline.html" class="external-link">abline</a></span><span class="op">(</span>h <span class="op">=</span> <span class="fl">0</span>, lty <span class="op">=</span> <span class="fl">2</span>, col <span class="op">=</span> <span class="st">"grey50"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_en_files/figure-html/methods-single-V-plots-1.png" class="r-plt" alt="" width="768"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> The plots are separated
-intentionally. In one combined plot, sensitive methods would dominate
-the y-axis and smoother paths would become unreadable. Per-method plots
-show when sign changes, <code>NA</code> sections or strong excursions
-occur. Bulk-Residual interruptions are often not data gaps, but direct
-consequences of the Richardson guard. Strong excursions in Bowen and
-Monin-Obukhov/Profile are more likely indicators of gradient or
-stability sensitivity.</p>
+intentionally. In one combined plot, sensitive calculation paths would
+dominate the y-axis and smoother paths would become unreadable.
+Per-method plots show when sign changes, <code>NA</code> sections or
+strong excursions occur. Bulk-Residual interruptions are often not data
+gaps, but direct consequences of the Richardson guard. Strong excursions
+in Bowen and Monin-Obukhov/Profile are more likely indicators of
+gradient or stability sensitivity.</p>
 </div>
 <div class="section level3">
 <h3 id="energy-consistency-of-heat-flux-methods">Energy consistency of heat-flux methods<a class="anchor" aria-label="anchor" href="#energy-consistency-of-heat-flux-methods"></a>
@@ -900,14 +982,15 @@ stability sensitivity.</p>
 energy-balance consistency check.</p>
 <p>The near-surface energy balance can be written as:</p>
 <p><span class="math display">\[
-0 = Q^{*} - B - L - V
+R_E = Q^* - B - H - LE
 \]</span></p>
-<p>For energy-bound or residual methods, this implies:</p>
+<p>For energy-partitioning or residual methods, this implies:</p>
 <p><span class="math display">\[
-L + V \approx Q^{*} - B
+H + LE \approx Q^* - B
 \]</span></p>
 <p>For Monin-Obukhov/Profile, this relation is not an expected closure
-condition, but a plausibility diagnostic.</p>
+condition, but a plausibility diagnostic. It does not validate the
+method-specific split into <code>H</code> and <code>LE</code>.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="op">(</span><span class="st">"Q_star"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="st">"Q_star_measured"</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">caldern</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -939,7 +1022,7 @@ condition, but a plausibility diagnostic.</p>
 <span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    Method <span class="op">=</span> <span class="va">method</span>,</span>
-<span>    Mean_L_plus_V <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">lv</span><span class="op">[</span><span class="va">valid</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    Mean_H_plus_LE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">lv</span><span class="op">[</span><span class="va">valid</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    Mean_Q_star_minus_B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">ref</span><span class="op">[</span><span class="va">valid</span><span class="op">]</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    Mean_difference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">diff</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>    Max_abs_difference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">diff</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
@@ -972,11 +1055,11 @@ condition, but a plausibility diagnostic.</p>
 <span></span>
 <span><span class="va">energy_consistency</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">energy_consistency</span><span class="op">[</span>, <span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">energy_consistency</span></span>
-<span><span class="co">#&gt;                             Method Mean_L_plus_V Mean_Q_star_minus_B</span></span>
-<span><span class="co">#&gt; 1 Bulk-Residual package (ri_guard)         279.6               279.6</span></span>
-<span><span class="co">#&gt; 2                 Priestley-Taylor         108.7               108.7</span></span>
-<span><span class="co">#&gt; 3                            Bowen         108.7               108.7</span></span>
-<span><span class="co">#&gt; 4            Monin-Obukhov/Profile         156.9               108.7</span></span>
+<span><span class="co">#&gt;                             Method Mean_H_plus_LE Mean_Q_star_minus_B</span></span>
+<span><span class="co">#&gt; 1 Bulk-Residual package (ri_guard)          279.6               279.6</span></span>
+<span><span class="co">#&gt; 2                 Priestley-Taylor          108.7               108.7</span></span>
+<span><span class="co">#&gt; 3                            Bowen          108.7               108.7</span></span>
+<span><span class="co">#&gt; 4            Monin-Obukhov/Profile          156.9               108.7</span></span>
 <span><span class="co">#&gt;   Mean_difference Max_abs_difference Valid_timesteps</span></span>
 <span><span class="co">#&gt; 1             0.0                0.0             113</span></span>
 <span><span class="co">#&gt; 2             0.0                0.0             288</span></span>
@@ -984,17 +1067,17 @@ condition, but a plausibility diagnostic.</p>
 <span><span class="co">#&gt; 4            48.2             5004.3             288</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> This table is the central
 consistency check. The mean of <code>Q_star - B</code> is computed over
-the same valid timesteps as <code>L + V</code> for each method. That
+the same valid timesteps as <code>H + LE</code> for each method. That
 makes Bulk-Residual readable: it has only 113 valid timesteps because
 the guard removes very stable or invalid situations. For exactly these
-valid timesteps, the residual path closes as expected: the mean and
+valid timesteps, the residual path closes by definition: the mean and
 maximum differences are 0 and 0 W/m².</p>
-<p>Priestley-Taylor and Bowen also close because both explicitly
-partition available energy. This means different things. For PT, the
-partitioning is relatively robustly parameterized. For Bowen, exact
-closure can still coexist with extreme individual partitions caused by
-small humidity gradients or denominator problems. Monin-Obukhov/Profile
-is not a closure method. Its mean difference of 48.2 W/m² and maximum
+<p>Priestley-Taylor and Bowen also close because both calculation paths
+explicitly partition available energy. This means different things. For
+PT, this is a partitioning assumption. For Bowen, exact closure can
+still coexist with extreme individual partitions caused by small
+humidity gradients or denominator problems. Monin-Obukhov/Profile is not
+a closure method. Its mean difference of 48.2 W/m² and maximum
 difference of 5004.3 W/m² are therefore not rounding errors. They
 indicate that this profile path can produce 5-minute values that should
 not be read as an energy-balance partition.</p>
@@ -1016,7 +1099,7 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
 <span>    Method <span class="op">=</span> <span class="st">"Bulk-Residual package (ri_guard)"</span>,</span>
-<span>    Flux <span class="op">=</span> <span class="st">"L"</span>,</span>
+<span>    Flux <span class="op">=</span> <span class="st">"H"</span>,</span>
 <span>    Value <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_bulk_pkg</span>,</span>
 <span>    dT_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dT_2_10</span>,</span>
 <span>    dH_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dH_2_10</span>,</span>
@@ -1027,7 +1110,7 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
 <span>    Method <span class="op">=</span> <span class="st">"Bowen"</span>,</span>
-<span>    Flux <span class="op">=</span> <span class="st">"L"</span>,</span>
+<span>    Flux <span class="op">=</span> <span class="st">"H"</span>,</span>
 <span>    Value <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_bowen</span>,</span>
 <span>    dT_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dT_2_10</span>,</span>
 <span>    dH_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dH_2_10</span>,</span>
@@ -1038,7 +1121,7 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
 <span>    Method <span class="op">=</span> <span class="st">"Bowen"</span>,</span>
-<span>    Flux <span class="op">=</span> <span class="st">"V"</span>,</span>
+<span>    Flux <span class="op">=</span> <span class="st">"LE"</span>,</span>
 <span>    Value <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_bowen</span>,</span>
 <span>    dT_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dT_2_10</span>,</span>
 <span>    dH_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dH_2_10</span>,</span>
@@ -1049,7 +1132,7 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
 <span>    Method <span class="op">=</span> <span class="st">"Monin-Obukhov/Profile"</span>,</span>
-<span>    Flux <span class="op">=</span> <span class="st">"L"</span>,</span>
+<span>    Flux <span class="op">=</span> <span class="st">"H"</span>,</span>
 <span>    Value <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">L_monin</span>,</span>
 <span>    dT_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dT_2_10</span>,</span>
 <span>    dH_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dH_2_10</span>,</span>
@@ -1060,7 +1143,7 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    datetime <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
 <span>    Method <span class="op">=</span> <span class="st">"Monin-Obukhov/Profile"</span>,</span>
-<span>    Flux <span class="op">=</span> <span class="st">"V"</span>,</span>
+<span>    Flux <span class="op">=</span> <span class="st">"LE"</span>,</span>
 <span>    Value <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">V_monin</span>,</span>
 <span>    dT_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dT_2_10</span>,</span>
 <span>    dH_2_10 <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">dH_2_10</span>,</span>
@@ -1088,10 +1171,10 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span></span>
 <span><span class="va">extreme_count</span></span>
 <span><span class="co">#&gt;                  Method Flux Count</span></span>
-<span><span class="co">#&gt; 1                 Bowen    L     4</span></span>
-<span><span class="co">#&gt; 2 Monin-Obukhov/Profile    L    15</span></span>
-<span><span class="co">#&gt; 3                 Bowen    V     4</span></span>
-<span><span class="co">#&gt; 4 Monin-Obukhov/Profile    V     3</span></span>
+<span><span class="co">#&gt; 1                 Bowen    H     4</span></span>
+<span><span class="co">#&gt; 2 Monin-Obukhov/Profile    H    15</span></span>
+<span><span class="co">#&gt; 3                 Bowen   LE     4</span></span>
+<span><span class="co">#&gt; 4 Monin-Obukhov/Profile   LE     3</span></span>
 <span><span class="va">bulk_guard_summary</span></span>
 <span><span class="co">#&gt;   bulk_stability Count</span></span>
 <span><span class="co">#&gt; 1        neutral     1</span></span>
@@ -1116,16 +1199,16 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Note <span class="op">=</span> <span class="st">"No values above the diagnostic threshold were found."</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt;                 datetime                Method Flux   Value dT_2_10 dH_2_10</span></span>
-<span><span class="co">#&gt; 1254 2017-06-30 08:25:00 Monin-Obukhov/Profile    V  2988.5    0.08    3.28</span></span>
-<span><span class="co">#&gt; 520  2017-06-30 19:15:00                 Bowen    L -2695.0   -0.84    7.67</span></span>
-<span><span class="co">#&gt; 808  2017-06-30 19:15:00                 Bowen    V  2646.2   -0.84    7.67</span></span>
-<span><span class="co">#&gt; 966  2017-06-30 08:25:00 Monin-Obukhov/Profile    L  2223.5    0.08    3.28</span></span>
-<span><span class="co">#&gt; 1009 2017-06-30 12:00:00 Monin-Obukhov/Profile    L  2018.8    0.30    0.52</span></span>
-<span><span class="co">#&gt; 522  2017-06-30 19:25:00                 Bowen    L -1861.2   -0.90    8.35</span></span>
-<span><span class="co">#&gt; 810  2017-06-30 19:25:00                 Bowen    V  1810.2   -0.90    8.35</span></span>
-<span><span class="co">#&gt; 1012 2017-06-30 12:15:00 Monin-Obukhov/Profile    L  1806.9    0.21    2.47</span></span>
-<span><span class="co">#&gt; 986  2017-06-30 10:05:00 Monin-Obukhov/Profile    L  1512.6    0.29    2.66</span></span>
-<span><span class="co">#&gt; 999  2017-06-30 11:10:00 Monin-Obukhov/Profile    L  1464.3    0.42    1.38</span></span>
+<span><span class="co">#&gt; 1254 2017-06-30 08:25:00 Monin-Obukhov/Profile   LE  2988.5    0.08    3.28</span></span>
+<span><span class="co">#&gt; 520  2017-06-30 19:15:00                 Bowen    H -2695.0   -0.84    7.67</span></span>
+<span><span class="co">#&gt; 808  2017-06-30 19:15:00                 Bowen   LE  2646.2   -0.84    7.67</span></span>
+<span><span class="co">#&gt; 966  2017-06-30 08:25:00 Monin-Obukhov/Profile    H  2223.5    0.08    3.28</span></span>
+<span><span class="co">#&gt; 1009 2017-06-30 12:00:00 Monin-Obukhov/Profile    H  2018.8    0.30    0.52</span></span>
+<span><span class="co">#&gt; 522  2017-06-30 19:25:00                 Bowen    H -1861.2   -0.90    8.35</span></span>
+<span><span class="co">#&gt; 810  2017-06-30 19:25:00                 Bowen   LE  1810.2   -0.90    8.35</span></span>
+<span><span class="co">#&gt; 1012 2017-06-30 12:15:00 Monin-Obukhov/Profile    H  1806.9    0.21    2.47</span></span>
+<span><span class="co">#&gt; 986  2017-06-30 10:05:00 Monin-Obukhov/Profile    H  1512.6    0.29    2.66</span></span>
+<span><span class="co">#&gt; 999  2017-06-30 11:10:00 Monin-Obukhov/Profile    H  1464.3    0.42    1.38</span></span>
 <span><span class="co">#&gt;      dU_2_10 Q_star_minus_B bulk_stability abs_Value</span></span>
 <span><span class="co">#&gt; 1254   0.003          207.7           &lt;NA&gt;    2988.5</span></span>
 <span><span class="co">#&gt; 520   -0.137          -48.8           &lt;NA&gt;    2695.0</span></span>
@@ -1140,13 +1223,15 @@ Richardson-guard classes from the Bulk-Residual path.</p>
 <p><strong>Interpretation.</strong> The extreme-value count shows where
 problematic 5-minute values arise. Bowen produces 8 values above the
 diagnostic threshold, Monin-Obukhov/Profile produces 18. The
-Bulk-Residual package path does not appear as an extreme-value source
-here because the Richardson guard does not forward critical profile
-states as large finite fluxes; it marks them as <code>NA</code>.</p>
+Bulk-Residual calculation path does not appear as an extreme-value
+source here because the Richardson guard does not forward critical
+profile states as large finite fluxes; it marks them as
+<code>NA</code>.</p>
 <p>The stability count is essential. Out of 288 timesteps, 107 are
 classified as unstable, 1 as neutral, 5 as stable and 175 as very
 stable. Only the non-guarded cases are used for <code>L_bulk_pkg</code>
-and <code>V_bulk_pkg</code>. For Bowen and Monin-Obukhov/Profile, large
+and <code>V_bulk_pkg</code> (the code variables for <code>H_bulk</code>
+and <code>LE_res</code>). For Bowen and Monin-Obukhov/Profile, large
 finite values can remain visible. Such values are first diagnostic signs
 of data and method sensitivity, not automatically real heat-flux
 events.</p>
@@ -1179,7 +1264,7 @@ events.</p>
 <span>  lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  ylim <span class="op">=</span> <span class="va">ylim_closure</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Time"</span>,</span>
-<span>  ylab <span class="op">=</span> <span class="st">"(L + V) - (Q* - B) [W/m²]"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"(H + LE) - (Q* - B) [W/m²]"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Energy consistency: energy-bound paths"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -1207,14 +1292,14 @@ events.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> This plot separates energy-bound or
 residual paths from Monin-Obukhov/Profile. For Bulk-Residual, PT and
-Bowen, closeness to the zero line means that <code>L + V</code> matches
-the available energy used by the method. For PT this is constructive;
-for Bulk-Residual it is also constructive for valid timesteps because
-<code>V</code> is the residual. Bowen can also close exactly as long as
-the denominator is finite and not capped.</p>
+Bowen, closeness to the zero line means that <code>H + LE</code> matches
+the available energy used by the method. For PT this is a partitioning
+assumption; for Bulk-Residual it is a residual definition for valid
+timesteps because <code>LE</code> is the residual. Bowen can also close
+exactly as long as the denominator is finite and not capped.</p>
 <p>The zero line does not prove that every individual partition is
 physically good. It only states that the energy bookkeeping is
-consistent. The split into <code>L</code> and <code>V</code> still has
+consistent. The split into <code>H</code> and <code>LE</code> still has
 to be read together with gradients, extreme values and warnings.</p>
 </div>
 <div class="section level3">
@@ -1239,7 +1324,7 @@ to be read together with gradients, extreme values and warnings.</p>
 <span>  lwd <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  ylim <span class="op">=</span> <span class="va">mo_ylim</span>,</span>
 <span>  xlab <span class="op">=</span> <span class="st">"Time"</span>,</span>
-<span>  ylab <span class="op">=</span> <span class="st">"(L_MO + V_MO) - (Q* - B) [W/m²]"</span>,</span>
+<span>  ylab <span class="op">=</span> <span class="st">"(H_MO + LE_MO) - (Q* - B) [W/m²]"</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"Monin-Obukhov/Profile: plausibility check against Q* - B"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -1264,11 +1349,12 @@ to be read together with gradients, extreme values and warnings.</p>
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span><span class="va">op</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Interpretation.</strong> This plot must be read differently
-from the previous one. Monin-Obukhov/Profile calculates <code>L</code>
-and <code>V</code> from measured differences between two heights.
-Temperature, humidity, wind and measurement height determine the result.
-The values are not adjusted afterward so that their sum equals the
-available energy.</p>
+from the previous one. Monin-Obukhov/Profile calculates <code>H</code>
+and <code>LE</code> from measured differences between two heights. In
+the code, these outputs are stored as <code>L_monin</code> and
+<code>V_monin</code>. Temperature, humidity, wind and measurement height
+determine the result. The values are not adjusted afterward so that
+their sum equals the available energy.</p>
 <p>The package functions catch problematic special cases: zero gradients
 return zero for the respective flux, invalid heights or wind values and
 non-evaluable profile states return <code>NA</code> with a warning.
@@ -1329,13 +1415,14 @@ shows how the existing output fields relate to
 <span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_flux_workflow_en_files/figure-html/closure-flux-open-en-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
-<p>The plot does not show the same residual concept for all methods. It
-shows the term that is open or residualized in each method family. For
+<p>The plot does not show the same residual concept for all methods.
+Depending on the calculation path, it shows a residual latent heat term,
+an unresolved complement, or a diagnostic energy-balance residual. For
 Bulk-Residual, this is <code>latent_bulk_residual</code>: latent heat is
 calculated as the remaining available energy after estimating
 <code>sensible_bulk</code>. For Penman, it is the unresolved complement
 after subtracting <code>latent_penman</code>; this term is not
-automatically sensible heat. For Monin-Obukhov/Profile, it is the
+automatically <code>H</code>. For Monin-Obukhov/Profile, it is the
 diagnostic balance residual
 <code>rad_bal - soil_flux - sensible - latent</code>. Priestley-Taylor
 and Bowen are not shown because they partition available energy and do
@@ -1350,11 +1437,12 @@ not return an explicit open term.</p>
 <p>The closure check shows
 <code>rad_bal - soil_flux - sensible - latent</code> for methods with
 paired fluxes. For Priestley-Taylor, Bowen and Bulk-Residual, values
-close to zero are expected by construction. This indicates formal
-closure, not physical validation. For Monin-Obukhov/Profile, non-zero
-values are diagnostic and show the difference between profile-derived
-flux estimates and available energy. Penman is not shown because no
-paired sensible heat flux is calculated.</p>
+close to zero are methodically expected by partitioning assumption or
+residual definition. This indicates formal closure, not physical
+validation. For Monin-Obukhov/Profile, non-zero values are diagnostic
+and show the difference between profile-derived flux estimates and
+available energy. Penman is not shown because no paired sensible heat
+flux is calculated.</p>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
 <span>  <span class="va">closure_flux</span>,</span>
@@ -1450,7 +1538,7 @@ inputs.</p>
 <span><span class="co">#&gt; 2  u_star_roughness    -2.69 142.27                0             1</span></span>
 <span><span class="co">#&gt; 3         wind_mean   -23.77 163.35                0             1</span></span></code></pre></div>
 <p>The table shows the key distinction. The closure ratio remains close
-to 1 for the Bulk-Residual path because
+to 1 for the Bulk-Residual calculation path because
 <code>latent_bulk_residual</code> is always calculated as the residual
 of <code>rad_bal - soil_flux - sensible_bulk</code>. The actual
 methodological sensitivity occurs one step earlier, in
@@ -1465,37 +1553,39 @@ selected exchange-velocity assumption is physically correct.</p>
 <div class="section level2">
 <h2 id="consequence-for-method-comparison">Consequence for method comparison<a class="anchor" aria-label="anchor" href="#consequence-for-method-comparison"></a>
 </h2>
-<p>The methods react differently to the same station dataset because
-they do not answer the same question. For this Caldern day, the
+<p>The calculation paths react differently to the same station dataset
+because they do not answer the same question. For this Caldern day, the
 practical interpretation is:</p>
 <ul>
-<li>Priestley-Taylor is the stable baseline path. It answers how
-available energy can be partitioned without sensitive profile
-quotients.</li>
-<li>Bulk-Residual with <code>ri_guard</code> answers which timesteps
-allow a simple wind- and temperature-gradient-based estimate of
-<code>L</code>, and where the stability diagnostic says that the neutral
-bulk approach is not robust.</li>
-<li>Bowen answers how a temperature/humidity gradient would partition
-available energy. It can close the energy balance and still produce
-extreme individual partitions.</li>
-<li>Penman answers only the question of <code>V</code>. It is not a
-complete <code>L</code>/<code>V</code> pair and must not be compared as
-if it were PT, Bulk or Bowen.</li>
-<li>Monin-Obukhov/Profile answers a profile question: what do the
+<li>Priestley-Taylor is an available-energy partition path. It asks how
+available energy is split into <code>H</code> and <code>LE</code> using
+an empirical evaporation parameterization.</li>
+<li>Bulk-Residual with <code>ri_guard</code> asks which timesteps allow
+a wind- and temperature-gradient-based estimate of <code>H</code>, and
+how large the derived residual <code>LE_res</code> is.</li>
+<li>Bowen asks how a temperature/humidity gradient partitions available
+energy into <code>H</code> and <code>LE</code>. It can close
+energetically and still produce extreme component fluxes.</li>
+<li>Penman answers only the question of <code>LE</code>. The open
+remainder <code>U_Penman = Q* - B - LE_Penman</code> is not a complete
+<code>H/LE</code> pair and must not be compared as such with PT,
+Bulk-Residual or Bowen.</li>
+<li>Monin-Obukhov/Profile answers a profile question: what do
 temperature, humidity and wind differences between two heights imply
-when interpreted as turbulent exchange? Large excursions,
-<code>NA</code> values or deviations from <span class="math display">\[Q^{*} - B\]</span> are not just noise. They show
-that gradients, wind shear or stability assumptions are critical for
-those timesteps.</li>
+when interpreted as turbulent exchange? This path is diagnostic and not
+energy-closing. Large excursions, <code>NA</code> values or deviations
+from <span class="math display">\[Q^* - B\]</span> show that gradients,
+wind shear or stability assumptions are critical for those
+timesteps.</li>
 </ul>
-<p>The key practical consequence is that the method comparison is not a
-search for one “best” curve. It shows which assumptions remain stable
-for the same station data and which assumptions lead to diagnostic
-cases. PT should be read as baseline, Bulk-Residual with guard as a
-transparent residual comparison, Bowen as gradient-sensitive
-partitioning, Penman as a separate <code>V</code> comparison, and
-Monin-Obukhov/Profile as a profile-diagnostic path.</p>
+<p>The key practical consequence is that the comparison of calculation
+paths is not a search for one “best” curve. It shows which assumptions
+remain stable for the same station data and which assumptions lead to
+diagnostic cases. PT should be read as available-energy partitioning,
+Bulk-Residual with guard as an <code>H</code> estimate with residual
+<code>LE</code>, Bowen as gradient-sensitive partitioning, Penman as a
+separate <code>LE</code> comparison with open remainder, and
+Monin-Obukhov/Profile as a profile- and stability-diagnostic path.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

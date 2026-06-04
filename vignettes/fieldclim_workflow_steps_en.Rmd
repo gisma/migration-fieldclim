@@ -2,6 +2,8 @@
 title: "fieldClim: Follow-up workflows and additional package functions"
 author: "Jörg Bendix, Chris Reudenbach"
 date: "2026-05-28"
+bibliography: fieldclim-methods.bib
+csl: apa.csl
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{fieldClim: Follow-up workflows and additional package functions}
@@ -20,7 +22,9 @@ knitr::opts_chunk$set(
 
 # Aim of this vignette
 
-This vignette complements the energy-balance workflow vignette. That vignette focuses on the coherent Caldern workflow with \(Q^{*}\), \(B\), \(L\), and \(V\). This page presents the additional package functions as **follow-up workflows**: radiation checks, modelled radiation, soil parameters, meteorological helper variables, stability variables, and object control.
+This vignette complements the energy-balance workflow vignette. That vignette focuses on the coherent Caldern workflow with \(Q^{*}\), \(B\), \(H\), and \(LE\). This page presents the additional package functions as **follow-up workflows**: radiation checks, modelled radiation, soil parameters, meteorological helper variables, stability variables, and object control.
+
+A systematic decision guide for matching heat-flux methods to measurement architecture is provided in [Choosing fieldClim Heat-Flux Methods by Measurement Design](fieldclim_m2m_en.html). This vignette applies that logic to the follow-up workflows around the Caldern example dataset.
 
 The text is not a second comparison of methods. The central question here is: Which groups of functions exist beyond the main workflow, what are they practically useful for, and which limitations must be considered when applying them?
 
@@ -31,10 +35,28 @@ The text is not a second comparison of methods. The central question here is: Wh
 | 2 | How can radiation be modelled when measurements are missing or when a plausibility benchmark is needed? | `sol_*`, `trans_*`, `terr_*`, `rad_*` |
 | 3 | How are soil parameters and soil heat flux handled? | `soil_*` |
 | 4 | Which helper variables are needed for humidity, pressure, and temperature? | `hum_*`, `pres_*`, `temp_*` |
-| 5 | How are the wind profile, Richardson number, and stability variables checked? | `turb_*`, `bound_*` |
+| 5 | How are the wind profile, Richardson number, and stability variables checked? | `turb_*`, `bound_*` as diagnostic follow-up functions |
 | 6 | How is a `weather_station` object checked, plotted, and exported? | `build_weather_station()`, `plot_weather_station()`, `as.data.frame()` |
 
 This vignette is a package map with executable mini examples. It does not replace a complete physical derivation, nor does it provide testing against independent flux measurements. Its purpose is to show which package functions fit which workflow steps.
+
+# Reference notation and code variables
+
+This vignette uses the reference notation from the method-selection page. `Q*` is net radiation, `B` is soil heat flux, `A = Q* - B` is available energy, `H` is sensible heat flux, `LE` is latent heat flux, and `R_E` is the residual or non-closed energy term.
+
+Longwave radiation is kept separate from turbulent heat flux notation. `L_down`, `L_up`, and `L*` refer to longwave radiation components. This `L` is not sensible heat flux. Sensible heat flux is denoted as `H`.
+
+The R code variables used in this tutorial are not renamed. Existing objects such as `L_monin_no_cap`, `V_bowen_no_cap`, or other `L_*` and `V_*` objects are kept because they belong to the current tutorial workflow. In the explanatory text, however, `L_*` is interpreted as `H`, and `V_*` is interpreted as `LE`.
+
+| Reference quantity | Meaning | `fieldClim` field or output | Tutorial code variable |
+|---|---|---|---|
+| `Q*` | net radiation | `rad_bal` | `Q_star` |
+| `B` | soil heat flux | `soil_flux` | `B`, `B_measured`, `B_model` |
+| `A = Q* - B` | available energy | `rad_bal - soil_flux` | `available_energy`, `Q_minus_B` |
+| `H` | sensible heat flux | `sensible_*` | `L_*` where used as tutorial working variable |
+| `LE` | latent heat flux | `latent_*` | `V_*` where used as tutorial working variable |
+| `R_E = Q* - B - H - LE` | residual / non-closed energy term | closure diagnostic output | `closure_residual`, `diff_*` |
+
 
 # Shared data and object setup
 
@@ -101,6 +123,8 @@ ws <- build_weather_station(
   valley = FALSE,
 
   surface_type = "field",
+  # surface_temp is an explicit model input for radiation functions, not an
+  # automatically available standard station measurement.
   surface_temp = caldern$Ts,
 
   texture = "peat",
@@ -164,6 +188,8 @@ with:
 - \(L^{*}\): longwave balance [W/m²]
 - \(L_{\downarrow}\): incoming longwave radiation [W/m²]
 - \(L_{\uparrow}\): longwave emission from the surface [W/m²]
+
+Here, `L` denotes longwave radiation. It does not denote sensible heat flux; sensible heat is denoted as `H` in the reference notation used in this vignette.
 
 The net radiation is theoretically given by:
 
@@ -334,7 +360,7 @@ lag_check
 
 # Workflow module 2: Model radiation instead of only measuring it
 
-The radiation functions can be used to check the plausibility of measurements or to model missing radiation components. The package workflow follows a chain:
+The radiation functions can be used to check the plausibility of measurements or to model missing radiation components. The package calculation logic follows a chain:
 
 | Subproblem | Function family | Role |
 |---|---|---|
@@ -359,6 +385,7 @@ slope <- 0
 exposition <- 0
 valley <- FALSE
 surface_type <- "field"
+# Explicit model input for longwave radiation; not a standard station sensor.
 surface_temp <- 20
 
 # Solar and topographic partial variables.
@@ -371,14 +398,14 @@ rad_sw_in(example_time, lon, lat, elev, temp, slope, exposition)
 rad_sw_bal(example_time, lon, lat, elev, temp, slope, exposition, valley, surface_type)
 rad_lw_bal(temp, rh, slope, valley, surface_type, surface_temp)
 
-# Modelled net radiation.
+# Modelled net radiation. This also uses Ts as explicit surface-temperature input.
 rad_bal(
   example_time, lon, lat, elev, temp, rh,
   slope, exposition, valley, surface_type, surface_temp
 )
 ```
 
-**Interpretation.** This module is relevant when radiation components are missing or when measurements need to be checked against a plausible order of magnitude. Modelled radiation is not an automatic replacement measurement here. It is a benchmark: if the diurnal cycle and magnitude roughly agree, this supports a consistent time basis and realistic site assumptions. If measurement and model diverge strongly, the first checks should address time zone, surface type, terrain parameters, sensor processing, or differently defined radiation components. The time basis is technically important here: the current package version handles POSIXct and POSIXlt timestamps consistently. The key point remains that the time zone must be set explicitly because solar position and radiation depend on local time.
+**Interpretation.** This module is relevant when radiation components are missing or when measurements need to be checked against a plausible order of magnitude. Modelled radiation is not an automatic replacement measurement here. It is a benchmark: if the diurnal cycle and magnitude roughly agree, this supports a consistent time basis and realistic site assumptions. If measurement and model diverge strongly, the first checks should address time zone, surface type, terrain parameters, sensor processing, or differently defined radiation components. The time basis is technically important here: the current package version handles POSIXct and POSIXlt timestamps consistently. The key point remains that the time zone must be set explicitly because solar position and radiation depend on local time. `surface_temp` is used here only as an explicit model input for longwave radiation. It is not treated as a standard automatically available station sensor.
 
 ## 2.1 Compare measured and modelled radiation as a diurnal cycle
 
@@ -398,7 +425,7 @@ caldern$K_star_model <- rad_sw_bal(
   slope, exposition, valley, surface_type
 )
 
-# Modelled longwave balance.
+# Modelled longwave balance. This uses Ts as explicit surface-temperature input.
 caldern$L_star_model <- rad_lw_bal(
   caldern$Ta_2m,
   caldern$Huma_2m,
@@ -408,7 +435,7 @@ caldern$L_star_model <- rad_lw_bal(
   caldern$Ts
 )
 
-# Modelled net radiation.
+# Modelled net radiation. This also uses Ts as explicit surface-temperature input.
 caldern$Q_star_model <- rad_bal(
   caldern$datetime,
   lon, lat, elev, caldern$Ta_2m, caldern$Huma_2m,
@@ -469,7 +496,7 @@ par(op)
 
 # Workflow module 3: Soil parameters and soil heat flux
 
-Soil heat flux can be measured or estimated from the temperature gradient, depth, moisture, and soil texture. The package workflow is:
+Soil heat flux can be measured or estimated from the temperature gradient, depth, moisture, and soil texture. The package calculation logic is:
 
 $$
 B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2}
@@ -586,11 +613,11 @@ plot(
 par(op)
 ```
 
-**Interpretation.** These helper variables are intermediate steps, not independent result fluxes. Absolute humidity, potential temperature, air density, and latent heat of vaporisation later enter gradient analyses, Bowen, Penman, and profile methods. This is exactly why they matter: a small unit or scaling error in a helper variable can later appear as a large difference in heat flux.
+**Interpretation.** These helper variables are intermediate steps, not independent result fluxes. Absolute humidity, potential temperature, air density, and latent heat of vaporisation later enter gradient analyses, Bowen, Penman, and profile-related calculation paths. This is exactly why they matter: a small unit or scaling error in a helper variable can later appear as a large difference in heat flux.
 
 # Workflow module 5: Wind profile, Richardson number, and stability
 
-Before using more complex heat-flux methods, the wind profile, roughness, and stability should be checked. The package provides several `turb_*` functions for this purpose.
+Before using profile-related heat-flux calculation paths, the wind profile, roughness, and stability should be checked. The package provides several `turb_*` functions for this purpose.
 
 ```{r turbulence-diagnostics}
 # Roughness length from the surface type.
@@ -674,10 +701,12 @@ Some methods have `cap` arguments or return `NA` in a controlled way for invalid
 
 ```{r cap-examples}
 # Bowen with and without cap.
+# Existing tutorial variables are kept: V_* corresponds to LE.
 V_bowen_no_cap <- latent_bowen(ws)
 V_bowen_cap <- latent_bowen(ws, cap = 1)
 
-# Monin-Obukhov with and without cap.
+# Monin-Obukhov/Profile with and without cap.
+# Existing tutorial variables are kept: L_* corresponds to H.
 L_monin_no_cap <- sensible_monin(ws)
 L_monin_cap <- sensible_monin(ws, cap = 20)
 
@@ -707,7 +736,7 @@ if ("bound_thermal_avg" %in% getNamespaceExports("fieldClim")) {
 After calculations, the `weather_station` object contains additional fields. These can be printed as a table, plotted, or exported for further analyses.
 
 ```{r object-output}
-# PT path as an example calculation.
+# Priestley-Taylor calculation path as an example calculation.
 ws_pt <- turb_flux_calc(ws, pt_only = TRUE)
 
 # Convert the result object into a table.
@@ -739,11 +768,11 @@ plot_weather_station(ws_pt)
 
 ## Energy-balance closure diagnostics
 
-`energy_balance_closure()` is not an additional flux model. It summarizes existing output fields of a `weather_station` object as energy-balance diagnostics. The starting point is available energy, defined as `rad_bal - soil_flux`. For methods with paired sensible and latent heat fluxes, the function calculates `available_energy - sensible - latent` as the closure residual. For Penman, no artificial sensible heat flux is created; instead, the function reports an `unresolved_complement`. Monin-Obukhov/Profile outputs are treated diagnostically and are not forced to close the energy balance.
+`energy_balance_closure()` is not an additional flux model. It summarizes existing output fields of a `weather_station` object as energy-balance diagnostics. The starting point is available energy, defined as `rad_bal - soil_flux`, or `A = Q* - B` in the reference notation. For methods with paired `H` and `LE` fluxes, the function calculates `available_energy - sensible - latent` as the closure residual, corresponding to `R_E = Q* - B - H - LE`. For Penman, no artificial sensible heat flux is created; instead, the function reports an `unresolved_complement`. Monin-Obukhov/Profile outputs are treated diagnostically and are not forced to close the energy balance.
 
-Bulk-Residual is therefore not a uniformly “simple” approach. What becomes simple or more profile-like is mainly the estimate of `sensible_bulk`. With `exchange_velocity = "wind_mean"`, a simple mean-wind exchange scale is used. With `exchange_velocity = "u_star_profile"`, the estimate uses the two wind measurement heights and moves closer to a neutral profile-transfer logic. With `exchange_velocity = "u_star_roughness"`, the exchange velocity is derived from roughness length. The energy balance, however, remains residual: `latent_bulk_residual` is still the remaining available energy after subtracting `sensible_bulk`. Bulk can therefore be profile-like in the `H` estimate while still residual-closing in `LE`.
+Bulk-Residual is a calculation path with two distinct parts. First, `sensible_bulk` estimates `H` from a two-height temperature gradient and an exchange assumption. Then `latent_bulk_residual` is defined as the remaining available energy after subtracting `sensible_bulk`. Different `exchange_velocity` settings change the estimate of `sensible_bulk`; they do not change the residual definition of `latent_bulk_residual`, and they do not validate the exchange assumption.
 
-In this workflow, `ws_pt` is the existing Priestley-Taylor result object. The diagnostic call is therefore restricted to `priestley_taylor`.
+In this workflow, `ws_pt` is the existing Priestley-Taylor result object. The diagnostic call is therefore restricted to `priestley_taylor`. This section demonstrates the package graphic and diagnostic structure rather than recalculating all heat-flux methods.
 
 ```{r closure-diagnostics-pt-en}
 closure_diag <- energy_balance_closure(ws_pt, methods = "priestley_taylor")
@@ -759,7 +788,7 @@ plot_energy_balance_closure(
 )
 ```
 
-The plot does not show the same residual concept for all methods. It shows the term that is open or residualized in each method family. For Bulk-Residual, this is `latent_bulk_residual`: latent heat is calculated as the remaining available energy after estimating `sensible_bulk`. For Penman, it is the unresolved complement after subtracting `latent_penman`; this term is not automatically sensible heat. For Monin-Obukhov/Profile, it is the diagnostic balance residual `rad_bal - soil_flux - sensible - latent`. Priestley-Taylor and Bowen are not shown because they partition available energy and do not return an explicit open term. In the Priestley-Taylor path shown here, this plot is therefore empty.
+The plot does not show the same residual concept for all methods. Depending on the calculation path, it shows a residual `LE` term, an unresolved complement, or a diagnostic energy-balance residual. For Bulk-Residual, this is `latent_bulk_residual`: `LE` is calculated as the remaining available energy after estimating `sensible_bulk`. For Penman, it is the unresolved complement after subtracting `latent_penman`; this term is not automatically `H`. For Monin-Obukhov/Profile, it is the diagnostic balance residual `rad_bal - soil_flux - sensible - latent`. Priestley-Taylor and Bowen are not shown because they partition available energy and do not return an explicit open term. In the Priestley-Taylor calculation path shown here, this plot is therefore empty.
 
 ```{r closure-diagnostics-check-en, fig.width=11, fig.height=7, out.width="100%", fig.align="center"}
 plot_energy_balance_closure(
@@ -769,7 +798,7 @@ plot_energy_balance_closure(
 )
 ```
 
-The closure check shows `rad_bal - soil_flux - sensible - latent` for methods with paired fluxes. For Priestley-Taylor, Bowen and Bulk-Residual, values close to zero are expected by construction. This indicates formal closure, not physical validation. For Monin-Obukhov/Profile, non-zero values are diagnostic and show the difference between profile-derived flux estimates and available energy. Penman is not shown because no paired sensible heat flux is calculated.
+The closure check shows `rad_bal - soil_flux - sensible - latent` for methods with paired `H` and `LE` fluxes. For Priestley-Taylor, Bowen and Bulk-Residual, values close to zero are methodically expected because these paths partition or define the available energy. This indicates formal closure, not physical validation. For Monin-Obukhov/Profile, non-zero values are diagnostic and show the difference between profile-derived flux estimates and available energy. Penman is not shown because no paired `H` flux is calculated.
 
 ```{r closure-diagnostics-ratio-en, fig.width=11, fig.height=7, out.width="100%", fig.align="center"}
 plot_energy_balance_closure(
@@ -780,7 +809,7 @@ plot_energy_balance_closure(
 )
 ```
 
-The ratio plot is zoomed to the range 0 to 2 so that deviations around formal closure at 1 remain readable. Values outside this range are not better or worse method values; they indicate unstable ratios, often caused by small available energy or strongly deviating profile-derived fluxes. The table above contains the untrimmed diagnostic values. Penman is not shown in the ratio plot because `fieldClim` does not return a paired sensible heat flux for Penman.
+The ratio plot is zoomed to the range 0 to 2 so that deviations around formal closure at 1 remain readable. Values outside this range are not better or worse method values; they indicate unstable ratios, often caused by small available energy or strongly deviating profile-derived fluxes. The table above contains the untrimmed diagnostic values. Penman is not shown in the ratio plot because `fieldClim` does not return a paired `H` flux for Penman.
 
 # Result
 
@@ -794,3 +823,4 @@ This vignette complements the energy-balance workflow with additional package fo
 6. Turbulence and stability functions are diagnostic tools.
 7. Caps and fallbacks are protection mechanisms, not automatic scientific confirmation.
 8. `plot_weather_station()` and `as.data.frame()` make the object accessible for checking and further processing.
+9. Method selection itself is controlled by measurement architecture and target quantity; see [Choosing fieldClim Heat-Flux Methods by Measurement Design](fieldclim_m2m_en.html).

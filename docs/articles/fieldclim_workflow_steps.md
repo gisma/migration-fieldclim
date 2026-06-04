@@ -3,11 +3,18 @@
 ## Ziel dieser Vignette
 
 Diese Vignette ergänzt die Workflow-Vignette zur Energiebilanz. Dort
-steht der zusammenhängende Caldern-Workflow mit \\Q^{\*}\\, \\B\\, \\L\\
-und \\V\\ im Zentrum. Diese Seite zeigt die weiteren Paketfunktionen als
-**Anschlussworkflows**: Strahlungsprüfung, modellierte Strahlung,
+steht der zusammenhängende Caldern-Workflow mit \\Q^{\*}\\, \\B\\, \\H\\
+und \\LE\\ im Zentrum. Diese Seite zeigt die weiteren Paketfunktionen
+als **Anschlussworkflows**: Strahlungsprüfung, modellierte Strahlung,
 Bodenparameter, meteorologische Hilfsgrößen, Stabilitätsgrößen und
 Objektkontrolle.
+
+Eine systematische Auswahlhilfe für die Frage, welcher Rechenweg zu
+welcher Messarchitektur passt, findet sich in der Methodenauswahlseite
+[Choosing fieldClim Heat-Flux Methods by Measurement
+Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md).
+Diese Vignette ergänzt diese Logik durch ausführbare Anschlussbeispiele
+zu Strahlung, Boden, Hilfsgrößen, Stabilität und Objektkontrolle.
 
 Der Text ist kein zweiter Methodenvergleich. Die zentrale Frage lautet
 hier: Welche Funktionsgruppen gibt es neben dem Hauptworkflow, wofür
@@ -28,6 +35,14 @@ Diese Vignette ist eine Paketlandkarte mit ausführbaren Mini-Beispielen.
 Sie ersetzt keine vollständige physikalische Ableitung und auch keine
 Validierung gegen unabhängige Flussmessungen. Sie soll zeigen, welche
 Paketfunktionen zu welchen Arbeitsschritten passen.
+
+Die Vignette verwendet für Energieflüsse die Referenznotation der
+Methodenauswahlseite: `Q*` ist die Netto-Strahlung, `B` ist der
+Bodenwärmestrom, `A = Q* - B` ist die verfügbare Energie, `H` ist der
+fühlbare Wärmestrom, `LE` ist der latente Wärmestrom und `R_E` ist der
+Residual- oder nicht geschlossene Energieterm. Die langwellige Strahlung
+bleibt davon getrennt: `L_down`, `L_up` und `L*` bezeichnen longwave
+radiation und nicht den fühlbaren Wärmestrom.
 
 ## Gemeinsamer Daten- und Objektaufbau
 
@@ -212,7 +227,9 @@ mit:
 - \\K\_{\downarrow}\\: einfallende kurzwellige Strahlung \[W/m²\]
 - \\K\_{\uparrow}\\: reflektierte kurzwellige Strahlung \[W/m²\]
 
-Die langwellige Bilanz wird hier in derselben Richtung geschrieben:
+Die langwellige Bilanz wird hier in derselben Richtung geschrieben. Hier
+steht `L` für longwave radiation, nicht für fühlbare Wärme. Fühlbare
+Wärme wird in der Referenznotation dieser Vignette als `H` bezeichnet.
 
 \\ L^{\*} = L\_{\downarrow} - L\_{\uparrow} \\
 
@@ -240,6 +257,7 @@ caldern$K_up <- caldern$rad_sw_out
 caldern$K_star_from_components <- caldern$K_down - caldern$K_up
 
 # Langwellige Komponenten aus Messspalten.
+# L steht hier für longwave radiation, nicht für fühlbare Wärme.
 caldern$L_down <- caldern$LDnCo
 caldern$L_up <- caldern$LUpCo
 caldern$L_star_down_minus_up <- caldern$L_down - caldern$L_up
@@ -343,7 +361,8 @@ Die Paketfunktionen können nur dann sinnvoll arbeiten, wenn klar ist,
 welche Strahlungsgröße als Arbeitsgröße verwendet wird. Wenn `rad_net`,
 `RsNet + RlNet` und `K* + L*` auseinanderlaufen, wird nicht automatisch
 eine neue Netto-Strahlung gebaut. Dann wird zuerst dokumentiert, welche
-Spalte welche Bilanzebene repräsentiert.
+Spalte welche Bilanzebene repräsentiert. `L*` meint hier ausschließlich
+die langwellige Strahlungsbilanz.
 
 ### 1.3 Strahlungsreihe für weitere Rechnungen festlegen
 
@@ -435,7 +454,7 @@ Korrekturstufen oder Vorzeichenkonventionen.
 ## Workflow-Baustein 2: Strahlung modellieren statt nur messen
 
 Die Strahlungsfunktionen können Messwerte plausibilisieren oder fehlende
-Strahlungskomponenten modellieren. Der Paketworkflow folgt dabei einer
+Strahlungskomponenten modellieren. Die Funktionslogik folgt dabei einer
 Kette:
 
 | Teilproblem | Funktionsfamilie | Rolle |
@@ -463,6 +482,8 @@ exposition <- 0
 valley <- FALSE
 surface_type <- "field"
 surface_temp <- 20
+# surface_temp ist hier ein explizit gesetzter Modellinput für langwellige Strahlung.
+# Es ist keine automatisch gemessene Standardgröße jeder Klimastation.
 
 # Solare und topographische Teilgrößen.
 sol_elevation(example_time, lon, lat)
@@ -603,7 +624,7 @@ realistische Größenordnungen liefern.
 ## Workflow-Baustein 3: Bodenparameter und Bodenwärmestrom
 
 Der Bodenwärmestrom kann gemessen oder aus Temperaturgradient, Tiefe,
-Feuchte und Bodenart geschätzt werden. Der Paketworkflow lautet:
+Feuchte und Bodenart geschätzt werden. Der Rechenweg lautet:
 
 \\ B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2} \\
 
@@ -885,10 +906,12 @@ Profilbedingungen auftreten.
 ``` r
 
 # Bowen mit und ohne cap.
+# Codevariable V_* entspricht in der Referenznotation LE.
 V_bowen_no_cap <- latent_bowen(ws)
 V_bowen_cap <- latent_bowen(ws, cap = 1)
 
 # Monin-Obukhov mit und ohne cap.
+# Codevariable L_* entspricht in der Referenznotation H.
 L_monin_no_cap <- sensible_monin(ws)
 L_monin_cap <- sensible_monin(ws, cap = 20)
 
@@ -980,29 +1003,29 @@ Die Funktion
 ist kein weiteres Flussmodell. Sie fasst bereits berechnete
 Ergebnisfelder eines `weather_station`-Objekts als
 Energiebilanzdiagnostik zusammen. Ausgangspunkt ist die verfügbare
-Energie `rad_bal - soil_flux`. Für Verfahren mit gepaarten sensiblen und
-latenten Wärmeflüssen berechnet sie den Schließungsrest
+Energie `rad_bal - soil_flux`. Für Verfahren mit gepaarten `H`- und
+`LE`-Flüssen berechnet sie den Schließungsrest
 `available_energy - sensible - latent`. Für Penman wird kein künstlicher
-sensibler Wärmefluss erzeugt; stattdessen wird der offene Ergänzungsterm
+`H`-Fluss erzeugt; stattdessen wird der offene Ergänzungsterm
 `unresolved_complement` ausgegeben. Monin-Obukhov/Profile-Ergebnisse
 werden diagnostisch gelesen und nicht auf Bilanzschluss gezwungen.
 
-Bulk-Residual ist deshalb kein einheitlich „einfacher“ Ansatz. Einfach
-oder profilnah ist vor allem die Schätzung von `sensible_bulk`. Mit
-`exchange_velocity = "wind_mean"` wird eine einfache mittlere
-Windgeschwindigkeit verwendet. Mit
+Bulk–Residual ist deshalb kein einheitlich „einfacher“ Ansatz. Einfach
+oder profilnah ist vor allem die Schätzung von `sensible_bulk`, also von
+`H_bulk`. Mit `exchange_velocity = "wind_mean"` wird eine einfache
+mittlere Windgeschwindigkeit verwendet. Mit
 `exchange_velocity = "u_star_profile"` nutzt die Schätzung die zwei
 Windhöhen und rückt näher an eine neutrale Profil-Austauschlogik. Mit
 `exchange_velocity = "u_star_roughness"` wird die
 Austauschgeschwindigkeit über eine Rauigkeitslänge bestimmt. Die
 Energiebilanz wird aber weiterhin residual geschlossen:
 `latent_bulk_residual` ist der Rest aus
-`rad_bal - soil_flux - sensible_bulk`. Bulk kann damit in der
-`H`-Schätzung profilnaher werden und trotzdem bei `LE` residual
-schließen.
+`rad_bal - soil_flux - sensible_bulk`, also `LE_res = Q* - B - H_bulk`.
+Bulk kann damit in der `H`-Schätzung profilnaher werden und trotzdem bei
+`LE` residual schließen.
 
 In diesem Workflow liegt mit `ws_pt` der bereits berechnete
-Priestley-Taylor-Pfad vor. Deshalb wird die Diagnose hier nur für
+Priestley–Taylor-Pfad vor. Deshalb wird die Diagnose hier nur für
 `priestley_taylor` aufgerufen.
 
 ``` r
@@ -1044,17 +1067,18 @@ plot_energy_balance_closure(
 
 ![](fieldclim_workflow_steps_files/figure-html/closure-diagnostics-open-de-1.png)
 
-Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
-sondern den jeweils offenen oder residualisierten Term. Bei
-Bulk-Residual ist dies `latent_bulk_residual`: Die latente Wärme wird
-nach der Schätzung von `sensible_bulk` als Rest aus
-`rad_bal - soil_flux - sensible_bulk` berechnet. Bei Penman ist es der
-offene Ergänzungsterm nach Abzug von `latent_penman`; dieser Term ist
-nicht automatisch fühlbarer Wärmestrom. Bei Monin-Obukhov/Profile ist es
-der diagnostische Bilanzrest `rad_bal - soil_flux - sensible - latent`.
-Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren. Je
+nach Rechenweg zeigt er einen residual definierten latenten Wärmestrom,
+einen offenen Ergänzungsterm oder einen diagnostischen Bilanzrest. Bei
+Bulk–Residual ist dies `latent_bulk_residual`: Die latente Wärme
+(`LE_res`) wird nach der Schätzung von `sensible_bulk` (`H_bulk`) als
+Rest aus `rad_bal - soil_flux - sensible_bulk` berechnet. Bei Penman ist
+es der offene Ergänzungsterm nach Abzug von `latent_penman`; dieser Term
+ist nicht automatisch `H`. Bei Monin-Obukhov/Profile ist es der
+diagnostische Bilanzrest `rad_bal - soil_flux - sensible - latent`.
+Priestley–Taylor und Bowen erscheinen hier nicht, weil sie die
 verfügbare Energie partitionieren und keinen expliziten offenen Term
-ausgeben. Im hier gezeigten Priestley-Taylor-Pfad bleibt dieser Plot
+ausgeben. Im hier gezeigten Priestley–Taylor-Pfad bleibt dieser Plot
 deshalb leer.
 
 ``` r
@@ -1069,13 +1093,13 @@ plot_energy_balance_closure(
 ![](fieldclim_workflow_steps_files/figure-html/closure-diagnostics-check-de-1.png)
 
 Der Schließungscheck zeigt `rad_bal - soil_flux - sensible - latent` für
-Verfahren mit gepaarten Flüssen. Bei Priestley-Taylor, Bowen und
-Bulk-Residual sind Werte nahe null methodisch erwartbar. Das zeigt
-formalen Bilanzschluss, aber keine physikalische Validierung. Bei
+Verfahren mit gepaarten `H`- und `LE`-Flüssen. Bei Priestley–Taylor,
+Bowen und Bulk–Residual sind Werte nahe null methodisch erwartbar. Das
+zeigt formalen Bilanzschluss, aber keine physikalische Validierung. Bei
 Monin-Obukhov/Profile ist ein nicht-nulliger Wert diagnostisch und zeigt
 die Differenz zwischen Profilfluss-Schätzung und verfügbarer Energie.
-Penman wird hier nicht gezeigt, weil kein gepaarter sensibler Wärmefluss
-berechnet wird.
+Penman wird hier nicht gezeigt, weil kein gepaarter `H`-Fluss berechnet
+wird.
 
 ``` r
 
@@ -1096,7 +1120,7 @@ schlechteren Methodenwerte, sondern Hinweise auf instabile Quotienten,
 meist bei kleiner verfügbarer Energie oder stark abweichenden
 Profilflüssen. Die Tabelle oberhalb enthält die nicht beschnittenen
 Diagnosewerte. Penman wird im Quotientenplot nicht dargestellt, weil
-`fieldClim` für Penman keinen gepaarten sensiblen Wärmefluss ausgibt.
+`fieldClim` für Penman keinen gepaarten `H`-Fluss ausgibt.
 
 ``` r
 
@@ -1190,7 +1214,7 @@ Paket-Anschlussworkflows. Die zentrale Logik lautet:
 4.  Bodenwärmestrom kann gemessen oder aus Bodenparametern geschätzt
     werden.
 5.  Feuchte-, Druck- und Temperaturfunktionen liefern wichtige
-    Zwischengrößen.
+    Zwischengrößen für spätere `H`- und `LE`-Rechenwege.
 6.  Turbulenz- und Stabilitätsfunktionen sind Diagnosewerkzeuge.
 7.  Caps und Fallbacks sind Schutzmechanismen, keine automatische
     fachliche Validierung.

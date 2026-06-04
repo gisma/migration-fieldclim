@@ -8,15 +8,23 @@ manuelle Datenprüfung endet: Die geprüften Spalten werden in ein
 `weather_station`-Objekt überführt und anschließend mit den
 `fieldClim`-Paketfunktionen ausgewertet.
 
-Der Schwerpunkt liegt nicht mehr auf der manuellen Kontrolle einzelner
-Messspalten, sondern auf der Paketlogik:
+Eine systematische Auswahlhilfe für die Frage, welcher Rechenweg zu
+welcher Messarchitektur passt, findet sich in der Methodenauswahlseite
+[Choosing fieldClim Heat-Flux Methods by Measurement
+Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md).
+Diese Vignette setzt diese Logik praktisch am Caldern-Beispieldatensatz
+um.
+
+Der Schwerpunkt liegt hier nicht mehr auf der manuellen Kontrolle
+einzelner Messspalten, sondern auf der Auswertung mit Hilfe der
+Paketlogik:
 
 | Schritt | Leitfrage | Paketbereich |
 |----|----|----|
 | 1 | Welche Wärmeflussmethoden werden unterschieden? | Methodenkonzept, Bilanzbindung, Diagnostik |
 | 2 | Wie wird der Datensatz an `fieldClim` übergeben? | [`build_weather_station()`](https://gisma.github.io/migration-fieldclim/reference/build_weather_station.md) |
 | 3 | Welche Eingaben erkennt die Inspektion? | [`inspect_weather_station_inputs()`](https://gisma.github.io/migration-fieldclim/reference/inspect_weather_station_inputs.md) |
-| 4 | Wie werden PT, Bulk-Residual, Bowen, Monin-Obukhov/Profile und Penman verglichen? | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md), [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md) und Einzelmethoden |
+| 4 | Wie werden PT, Bulk–Residual, Bowen, Monin-Obukhov/Profile und Penman verglichen? | [`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md), [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md) und Einzelmethoden als unterschiedliche Rechenwege |
 
 Die für diese Vignette benötigte Datenbasis wird im Hintergrund aus
 derselben Paketdatei geladen. Die manuelle Prüfung von Zeitstruktur,
@@ -25,21 +33,34 @@ Vignette.
 
 ## Notation
 
-Die zweite Vignette verwendet dieselbe Notation wie die manuelle
-Datenprüfung. `Q_star` ist die Netto-Strahlung, `B` ist der
-Bodenwärmestrom, `L` ist der fühlbare Wärmestrom und `V` ist der latente
-Wärmestrom.
+Die zweite Vignette verwendet für Formeln die englische Referenznotation
+der Methodenauswahlseite: `Q*` ist die Netto-Strahlung, `B` ist der
+Bodenwärmestrom, `A = Q* - B` ist die verfügbare Energie, `H` ist der
+fühlbare Wärmestrom, `LE` ist der latente Wärmestrom und `R_E` ist der
+Residual- oder nicht geschlossene Energieterm.
+
+Die R-Code-Variablen im Tutorial bleiben davon unberührt. Variablennamen
+wie `L_pt`, `V_pt`, `L_bulk_pkg` oder `V_bulk_pkg` werden beibehalten,
+weil sie aus dem bestehenden Paket- und Tutorialworkflow stammen. In den
+Erläuterungen werden sie jedoch als `H` beziehungsweise `LE`
+interpretiert.
 
 Für die Paketfunktionen wird diese Notation auf `fieldClim`-Namen
 abgebildet:
 
-| Theoriegröße | Bedeutung | `fieldClim`-Feld oder Ausgabe |
-|----|----|----|
-| `Q_star` / `Q*` | Netto-Strahlung | `rad_bal` |
-| `B` | Bodenwärmestrom | `soil_flux` |
-| `L` | fühlbarer Wärmestrom | `sensible_*` |
-| `V` | latenter Wärmestrom | `latent_*` |
-| `Q_star - B` | verfügbare turbulente Energie | `rad_bal - soil_flux` |
+| Referenzgröße | Bedeutung | `fieldClim`-Feld oder Ausgabe | Tutorial-Codevariable |
+|----|----|----|----|
+| `Q*` | Netto-Strahlung | `rad_bal` | `Q_star` |
+| `B` | Bodenwärmestrom | `soil_flux` | `B` |
+| `A = Q* - B` | verfügbare Energie | `rad_bal - soil_flux` | `available_energy` |
+| `H` | fühlbarer Wärmestrom | `sensible_*` | `L_*` |
+| `LE` | latenter Wärmestrom | `latent_*` | `V_*` |
+| `R_E = Q* - B - H - LE` | Residualterm / nicht geschlossener Energieterm | Ausgabe der Closure-Diagnostik | `diff_*`, `closure_residual` |
+
+Die Spaltennamen `L_*` und `V_*` werden im Code nicht umbenannt. Sie
+sind in diesem Tutorial als Arbeitsvariablen zu verstehen: `L_*`
+entspricht dem referenzierten `H`, `V_*` entspricht dem referenzierten
+`LE`.
 
 ## Schritt 1: Methodenüberblick und Rollen der Verfahren
 
@@ -54,54 +75,59 @@ unterschiedliche Teilinformationen.
 ![](figures/station.png)
 
 ![](figures/fieldClim_theory.svg) Die Verfahren sind nicht als
-gleichartige Messverfahren zu lesen. Sie sind unterschiedliche
-Rechenpfade mit unterschiedlicher Nähe zur Energiebilanz, zu Gradienten
-und zu Profilannahmen. Für die eigentliche Auswertung wird der Paketpfad
+gleichartige Analyseverfahren zu lesen. Sie sind unterschiedliche
+Rechenwege mit unterschiedlicher Nähe zur Energiebilanz, zu Gradienten
+und zu Profilannahmen. Die methodische Auswahl folgt der Logik der Seite
+[Choosing fieldClim Heat-Flux Methods by Measurement
+Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md):
+Entscheidend ist, welche Messarchitektur vorliegt und welche Größe
+interpretiert werden soll.
+
 [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
-verwendet.
+ist dabei nicht „die eigentliche Auswertung“, sondern nur der
+Bulk–Residual-Rechenweg. Dort wird zuerst `sensible_bulk` berechnet und
+anschließend `latent_bulk_residual` als Rest der verfügbaren Energie
+bestimmt.
 
-| Methode | Hauptfrage | Direkte Eingänge | Ergebnis | Rolle im Workflow |
-|----|----|----|----|----|
-| Priestley-Taylor | Wie wird die verfügbare Energie stabil partitioniert? | `Q_star`, `B`, Parameter | `L_pt`, `V_pt` | erster, energiegebundener Paketpfad |
-| Bulk-Residual | Wie schätzt das Paket `L` aus Temperaturgradient und Wind und berechnet `V` als Residuum? | `weather_station`, [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md), [`latent_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/latent_bulk_residual.md) | `L_bulk_pkg`, `V_bulk_pkg` | residualer Paketpfad, optional mit Richardson-Guard |
-| Bowen-Verhältnis | Wie teilt ein Temperatur-/Feuchtegradient die verfügbare Energie auf? | Temperaturgradient, Feuchtegradient, `Q_star`, `B` | `L_bowen`, `V_bowen` | gradientenempfindliche Partitionierung |
-| Monin-Obukhov/Profile | Wie reagieren Profilmethoden auf Gradienten und Stabilität? | Windprofil, Temperaturprofil, Feuchteprofil, Stabilitätsdiagnostik | `L_monin`, `V_monin` | profilbasiert, nicht bilanznormiert/energie-schließend |
-| Penman | Wie groß ist der latente Wärmestrom aus Energie- und Verdunstungsantrieb? | `Q_star`, `B`, Wind, Temperatur, Feuchte, Oberfläche | `V_penman` | LE-only Vergleichspfad |
+| Methode | Hauptfrage | Direkte Eingänge | Ergebnis im Code | Referenznotation | Rolle im Workflow |
+|----|----|----|----|----|----|
+| Priestley–Taylor | Wie wird die verfügbare Energie über eine empirische Verdunstungsparametrisierung aufgeteilt? | `rad_bal`, `soil_flux`, `temp`, `surface_type` | `L_pt`, `V_pt` | `H_PT`, `LE_PT` | energiegebundene Partitionierung |
+| Bulk–Residual | Wie wird fühlbare Wärme aus Zwei-Höhen-Temperaturgradient und Austauschannahme geschätzt, und wie wird latente Wärme als Rest bestimmt? | `t1`, `t2`, `v1`, optional `v2`, `z1`, `z2`, `rad_bal`, `soil_flux` | `L_bulk_pkg`, `V_bulk_pkg` | `H_bulk`, `LE_res` | direkte `H`-Schätzung plus residuales `LE` |
+| Bowen-Verhältnis | Wie teilt ein Temperatur-/Feuchtegradient die verfügbare Energie auf? | `t1`, `t2`, `hum1`, `hum2`, `z1`, `z2`, `rad_bal`, `soil_flux` | `L_bowen`, `V_bowen` | `H_BR`, `LE_BR` | gradientenbasierte Partitionierung |
+| Monin-Obukhov/Profile | Was ergeben Temperatur-, Feuchte- und Windprofile als diagnostische Profilflüsse? | `t1`, `t2`, `hum1`, `hum2`, `v1`, `v2`, `z1`, `z2`, Rauigkeitskontext | `L_monin`, `V_monin` | `H_MO`, `LE_MO` | Profil-/Stabilitätsdiagnose, nicht bilanzschließend |
+| Penman | Wie groß ist der latente Wärmestrom aus Energie- und Verdunstungsantrieb? | `rad_bal`, `soil_flux`, Meteorologie, Standort- und Oberflächenparameter | `V_penman` | `LE_Penman` | `LE`-only Vergleichspfad |
 
-#### 1. Priestley-Taylor
+#### 1. Priestley–Taylor
 
-\#`{r method-pt-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_priestley_taylor.png") #`
+Priestley–Taylor ist in dieser Vignette ein energiegebundener Rechenweg.
+Der Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
+keine Aufteilung über gemessene Feuchtegradienten.
 
-Priestley-Taylor ist in dieser Vignette der stabile erste Paketpfad. Der
-Ansatz bleibt direkt an die verfügbare Energie gebunden und benötigt
-keine empfindliche Aufteilung über kleine Feuchtegradienten.
+\\ H + LE = Q^\* - B \\
 
-\\ L + V = Q^{\*} - B \\
+\\ LE\_{PT} = \alpha\_{PT} \frac{sc}{sc + \gamma} (Q^\* - B) \\
 
-\\ V\_{PT} \approx \alpha\_{PT} \frac{\Delta}{\Delta + \gamma} (Q^{\*} -
-B) \\
+\\ H\_{PT} = (Q^\* - B) - LE\_{PT} \\
 
-\\ L\_{PT} = (Q^{\*} - B) - V\_{PT} \\
+Die zentrale Eigenschaft dieses Rechenwegs ist die Bilanzbindung: Wenn
+`Q_star` und `B` korrekt gesetzt sind, bleibt die Summe aus `H_PT` und
+`LE_PT` auf der verfügbaren Energie. Im Code werden diese Größen später
+als `L_pt` und `V_pt` abgelegt. Das ist eine methodische
+Partitionierung, keine unabhängige Validierung der beiden Teilflüsse.
 
-Der Vorteil dieses Pfads ist die Bilanzbindung: Wenn `Q_star` und `B`
-korrekt gesetzt sind, bleibt die Summe aus `L_PT` und `V_PT` auf der
-verfügbaren Energie.
+#### 2. Bulk–Residual mit optionalem Richardson-Guard
 
-#### 2. Bulk-Residual mit optionalem Richardson-Guard
-
-\#`{r method-bulk-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/Overview_meadow_station.png") #`
-
-Der Paketpfad
+Der Rechenweg
 [`turb_flux_bulk_residual()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_bulk_residual.md)
-nutzt eine einfache Bulk-Transfer-Schätzung für den fühlbaren Wärmestrom
-und berechnet den latenten Wärmestrom anschließend als Residuum. Die
+nutzt eine Bulk-Transfer-Schätzung für den fühlbaren Wärmestrom und
+berechnet den latenten Wärmestrom anschließend als Residuum. Die
 Grundlogik ist:
 
-\\ L\_{bulk} = \rho c_p \frac{\Delta T}{r_a} \\
+\\ H\_{bulk} = \rho c_p \frac{t_1 - t_2}{r_a} \\
 
 \\ r_a = \frac{\ln(z_2 / z_1)}{k \bar{u}} \\
 
-\\ V\_{residual} = Q^{\*} - B - L\_{bulk} \\
+\\ LE\_{res} = Q^\* - B - H\_{bulk} \\
 
 Zusätzlich kann
 [`sensible_bulk()`](https://gisma.github.io/migration-fieldclim/reference/sensible_bulk.md)
@@ -114,18 +140,22 @@ berechnen:
 Der Guard ist nicht der Default. Er wird nur aktiviert, wenn
 `stability_method = "ri_guard"` gesetzt wird. Instabile, neutrale und
 moderat stabile Fälle behalten den neutralen Bulk-Wert. Sehr stabile,
-ungültige oder schwach geschwerte Fälle werden auf `NA` gesetzt. Wenn
-`L_bulk` dadurch `NA` wird, wird auch das Residuum `V_bulk` `NA`. Das
-verhindert, dass eine algebraische Residualschließung einen nicht
-belastbaren fühlbaren Wärmestrom verdeckt.
+ungültige oder schwach gescherte Fälle werden auf `NA` gesetzt. Wenn
+`H_bulk` dadurch `NA` wird, wird auch das Residuum `LE_res` `NA`. Im
+Code entspricht das den Arbeitsvariablen `L_bulk_pkg` und `V_bulk_pkg`.
+Dadurch bleibt sichtbar, dass der neutrale Bulk-Ansatz für diese
+Zeitschritte nicht ausgewertet wurde.
 
-Die aktuell eingebundene Bulk-Grafik zeigt noch die Grundlogik der
-früheren manuellen Referenz. Sie wird im nächsten Abbildungsschritt auf
-den Paketpfad mit optionalem Richardson-Guard umgestellt.
+Der Guard ist eine Filteroption, keine Stabilitätskorrektur. Er macht
+Bulk–Residual nicht zu einem Monin-Obukhov-Verfahren.
+
+Die Bulk-Grafik ist als Darstellung des Rechenwegs zu lesen: Zuerst wird
+`H_bulk` aus Temperaturgradient und Austauschannahme geschätzt,
+anschließend wird `LE_res` als Rest bestimmt. Der optionale
+Richardson-Guard betrifft nur die Zulässigkeit einzelner
+Bulk-Zeitschritte.
 
 #### 3. Bowen-Verhältnis
-
-\#`{r method-bowen-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_bowen.png") #`
 
 Der Bowen-Ansatz nutzt ein Verhältnis aus Temperatur- und
 Feuchtegradient. Er verteilt die verfügbare Energie auf fühlbaren und
@@ -137,27 +167,27 @@ Didaktisch entscheidend ist hier das Gradientenverhältnis. Die
 Paketimplementierung ist spezifischer: Sie verwendet eine
 Potentialtemperaturdifferenz und eine absolute Feuchtedifferenz mit
 einem empirischen `fieldClim`-Koeffizienten. Deshalb wird Bowen in
-dieser Vignette als Paketpfad interpretiert, nicht als allgemeine
-textbook-Formel.
+dieser Vignette als Rechenweg des Pakets interpretiert, nicht als
+allgemeine textbook-Formel.
 
-\\ L\_{Bowen} = \frac{\beta}{1 + \beta} (Q^{\*} - B) \\
+\\ H\_{BR} = \frac{\beta}{1 + \beta} (Q^\* - B) \\
 
-\\ V\_{Bowen} = \frac{1}{1 + \beta} (Q^{\*} - B) \\
+\\ LE\_{BR} = \frac{1}{1 + \beta} (Q^\* - B) \\
 
-Der Ansatz ist für finite, nicht gekappte Fälle bilanzgebunden, aber
-stark gradientenempfindlich. Wenn Feuchtegradienten sehr klein werden,
-Vorzeichen wechseln, `beta` nicht endlich ist oder `1 + beta` nahe null
-liegt, können einzelne Zeitschritte stark ausschlagen. Gekappte oder
-nicht-endliche Fälle werden deshalb als nicht belastbare
+Der Rechenweg ist für finite, nicht gekappte Fälle bilanzgebunden, aber
+stark gradientenempfindlich. Im Code werden die Ergebnisse später als
+`L_bowen` und `V_bowen` abgelegt. Wenn Feuchtegradienten sehr klein
+werden, Vorzeichen wechseln, `beta` nicht endlich ist oder `1 + beta`
+nahe null liegt, können einzelne Zeitschritte stark ausschlagen.
+Gekappte oder nicht-endliche Fälle werden deshalb als nicht belastbare
 Bowen-Zeitschritte behandelt und nicht als exakte Aufteilung von
 \\Q^\* - B\\ interpretiert.
 
-#### 4. Monin-Obukhov/Profile
+#### 4. Monin-Obukhov/Profile als Diagnostik
 
-\#`{r method-mo-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_monin_obukhov.png") #`
-
-Der Monin-Obukhov/Profile-Pfad ist in `fieldClim` kein Verfahren, das
-die verfügbare Energie automatisch auf \\L\\ und \\V\\ verteilt. Er
+Der Monin-Obukhov/Profile-Rechenweg wird in dieser Vignette als Profil-
+und Stabilitätsdiagnostik gelesen. Er ist kein Verfahren, das die
+verfügbare Energie automatisch auf \\H\\ und \\LE\\ verteilt. Er
 berechnet Wärmeflüsse aus den gemessenen Unterschieden zwischen zwei
 Höhen: Temperatur, Feuchte, Wind und Messhöhe gehen direkt in die
 Profilrechnung ein. Deshalb reagiert der Ansatz besonders empfindlich,
@@ -172,23 +202,31 @@ auf 0 gesetzt. Wenn Messhöhen ungültig sind, Windwerte fehlen oder
 rechnerisch nicht auswertbare Profilzustände entstehen, gibt die
 Funktion für diese Zeitschritte `NA` zurück und erzeugt eine Warnung.
 
-Wichtig ist: Diese Absicherung macht den Monin-Obukhov/Profile-Pfad
-nicht zu einem bilanzschließenden Verfahren. Große, aber rechnerisch
+Wichtig ist: Diese Absicherung macht den Monin-Obukhov/Profile-Rechenweg
+weder zu einem bilanzschließenden Verfahren noch zu einer automatisch
+validierten vollständigen MOST-Implementierung. Große, aber rechnerisch
 endliche Werte werden nicht automatisch auf \\Q^\* - B\\ begrenzt.
 Deshalb müssen die Ergebnisse anschließend gegen die verfügbare Energie
-geprüft werden. Wenn \\L + V\\ deutlich größer oder kleiner als \\Q^\* -
-B\\ ist, spricht das nicht sofort für ein reales Wärmeflussereignis,
-sondern für eine kritische Profil- oder Stabilitätssituation im
-Datensatz.
+geprüft werden. Wenn \\H + LE\\ deutlich größer oder kleiner als
+\\Q^\* - B\\ ist, spricht das nicht sofort für ein reales
+Wärmeflussereignis, sondern für eine kritische Profil- oder
+Stabilitätssituation im Datensatz.
 
 Für die Interpretation gilt deshalb: Monin-Obukhov/Profile-Werte werden
 nicht auf die verfügbare Energie \\Q^\* - B\\ normiert. Es wird also
 nicht erwartet, dass
 
-\\ L\_{MO} + V\_{MO} = Q^\* - B \\
+\\ H\_{MO} + LE\_{MO} = Q^\* - B \\
+
+Der diagnostische Residualbezug lautet:
+
+\\ R\_{E,MO} = Q^\* - B - H\_{MO} - LE\_{MO} \\
+
+Im Code werden `H_MO` und `LE_MO` später als `L_monin` und `V_monin`
+abgelegt.
 
 gilt. Die Gleichung dient hier nur als Plausibilitätsprüfung. Wenn
-\\L\_{MO} + V\_{MO}\\ deutlich von \\Q^\* - B\\ abweicht, spricht das
+\\H\_{MO} + LE\_{MO}\\ deutlich von \\Q^\* - B\\ abweicht, spricht das
 für empfindliche oder problematische Profilbedingungen: kleine
 Temperatur- oder Feuchtegradienten, schwache Windunterschiede,
 ungünstige Stabilitätsannahmen oder 5-Minuten-Rauschen.
@@ -200,20 +238,28 @@ Partitionierungsansatz gelesen werden darf.
 
 #### 5. Penman
 
-\#`{r method-penman-image, echo=FALSE, fig.width=9, fig.height=6, out.width="100%"} #knitr::include_graphics("figures/clos_wf-method_penman.png") #`
-
 Penman ist ein Kombinationsansatz für den latenten Wärmestrom. Er
 verbindet einen Energieterm mit einem aerodynamischen Verdunstungsterm.
-Im aktuellen Paketpfad liefert Penman `V`, aber keinen eigenen fühlbaren
-Wärmestrom `L`.
+Im aktuellen Rechenweg liefert Penman `LE`, im Code später `V_penman`,
+aber keinen eigenen fühlbaren Wärmestrom `H`.
 
-\\ V\_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^{\*} - B) +
+\\ LE\_{Penman} \approx \frac{\Delta}{\Delta + \gamma}(Q^\* - B) +
 \frac{\gamma}{\Delta + \gamma} E_a \\
 
 \\ E_a = f(u, e_s - e_a) \\
 
-Penman ist deshalb ein Vergleichs- und Prüfpfad für `V`, aber keine
-vollständige `L`/`V`-Partitionierung wie Priestley-Taylor oder Bowen.
+Da Penman keinen eigenen fühlbaren Wärmestrom berechnet, bleibt nach
+Abzug von `latent_penman` nur ein offener Rest:
+
+\\ U\_{Penman} = Q^\* - B - LE\_{Penman} \\
+
+Dieser Rest ist nicht automatisch `H`. Er kann fühlbare Wärme,
+Bilanzfehler, Eingangsdatenfehler und Modellabweichungen enthalten. Im
+Code wird `LE_Penman` später als `V_penman` abgelegt.
+
+Penman ist deshalb ein Vergleichs- und Prüfweg für `LE`, aber keine
+vollständige `H`/`LE`-Partitionierung wie Priestley–Taylor, Bowen oder
+Bulk–Residual.
 
 ## Schritt 2: Übergabe an das `weather_station`-Objekt
 
@@ -249,7 +295,7 @@ ws <- build_weather_station(
   z1 = 2,
   z2 = 10,
 
-  # Paketnamen für Theoriegrößen:
+  # Paketnamen für Referenzgrößen:
   # rad_bal entspricht Q*, soil_flux entspricht B.
   rad_bal = caldern$Q_star,
   soil_flux = caldern$B,
@@ -438,7 +484,7 @@ inspection_regular$method_readiness[, c(
 **Interpretation.** Diese Vorprüfung beantwortet noch nicht, ob die
 physikalischen Methoden für jeden Zeitschritt sinnvoll sind. Sie prüft
 zuerst die Eingangsstruktur: Sind die benötigten Felder für
-Priestley-Taylor, Bulk-Residual, Bowen, Monin-Obukhov/Profile und Penman
+Priestley–Taylor, Bulk–Residual, Bowen, Monin-Obukhov/Profile und Penman
 vorhanden? Gibt es fehlende oder teilweise fehlende Eingaben? Werden
 einfache QC-Probleme wie unmögliche Feuchtewerte oder negative
 Windgeschwindigkeiten gefunden?
@@ -449,20 +495,22 @@ Wärmeflussmethoden berechnet und interpretiert werden.
 
 ## Schritt 4: Paketmethoden für Wärmeflüsse
 
-### Priestley-Taylor als erster Paketpfad
+### Priestley–Taylor als energiegebundener Rechenweg
 
-Priestley-Taylor nutzt die verfügbare Energie `Q* - B` und eine
+Priestley–Taylor nutzt die verfügbare Energie `Q* - B` und eine
 empirische Verdunstungsparametrisierung. Der Vorteil im Einstieg ist
 nicht, dass die Methode „wahrer“ wäre, sondern dass sie keine instabilen
 Gradientenquotienten benötigt.
 
 ``` r
 
-# Nur den Priestley-Taylor-Pfad berechnen.
+# Nur den Priestley–Taylor-Pfad berechnen.
 # Dieser Pfad ist als erster Paketvergleich stabiler als der volle Methodenworkflow.
 flux_pt <- turb_flux_calc(ws, pt_only = TRUE)
 
 # Ergebnisse zurück in den Auswertungsdatensatz schreiben.
+# Die bestehenden Codevariablen L_* und V_* bleiben erhalten:
+# L_* entspricht H, V_* entspricht LE.
 caldern$L_pt <- flux_pt$sensible_priestley_taylor
 caldern$V_pt <- flux_pt$latent_priestley_taylor
 caldern$L_plus_V_pt <- caldern$L_pt + caldern$V_pt
@@ -473,11 +521,11 @@ caldern$L_plus_V_pt <- caldern$L_pt + caldern$V_pt
 op <- par(mfrow = c(2, 1), mar = c(3.5, 4, 2, 1))
 
 plot(caldern$datetime, caldern$L_pt, type = "l", col = "#CC79A7", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "Priestley-Taylor: L")
+     xlab = "Zeit", ylab = "W/m²", main = "Priestley–Taylor: H")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$V_pt, type = "l", col = "#56B4E9", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "Priestley-Taylor: V")
+     xlab = "Zeit", ylab = "W/m²", main = "Priestley–Taylor: LE")
 abline(h = 0, lty = 2, col = "grey50")
 ```
 
@@ -496,10 +544,10 @@ op <- par(mar = c(6, 4, 3, 1), xpd = NA)
 
 plot(caldern$datetime, caldern$Q_minus_B, type = "l", col = cols_pt[1], lwd = 2,
      ylim = range(caldern$Q_minus_B, caldern$L_plus_V_pt, na.rm = TRUE),
-     xlab = "Zeit", ylab = "W/m²", main = "Priestley-Taylor: Energieabschluss")
+     xlab = "Zeit", ylab = "W/m²", main = "Priestley–Taylor: Energieabschluss")
 lines(caldern$datetime, caldern$L_plus_V_pt, col = cols_pt[2], lwd = 2)
 legend("bottom", inset = c(0, -0.35), horiz = TRUE, bty = "n",
-       legend = c("Q* - B", "L + V nach PT"), col = cols_pt, lty = 1, lwd = 2)
+       legend = c("Q* - B", "H + LE nach PT"), col = cols_pt, lty = 1, lwd = 2)
 ```
 
 ![](fieldclim_flux_workflow_files/figure-html/priestley-closure-plot-1.png)
@@ -510,24 +558,24 @@ legend("bottom", inset = c(0, -0.35), horiz = TRUE, bty = "n",
 par(op)
 ```
 
-**Interpretation.** Priestley-Taylor ist hier der sauberste Einstieg in
-den Methodenvergleich. Die Methode nimmt die verfügbare Energie und
-teilt sie mit einem kompakten Verdunstungsparameter auf `L` und `V` auf.
-Im Ergebnis liegt der Tagesmittelwert für `L` bei 25.1 W/m² und für `V`
-bei 83.6 W/m². Zusammen ergibt das im Mittel genau die verfügbare
-Energie.
+**Interpretation.** Priestley–Taylor ist hier der erste energiegebundene
+Vergleichsweg. Die Methode nimmt die verfügbare Energie und teilt sie
+mit einem kompakten Verdunstungsparameter auf `H` und `LE` auf. Im Code
+werden diese Größen als `L_pt` und `V_pt` abgelegt. Im Ergebnis liegt
+der Tagesmittelwert für `H` bei 25.1 W/m² und für `LE` bei 83.6 W/m².
+Zusammen ergibt das im Mittel die verfügbare Energie.
 
-Das macht PT nicht automatisch „richtiger“ als die anderen Methoden. Der
-Vorteil liegt in der Lesbarkeit: Wenn `Q_star` und `B` stimmen, ist der
-Energieabschluss sofort nachvollziehbar. Die Methode vermeidet kleine
-Feuchtegradienten, Windschere und Stabilitätsklassifikation. Deshalb
-eignet sie sich in dieser Vignette als erster Vergleichspfad: Sie zeigt,
-wie die Energiebilanz aussieht, bevor empfindlichere Profil- oder
-Gradientenmethoden hinzukommen.
+Das macht PT nicht automatisch „richtiger“ als die anderen Methoden. Die
+Stärke liegt in der transparenten Bilanzbindung: Wenn `Q_star` und `B`
+stimmen, ist der Energieabschluss sofort nachvollziehbar. Die Methode
+vermeidet kleine Feuchtegradienten, Windschere und
+Stabilitätsklassifikation. Deshalb eignet sie sich in dieser Vignette
+als erster Vergleichspfad: Sie zeigt, wie die Energiebilanz aussieht,
+bevor empfindlichere Profil- oder Gradientenmethoden hinzukommen.
 
-### Bulk-Residual im Paket mit Richardson-Guard
+### Bulk–Residual im Paket mit Richardson-Guard
 
-Der Bulk-Residual-Pfad wird jetzt als Paketmethode behandelt, nicht mehr
+Der Bulk–Residual-Pfad wird jetzt als Paketmethode behandelt, nicht mehr
 als separater manueller Workflow-Schritt. Für den Vergleich wird der
 optionale Richardson-Guard aktiviert, weil der Caldern-Datensatz zwei
 Temperatur- und Windhöhen enthält.
@@ -555,11 +603,11 @@ table(caldern$bulk_stability, useNA = "ifany")
 op <- par(mfrow = c(2, 1), mar = c(3.5, 4, 2, 1))
 
 plot(caldern$datetime, caldern$L_bulk_pkg, type = "l", col = "#666666", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "Bulk-Residual im Paket: L mit ri_guard")
+     xlab = "Zeit", ylab = "W/m²", main = "Bulk–Residual im Paket: H mit ri_guard")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$V_bulk_pkg, type = "l", col = "#56B4E9", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "Bulk-Residual im Paket: V als Residuum")
+     xlab = "Zeit", ylab = "W/m²", main = "Bulk–Residual im Paket: LE als Residuum")
 abline(h = 0, lty = 2, col = "grey50")
 ```
 
@@ -571,30 +619,31 @@ abline(h = 0, lty = 2, col = "grey50")
 par(op)
 ```
 
-**Interpretation.** Der Bulk-Residual-Pfad arbeitet anders als PT.
-Zuerst wird `L` aus Temperaturunterschied und Wind abgeschätzt; erst
-danach wird `V` als Rest der Energiebilanz berechnet. Mit aktiviertem
-Richardson-Guard bleiben in diesem Datensatz nur 113 von 288
-Zeitschritten als gültige Bulk-Residual-Werte übrig. Die
+**Interpretation.** Der Bulk–Residual-Rechenweg arbeitet anders als PT.
+Zuerst wird `H` aus Temperaturunterschied und Wind abgeschätzt; im Code
+wird diese Größe als `L_bulk_pkg` abgelegt. Erst danach wird `LE` als
+Rest der Energiebilanz berechnet; im Code ist dies `V_bulk_pkg`. Mit
+aktiviertem Richardson-Guard bleiben in diesem Datensatz nur 113 von 288
+Zeitschritten als gültige Bulk–Residual-Werte übrig. Die
 Stabilitätszählung zeigt warum: 175 Zeitschritte werden als sehr stabil
 klassifiziert und deshalb nicht als robuste neutrale Bulk-Flüsse
 weitergeführt.
 
 Das ist kein Fehler, sondern genau die Funktion des Guards. Der Guard
-macht aus Bulk-Residual kein vollständiges Monin-Obukhov-Verfahren und
+macht aus Bulk–Residual kein vollständiges Monin-Obukhov-Verfahren und
 korrigiert die gültigen Flüsse nicht. Er verhindert nur, dass ein
 neutraler Bulk-Ansatz dort scheinbar plausible Zahlen liefert, wo das
 Zwei-Höhen-Profil selbst sagt: Diese Situation ist sehr stabil, schwach
 geschert oder numerisch nicht belastbar. Für die gültigen Zeitschritte
-bleibt die Residualrechnung transparent: `V` ist der Energierest nach
-`Q_star`, `B` und `L_bulk`.
+bleibt die Residualrechnung transparent: `LE` ist der Energierest nach
+`Q_star`, `B` und `H_bulk`.
 
 ### Voller Methodenworkflow
 
 ``` r
 
 # Alle im Sammelworkflow verfügbaren Methoden berechnen.
-# Bulk-Residual wurde oben separat berechnet, weil hier der Richardson-Guard
+# Bulk–Residual wurde oben separat berechnet, weil hier der Richardson-Guard
 # explizit verwendet wird.
 flux_all <- turb_flux_calc(ws)
 
@@ -605,12 +654,18 @@ caldern$V_monin <- flux_all$latent_monin
 caldern$V_penman <- flux_all$latent_penman
 ```
 
+Der Sammelworkflow
+[`turb_flux_calc()`](https://gisma.github.io/migration-fieldclim/reference/turb_flux_calc.md)
+berechnet die Standardmethoden mit ihren Standardoptionen. Der guarded
+Bulk–Residual-Rechenweg wird deshalb separat geführt und in den
+folgenden Tabellen als `Bulk–Residual Paket (ri_guard)` ausgewiesen.
+
 ``` r
 
 L_summary <- data.frame(
   Methode = c(
-    "Priestley-Taylor",
-    "Bulk-Residual Paket (ri_guard)",
+    "Priestley–Taylor",
+    "Bulk–Residual Paket (ri_guard)",
     "Bowen",
     "Monin-Obukhov/Profile"
   ),
@@ -624,8 +679,8 @@ L_summary <- data.frame(
 
 V_summary <- data.frame(
   Methode = c(
-    "Priestley-Taylor",
-    "Bulk-Residual Paket (ri_guard)",
+    "Priestley–Taylor",
+    "Bulk–Residual Paket (ri_guard)",
     "Bowen",
     "Monin-Obukhov/Profile",
     "Penman"
@@ -642,50 +697,53 @@ V_summary <- data.frame(
 L_summary[, -1] <- round(L_summary[, -1], 1)
 V_summary[, -1] <- round(V_summary[, -1], 1)
 
+names(L_summary)[names(L_summary) == "L_Mittel_W_m2"] <- "H_Mittel_W_m2"
+names(V_summary)[names(V_summary) == "V_Mittel_W_m2"] <- "LE_Mittel_W_m2"
+
 L_summary
-#>                          Methode L_Mittel_W_m2
-#> 1               Priestley-Taylor          25.1
-#> 2 Bulk-Residual Paket (ri_guard)          90.9
+#>                          Methode H_Mittel_W_m2
+#> 1               Priestley–Taylor          25.1
+#> 2 Bulk–Residual Paket (ri_guard)          90.9
 #> 3                          Bowen         -21.1
 #> 4          Monin-Obukhov/Profile         104.2
 V_summary
-#>                          Methode V_Mittel_W_m2
-#> 1               Priestley-Taylor          83.6
-#> 2 Bulk-Residual Paket (ri_guard)         188.7
-#> 3                          Bowen         129.8
-#> 4          Monin-Obukhov/Profile          52.7
-#> 5                         Penman          13.2
+#>                          Methode LE_Mittel_W_m2
+#> 1               Priestley–Taylor           83.6
+#> 2 Bulk–Residual Paket (ri_guard)          188.7
+#> 3                          Bowen          129.8
+#> 4          Monin-Obukhov/Profile           52.7
+#> 5                         Penman           13.2
 ```
 
 **Interpretation.** Die Tabellen zeigen keine Rangfolge, sondern
 verschiedene Antworten auf verschiedene methodische Fragen.
 
-PT liefert mit 25.1 W/m² für `L` und 83.6 W/m² für `V` einen moderaten,
-energiegebundenen Referenzverlauf.
+PT liefert mit 25.1 W/m² für `H` und 83.6 W/m² für `LE` einen
+energiegebundenen Vergleichsverlauf.
 
-Bulk-Residual liegt für die gültigen, nicht geguardeten Zeitschritte
-deutlich höher (`L`: 90.9 W/m², `V`: 188.7 W/m²), weil nur ein Teil des
+Bulk–Residual liegt für die gültigen, nicht geguardeten Zeitschritte
+deutlich höher (`H`: 90.9 W/m², `LE`: 188.7 W/m²), weil nur ein Teil des
 Tages nach dem Richardson-Screening übrig bleibt und diese gültigen
 Zeitpunkte nicht denselben Tagesmittelwert wie alle 288 Messzeitpunkte
 repräsentieren.
 
-Bowen zeigt einen negativen Tagesmittelwert für `L` (-21.1 W/m²), aber
-einen hohen latenten Anteil (129.8 W/m²). Das ist ein Hinweis darauf,
-dass Mittelwerte bei gradientenempfindlichen Methoden trügerisch sein
-können: Einzelne starke positive und negative Partitionierungen können
-sich im Mittel teilweise aufheben.
+Bowen zeigt einen negativen Tagesmittelwert für `H` (-21.1 W/m²), aber
+einen hohen latenten Anteil (`LE`: 129.8 W/m²). Das ist ein Hinweis
+darauf, dass Mittelwerte bei gradientenempfindlichen Methoden trügerisch
+sein können: Einzelne starke positive und negative Partitionierungen
+können sich im Mittel teilweise aufheben.
 
-Penman steht separat, weil es nur `V` liefert; der Mittelwert von 13.2
+Penman steht separat, weil es nur `LE` liefert; der Mittelwert von 13.2
 W/m² ist daher kein vollständiges `L/V`-Paar.
 
-Monin-Obukhov/Profile liefert im Mittel etwa 104 W/m² fühlbaren und 53
-W/m² latenten Wärmestrom. Diese Werte entstehen aus Temperatur-,
-Feuchte- und Windprofilen, nicht aus einer Aufteilung der verfügbaren
-Energie. Sie müssen deshalb anders gelesen werden als Priestley-Taylor,
-Bulk-Residual oder Bowen: Entscheidend ist nicht nur der Mittelwert,
-sondern ob \\L + V\\ zur verfügbaren Energie \\Q^\* - B\\ passt. Wenn
-große Abweichungen auftreten, spricht das für empfindliche Gradienten,
-schwache Windunterschiede oder Stabilitätsprobleme im Profilansatz.
+Monin-Obukhov/Profile liefert im Mittel etwa 104 W/m² `H` und 53 W/m²
+`LE`. Diese Werte entstehen aus Temperatur-, Feuchte- und Windprofilen,
+nicht aus einer Aufteilung der verfügbaren Energie. Sie müssen deshalb
+anders gelesen werden als Priestley–Taylor, Bulk–Residual oder Bowen:
+Entscheidend ist nicht nur der Mittelwert, sondern ob \\H + LE\\ zur
+verfügbaren Energie \\Q^\* - B\\ passt. Wenn große Abweichungen
+auftreten, spricht das für empfindliche Gradienten, schwache
+Windunterschiede oder Stabilitätsprobleme im Profilansatz.
 
 ### Einzelplots der Paketmethoden
 
@@ -694,19 +752,19 @@ schwache Windunterschiede oder Stabilitätsprobleme im Profilansatz.
 op <- par(mfrow = c(4, 1), mar = c(3.2, 4, 2, 1))
 
 plot(caldern$datetime, caldern$L_pt, type = "l", col = "#CC79A7", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "L: Priestley-Taylor")
+     xlab = "Zeit", ylab = "W/m²", main = "H: Priestley–Taylor")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$L_bulk_pkg, type = "l", col = "#666666", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "L: Bulk-Residual Paket mit ri_guard")
+     xlab = "Zeit", ylab = "W/m²", main = "H: Bulk–Residual Paket mit ri_guard")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$L_bowen, type = "l", col = "#009E73", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "L: Bowen")
+     xlab = "Zeit", ylab = "W/m²", main = "H: Bowen")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$L_monin, type = "l", col = "#D55E00", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "L: Monin-Obukhov/Profile")
+     xlab = "Zeit", ylab = "W/m²", main = "H: Monin-Obukhov/Profile")
 abline(h = 0, lty = 2, col = "grey50")
 ```
 
@@ -723,23 +781,23 @@ par(op)
 op <- par(mfrow = c(5, 1), mar = c(3.2, 4, 2, 1))
 
 plot(caldern$datetime, caldern$V_pt, type = "l", col = "#56B4E9", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "V: Priestley-Taylor")
+     xlab = "Zeit", ylab = "W/m²", main = "LE: Priestley–Taylor")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$V_bulk_pkg, type = "l", col = "#666666", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "V: Bulk-Residual Paket mit ri_guard")
+     xlab = "Zeit", ylab = "W/m²", main = "LE: Bulk–Residual Paket mit ri_guard")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$V_bowen, type = "l", col = "#009E73", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "V: Bowen")
+     xlab = "Zeit", ylab = "W/m²", main = "LE: Bowen")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$V_monin, type = "l", col = "#D55E00", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "V: Monin-Obukhov/Profile")
+     xlab = "Zeit", ylab = "W/m²", main = "LE: Monin-Obukhov/Profile")
 abline(h = 0, lty = 2, col = "grey50")
 
 plot(caldern$datetime, caldern$V_penman, type = "l", col = "#0072B2", lwd = 2,
-     xlab = "Zeit", ylab = "W/m²", main = "V: Penman")
+     xlab = "Zeit", ylab = "W/m²", main = "LE: Penman")
 abline(h = 0, lty = 2, col = "grey50")
 ```
 
@@ -752,11 +810,11 @@ par(op)
 ```
 
 **Interpretation.** Die Einzelplots sind bewusst getrennt. In einer
-gemeinsamen Grafik würden die empfindlichen Methoden die Achsen
+gemeinsamen Grafik würden die empfindlichen Rechenwege die Achsen
 dominieren und ruhigere Verläufe unsichtbar machen. Hier sieht man
 stattdessen pro Methode, wann Vorzeichenwechsel, `NA`-Abschnitte oder
 starke Ausschläge auftreten. Besonders wichtig ist der
-Bulk-Residual-Plot: Unterbrechungen sind dort nicht automatisch
+Bulk–Residual-Plot: Unterbrechungen sind dort nicht automatisch
 Datenlücken, sondern häufig die direkte Folge des Richardson-Guards. Bei
 Bowen und Monin-Obukhov/Profile sind starke Ausschläge dagegen eher
 Hinweise auf empfindliche Gradienten- oder Stabilitätsbedingungen.
@@ -766,18 +824,19 @@ Hinweise auf empfindliche Gradienten- oder Stabilitätsbedingungen.
 Die folgenden Ergebnisse sind nicht nur ein Methodenvergleich. Sie sind
 auch eine Konsistenzprüfung der Energiebilanz.
 
-Die Theorie schreibt die bodennahe Energiebilanz als:
+Die Referenznotation schreibt die bodennahe Energiebilanz als:
 
-\\ 0 = Q^{\*} - B - L - V \\
+\\ R_E = Q^\* - B - H - LE \\
 
-Für energiegebundene oder residuale Methoden gilt näherungsweise
-beziehungsweise konstruktiv:
+Für energiepartitionierende oder residuale Methoden gilt je nach
+Rechenweg per Annahme oder per Definition:
 
-\\ L + V \approx Q^{\*} - B \\
+\\ H + LE \approx Q^\* - B \\
 
 Diese Beziehung prüft, ob die berechneten turbulenten Wärmeflüsse
-energetisch zur verfügbaren Energie passen. Für Monin-Obukhov/Profile
-ist sie keine Closure-Erwartung, sondern nur eine
+energetisch zur verfügbaren Energie passen. Sie prüft nicht, ob die
+methodische Aufteilung in `H` und `LE` physikalisch validiert ist. Für
+Monin-Obukhov/Profile ist sie keine Closure-Erwartung, sondern nur eine
 Plausibilitätsdiagnose.
 
 ``` r
@@ -822,12 +881,12 @@ energy_row <- function(method, lv, ref) {
 
 energy_consistency <- rbind(
   energy_row(
-    "Bulk-Residual Paket (ri_guard)",
+    "Bulk–Residual Paket (ri_guard)",
     caldern$LV_bulk_pkg,
     caldern$available_energy
   ),
   energy_row(
-    "Priestley-Taylor",
+    "Priestley–Taylor",
     caldern$LV_pt,
     caldern$available_energy
   ),
@@ -846,8 +905,8 @@ energy_consistency <- rbind(
 energy_consistency[, 2:5] <- round(energy_consistency[, 2:5], 1)
 energy_consistency
 #>                          Methode Mittel_L_plus_V Mittel_Q_star_minus_B
-#> 1 Bulk-Residual Paket (ri_guard)           279.6                 279.6
-#> 2               Priestley-Taylor           108.7                 108.7
+#> 1 Bulk–Residual Paket (ri_guard)           279.6                 279.6
+#> 2               Priestley–Taylor           108.7                 108.7
 #> 3                          Bowen           108.7                 108.7
 #> 4          Monin-Obukhov/Profile           156.9                 108.7
 #>   Mittlere_Abweichung Max_abs_Abweichung Gueltige_Zeitpunkte
@@ -860,14 +919,14 @@ energy_consistency
 **Interpretation.** Diese Tabelle ist die zentrale Konsistenzprüfung.
 Wichtig ist, dass der Mittelwert von `Q_star - B` jetzt
 methodenspezifisch über dieselben gültigen Zeitschritte berechnet wird
-wie `L + V`. Dadurch ist der Bulk-Residual-Pfad fair lesbar: Er hat nur
-113 gültige Zeitpunkte, weil der Guard sehr stabile oder ungültige
-Situationen entfernt. Für genau diese gültigen Zeitpunkte schließt der
-residuale Pfad jedoch erwartungsgemäß: mittlere und maximale Abweichung
-liegen bei 0 beziehungsweise 0 W/m².
+wie `H + LE`. Dadurch ist der Bulk–Residual-Rechenweg fair lesbar: Er
+hat nur 113 gültige Zeitpunkte, weil der Guard sehr stabile oder
+ungültige Situationen entfernt. Für genau diese gültigen Zeitpunkte
+schließt der residuale Rechenweg jedoch erwartungsgemäß: mittlere und
+maximale Abweichung liegen bei 0 beziehungsweise 0 W/m².
 
-Priestley-Taylor und Bowen schließen ebenfalls, weil beide Pfade die
-verfügbare Energie explizit aufteilen. Das bedeutet aber
+Priestley–Taylor und Bowen schließen ebenfalls, weil beide Rechenwege
+die verfügbare Energie explizit aufteilen. Das bedeutet aber
 Unterschiedliches: Bei PT ist die Partitionierung relativ robust
 parametrisiert; bei Bowen kann sie trotz perfektem Energieabschluss
 durch kleine Feuchtegradienten oder Nennerprobleme einzelne extreme
@@ -883,7 +942,7 @@ Bilanzpartition gelesen werden dürfen.
 Die Extremwertdiagnose soll nicht alle auffälligen Zeitschritte
 ausgeben. Sie fasst zuerst zusammen, wo Extremwerte auftreten, und zeigt
 danach nur die stärksten Fälle. Zusätzlich wird der Richardson-Guard des
-Bulk-Paketpfads ausgewiesen.
+Bulk–Residual-Rechenwegs ausgewiesen.
 
 ``` r
 
@@ -896,7 +955,7 @@ caldern$dU_2_10 <- caldern$Windspeed_2m - caldern$Windspeed_10m
 extreme_all <- rbind(
   data.frame(
     datetime = caldern$datetime,
-    Methode = "Bulk-Residual Paket (ri_guard)",
+    Methode = "Bulk–Residual Paket (ri_guard)",
     Fluss = "L",
     Wert = caldern$L_bulk_pkg,
     dT_2_10 = caldern$dT_2_10,
@@ -1026,7 +1085,7 @@ if (nrow(extreme_cases) > 0) {
 **Interpretation.** Die Extremwertzählung zeigt, wo die problematischen
 5-Minuten-Werte entstehen. Bowen erzeugt in diesem Lauf 8 auffällige
 Werte oberhalb der Diagnosegrenze, Monin-Obukhov/Profile 18. Der
-Bulk-Residual-Paketpfad erscheint hier nicht als Extremwertlieferant,
+Bulk–Residual-Rechenweg erscheint hier nicht als Extremwertlieferant,
 weil der Richardson-Guard kritische Profilzustände nicht als große
 Flüsse weiterrechnet, sondern als `NA` ausweist.
 
@@ -1069,7 +1128,7 @@ plot(
   lwd = 2,
   ylim = ylim_closure,
   xlab = "Zeit",
-  ylab = "(L + V) - (Q* - B) [W/m²]",
+  ylab = "(H + LE) - (Q* - B) [W/m²]",
   main = "Energetische Konsistenz: bilanzgebundene Pfade"
 )
 
@@ -1085,7 +1144,7 @@ legend(
   bty = "n",
   legend = c(
     "Bulk Paket ri_guard",
-    "Priestley-Taylor",
+    "Priestley–Taylor",
     "Bowen"
   ),
   col = cols_closure,
@@ -1103,11 +1162,12 @@ par(op)
 
 **Interpretation.** Diese Grafik trennt bewusst die energiegebundenen
 beziehungsweise residualen Pfade von Monin-Obukhov/Profile. Bei
-Bulk-Residual, PT und Bowen bedeutet Nähe zur Nulllinie: Die Summe aus
+Bulk–Residual, PT und Bowen bedeutet Nähe zur Nulllinie: Die Summe aus
 `L` und `V` passt zur verwendeten verfügbaren Energie. Bei PT ist das
-konstruktiv, bei Bulk-Residual für gültige Zeitschritte ebenfalls, weil
-`V` als Rest berechnet wird. Bowen kann ebenfalls exakt schließen,
-solange der Nenner nicht geguardet oder nicht endlich ist.
+eine Partitionierungsannahme, bei Bulk–Residual für gültige Zeitschritte
+eine Residualdefinition, weil `LE` als Rest berechnet wird. Bowen kann
+ebenfalls exakt schließen, solange der Nenner nicht geguardet oder nicht
+endlich ist.
 
 Diese Nulllinie beweist aber nicht, dass jede einzelne Partitionierung
 physikalisch gut ist. Sie sagt nur: Die Energiebuchhaltung ist
@@ -1136,7 +1196,7 @@ plot(
   lwd = 2,
   ylim = mo_ylim,
   xlab = "Zeit",
-  ylab = "(L_MO + V_MO) - (Q* - B) [W/m²]",
+  ylab = "(H_MO + LE_MO) - (Q* - B) [W/m²]",
   main = "Monin-Obukhov/Profile: Plausibilitätsprüfung gegen Q* - B"
 )
 
@@ -1167,10 +1227,10 @@ par(op)
 ```
 
 **Interpretation.** Diese Grafik muss anders gelesen werden als die
-vorige. Monin-Obukhov/Profile berechnet \\L\\ und \\V\\ aus den
-gemessenen Unterschieden zwischen zwei Höhen: Temperatur, Feuchte, Wind
-und Messhöhe bestimmen das Ergebnis. Die Werte werden nicht nachträglich
-so angepasst, dass ihre Summe genau der verfügbaren Energie \\Q^\* - B\\
+vorige. Monin-Obukhov/Profile berechnet `H` und `LE` aus den gemessenen
+Unterschieden zwischen zwei Höhen: Temperatur, Feuchte, Wind und
+Messhöhe bestimmen das Ergebnis. Die Werte werden nicht nachträglich so
+angepasst, dass ihre Summe genau der verfügbaren Energie \\Q^\* - B\\
 entspricht.
 
 Die Paketfunktionen fangen inzwischen problematische Sonderfälle ab:
@@ -1243,15 +1303,16 @@ plot_energy_balance_closure(
 
 ![](fieldclim_flux_workflow_files/figure-html/closure-flux-open-de-1.png)
 
-Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren,
-sondern den jeweils offenen oder residualisierten Term. Bei
-Bulk-Residual ist dies `latent_bulk_residual`: Die latente Wärme wird
+Der Plot zeigt nicht denselben Residualbegriff für alle Verfahren. Er
+zeigt je nach Rechenweg einen residual definierten latenten Wärmestrom,
+einen offenen Ergänzungsterm oder einen diagnostischen Bilanzrest. Bei
+Bulk–Residual ist dies `latent_bulk_residual`: Die latente Wärme wird
 nach der Schätzung von `sensible_bulk` als Rest aus
 `rad_bal - soil_flux - sensible_bulk` berechnet. Bei Penman ist es der
 offene Ergänzungsterm nach Abzug von `latent_penman`; dieser Term ist
-nicht automatisch fühlbarer Wärmestrom. Bei Monin-Obukhov/Profile ist es
-der diagnostische Bilanzrest `rad_bal - soil_flux - sensible - latent`.
-Priestley-Taylor und Bowen erscheinen hier nicht, weil sie die
+nicht automatisch `H`. Bei Monin-Obukhov/Profile ist es der
+diagnostische Bilanzrest `rad_bal - soil_flux - sensible - latent`.
+Priestley–Taylor und Bowen erscheinen hier nicht, weil sie die
 verfügbare Energie partitionieren und keinen expliziten offenen Term
 ausgeben.
 
@@ -1267,8 +1328,8 @@ plot_energy_balance_closure(
 ![](fieldclim_flux_workflow_files/figure-html/closure-flux-check-de-1.png)
 
 Der Schließungscheck zeigt `rad_bal - soil_flux - sensible - latent` für
-Verfahren mit gepaarten Flüssen. Bei Priestley-Taylor, Bowen und
-Bulk-Residual sind Werte nahe null methodisch erwartbar. Das zeigt
+Verfahren mit gepaarten Flüssen. Bei Priestley–Taylor, Bowen und
+Bulk–Residual sind Werte nahe null methodisch erwartbar. Das zeigt
 formalen Bilanzschluss, aber keine physikalische Validierung. Bei
 Monin-Obukhov/Profile ist ein nicht-nulliger Wert diagnostisch und zeigt
 die Differenz zwischen Profilfluss-Schätzung und verfügbarer Energie.
@@ -1330,7 +1391,7 @@ Solche Werte entstehen typischerweise, wenn der Nenner
 von der verfügbaren Energie abweichen. Sie sind Diagnosefälle, keine
 Rangliste der Verfahren.
 
-#### Bulk-Residual: Austauschgeschwindigkeit und Residualschluss
+#### Bulk–Residual: Austauschgeschwindigkeit und Residualschluss
 
 Der folgende Block hält den Residualschluss fest und variiert nur die
 Austauschgeschwindigkeit in der Schätzung von `sensible_bulk`. Das
@@ -1383,14 +1444,15 @@ aggregate(
 ```
 
 Die Tabelle zeigt den zentralen Unterschied. Der Schließungsquotient
-bleibt beim Bulk-Residual-Pfad nahe 1, weil `latent_bulk_residual` immer
-als Rest aus `rad_bal - soil_flux - sensible_bulk` berechnet wird. Die
-eigentliche methodische Sensitivität liegt vorher in `sensible_bulk`. Je
-nachdem, ob die Austauschgeschwindigkeit über mittleren Wind, über
-`u_star_profile` oder über `u_star_roughness` bestimmt wird, ändert sich
-die Aufteilung zwischen fühlbarem und latentem Wärmestrom. Ein
-geschlossener Bilanzrest bedeutet deshalb nicht, dass die gewählte
-Austauschgeschwindigkeit physikalisch richtig ist.
+bleibt beim Bulk–Residual-Rechenweg nahe 1, weil `latent_bulk_residual`
+immer als Rest aus `rad_bal - soil_flux - sensible_bulk` berechnet wird.
+Die eigentliche methodische Sensitivität liegt vorher in
+`sensible_bulk`. Je nachdem, ob die Austauschgeschwindigkeit über
+mittleren Wind, über `u_star_profile` oder über `u_star_roughness`
+bestimmt wird, ändert sich die Aufteilung zwischen fühlbarem und
+latentem Wärmestrom. Ein geschlossener Bilanzrest bedeutet deshalb
+nicht, dass die gewählte Austauschgeschwindigkeit physikalisch richtig
+ist.
 
 ### Konsequenz für den Methodenvergleich
 
@@ -1398,31 +1460,29 @@ Die Methoden reagieren auf denselben Stationsdatensatz unterschiedlich,
 weil sie nicht dieselbe Frage beantworten. Für diesen Caldern-Tag ergibt
 sich daraus eine klare Lesart:
 
-- Priestley-Taylor ist der stabile Einstiegspfad. Er beantwortet: Wie
-  lässt sich die verfügbare Energie ohne empfindliche Profilquotienten
-  in `L` und `V` aufteilen?
-- Bulk-Residual mit `ri_guard` beantwortet: Welche Zeitschritte erlauben
-  eine einfache wind- und temperaturgradientenbasierte Schätzung von
-  `L`, und wo sagt die Stabilitätsdiagnose, dass der neutrale
-  Bulk-Ansatz nicht belastbar ist?
+- Priestley–Taylor ist ein energiegebundener Rechenweg. Er beantwortet:
+  Wie lässt sich die verfügbare Energie über eine empirische
+  Verdunstungsparametrisierung in `H` und `LE` aufteilen?
+- Bulk–Residual mit `ri_guard` beantwortet: Welche Zeitschritte erlauben
+  eine wind- und temperaturgradientenbasierte Schätzung von `H`, und wie
+  groß ist das daraus abgeleitete Residuum `LE_res`?
 - Bowen beantwortet: Wie würde ein Temperatur-/Feuchtegradient die
-  verfügbare Energie partitionieren? Die Methode kann energetisch
-  schließen und trotzdem einzelne extreme Anteile erzeugen.
-- Penman beantwortet nur die Frage nach `V`. Es ist kein vollständiges
-  `L/V`-Paar und darf deshalb nicht wie PT, Bulk oder Bowen bilanziell
+  verfügbare Energie in `H` und `LE` partitionieren? Der Rechenweg kann
+  energetisch schließen und trotzdem einzelne extreme Anteile erzeugen.
+- Penman beantwortet nur die Frage nach `LE`. Der offene Rest
+  `U_Penman = Q* - B - LE_Penman` ist kein vollständiges `H`/`LE`-Paar
+  und darf deshalb nicht wie PT, Bulk–Residual oder Bowen bilanziell
   verglichen werden.
 - Monin-Obukhov/Profile beantwortet eine Profilfrage: Was ergeben
   Temperatur-, Feuchte- und Windunterschiede zwischen zwei Höhen, wenn
-  sie als turbulenter Austausch interpretiert werden? Große Ausschläge,
-  `NA`-Werte oder Abweichungen von \\Q^\* - B\\ sind deshalb keine
-  bloßen Störungen. Sie zeigen, dass Gradienten, Windschere oder
-  Stabilitätsannahmen für diese Zeitschritte kritisch sind.
+  sie als turbulenter Austausch interpretiert werden? Der Rechenweg ist
+  diagnostisch und nicht bilanzschließend.
 
-Die wichtigste praktische Konsequenz lautet: Der Methodenvergleich ist
-keine Suche nach der einen „besten“ Kurve. Er zeigt, welche Annahmen bei
-denselben Stationsdaten stabil sind und welche Annahmen zu
-Diagnosefällen führen. Für eine robuste Auswertung sollte PT als
-Baseline gelesen werden, Bulk-Residual mit Guard als transparenter
-residualer Vergleich, Bowen als gradientenempfindliche Partitionierung,
-Penman als separater `V`-Vergleich und Monin-Obukhov/Profile als
-Diagnosepfad.
+Die wichtigste praktische Konsequenz lautet: Der Vergleich der
+Rechenwege ist keine Suche nach der einen „besten“ Kurve. Er zeigt,
+welche Annahmen bei denselben Stationsdaten stabil sind und welche
+Annahmen zu Diagnosefällen führen. PT wird als energiegebundene
+Partitionierung gelesen, Bulk–Residual als `H`-Schätzung mit residualem
+`LE`, Bowen als gradientenempfindliche Partitionierung, Penman als
+separater `LE`-Vergleich mit offenem Rest und Monin-Obukhov/Profile als
+Profil- und Stabilitätsdiagnostik.

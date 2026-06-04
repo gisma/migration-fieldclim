@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -92,28 +93,30 @@ Chris Reudenbach</h4>
 <h2 id="purpose-of-this-vignette">Purpose of this vignette<a class="anchor" aria-label="anchor" href="#purpose-of-this-vignette"></a>
 </h2>
 <p>This vignette explains the scientific and conceptual background of
-the heat-flux methods implemented in <code>fieldClim</code>. It is not a
-numerical benchmark and it is not an empirical validation against
-independent turbulent-flux measurements. Its purpose is narrower: it
-explains what each method family does with the surface energy balance,
-which terms are measured or supplied as station inputs, which terms are
-estimated, which terms are assumed through closure, and which terms
-remain unresolved.</p>
+the heat-flux methods implemented in <code>fieldClim</code>. It provides
+the physical interpretation frame for the package workflows: what each
+method family calculates, which terms are measured or supplied as
+station inputs, which terms are estimated, which terms are assigned by
+partition or residual logic, and which terms remain unresolved.</p>
 <p><code>fieldClim</code> is designed for weather-station based
 microclimate and micrometeorological analysis. Such stations may provide
-net radiation, soil heat flux, air temperature, humidity and wind
-profiles, but they usually do not provide the high-frequency wind and
-scalar data required for full eddy-covariance processing. The package
-therefore implements physically interpretable approximation and
-diagnostic methods rather than a complete eddy-covariance workflow.</p>
-<p>The central question is not which method is “the true” one. The
-central question is how each method treats the unknown part of the
-energy balance. Some methods force the available energy to be fully
-divided between sensible and latent heat. Some estimate one flux first
-and assign the remainder to the other flux. Some estimate only latent
-heat. Some estimate profile-based turbulent fluxes and leave the
-remaining energy-balance difference visible as a diagnostic
-residual.</p>
+net radiation, soil heat flux, air temperature, humidity and one- or
+two-height wind and scalar profiles. Full eddy-covariance processing
+requires high-frequency wind and scalar measurements and is outside the
+package scope. The package therefore implements interpretable
+approximation and diagnostic methods for station-based heat-flux
+analysis.</p>
+<p>The central question is how each method treats the unknown part of
+the surface energy balance. Some methods partition available energy into
+sensible and latent heat. Some estimate one flux first and assign the
+remainder to the other flux. Some estimate latent heat only. Some
+estimate profile-based turbulent fluxes and keep the remaining
+energy-balance difference visible as a diagnostic residual.</p>
+<p>A practical method-selection guide is provided in <a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. This background vignette explains the physical
+logic behind that guide. The wording also follows the overview graphic:
+first the accounting frame, then the flux families, then the closure
+regimes.</p>
 </div>
 <div class="section level2">
 <h2 id="fieldclim-scope-and-evidence-boundary">FieldClim scope and evidence boundary<a class="anchor" aria-label="anchor" href="#fieldclim-scope-and-evidence-boundary"></a>
@@ -121,334 +124,272 @@ residual.</p>
 <p>Eddy covariance is often used as the direct field reference for
 turbulent sensible and latent heat fluxes because it estimates turbulent
 exchange from high-frequency covariance between vertical wind and scalar
-fluctuations. However, eddy covariance is not a simple truth source. The
-surface energy balance often does not close even at well-instrumented
-flux sites. This problem has been documented for individual sites,
-synthesis studies and FLUXNET-scale analyses. Reported causes include
-storage terms, advection, landscape heterogeneity, footprint mismatch,
-instrumental uncertainty, low-frequency turbulent motions and scale
-mismatch between radiative, soil and turbulent-flux measurements.</p>
-<p>This matters for <code>fieldClim</code>: if even direct
-turbulent-flux systems frequently show energy-balance non-closure, then
-station-based approximation methods must not be presented as if formal
-closure proves physical correctness. Formal closure is a property of a
-method. It is not, by itself, a validation result.</p>
+fluctuations. Eddy covariance data also show that the surface energy
+balance often remains open even at well-instrumented flux sites. This
+problem has been documented for individual sites, synthesis studies and
+FLUXNET-scale analyses. Reported causes include storage terms,
+advection, landscape heterogeneity, footprint mismatch, instrumental
+uncertainty, low-frequency turbulent motions and scale mismatch between
+radiative, soil and turbulent-flux measurements <span class="citation">(Foken, 2008; Leuning et al., 2012; <span class="nocase">Mauder et al.</span>, 2024; Wilson et al.,
+2002)</span>.</p>
+<p>This matters for <code>fieldClim</code>: station-based approximation
+methods need a clear distinction between calculation closure and
+empirical validation. A method can close the available energy because
+one flux is defined as a residual. Another method can leave a residual
+visible because fluxes are estimated from profile information. These are
+different calculation semantics.</p>
 </div>
 <div class="section level2">
 <h2 id="surface-energy-balance-and-package-sign-convention">Surface energy balance and package sign convention<a class="anchor" aria-label="anchor" href="#surface-energy-balance-and-package-sign-convention"></a>
 </h2>
-<p>The common reference point is the surface energy balance.
-Microclimatological and micrometeorological texts use partly different
-symbols for the same physical quantities. <code>fieldClim</code> uses
-implementation names such as <code>rad_bal</code>,
-<code>soil_flux</code>, <code>sensible_*</code> and
-<code>latent_*</code>. These are package fields and output names, not a
-separate theoretical notation.</p>
+<p>The common reference point is the reduced surface energy balance
+without explicit storage or horizontal transport terms. This vignette
+uses the same reference notation as the overview graphic and the
+method-selection page: <code>Q*</code> is net radiation, <code>B</code>
+is soil heat flux, <code>A = Q* - B</code> is available energy,
+<code>H</code> is sensible heat flux, <code>LE</code> is latent heat
+flux, and <code>R_E</code> is the residual or non-closed energy term.
+The text deliberately avoids parallel notation such as
+<code>R_n/G</code> or <code>L/V</code> in the main explanation. Package
+internals and some Roxygen comments may use <code>R_n</code> and
+<code>G</code>, but the tutorial and figure logic use <code>Q*</code>
+and <code>B</code> consistently.</p>
+<p>For readers without a meteorological background, the main idea is
+simple. Net radiation is the radiative energy gained or lost by the
+surface. Soil heat flux is the part of that energy that enters or leaves
+the ground. The remaining part is available for exchange with the air.
+Sensible heat changes air temperature. Latent heat is the energy
+involved in evaporation or condensation. The residual term collects what
+remains unresolved by a given method and dataset.</p>
 <table class="table">
 <colgroup>
-<col width="20%">
-<col width="17%">
-<col width="20%">
-<col width="41%">
+<col width="22%">
+<col width="14%">
+<col width="27%">
+<col width="35%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">Quantity</th>
-<th align="left">Common notation</th>
+<th align="left">Reference notation</th>
 <th align="left">fieldClim field or output</th>
 <th align="left">Positive direction or meaning in fieldClim</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="left">Net radiation</td>
-<td align="left">Q* or Rn</td>
+<td align="left">Q*</td>
 <td align="left">rad_bal</td>
 <td align="left">net radiative energy input at the surface</td>
 </tr>
 <tr class="even">
 <td align="left">Soil heat flux</td>
-<td align="left">B or G</td>
+<td align="left">B</td>
 <td align="left">soil_flux</td>
 <td align="left">heat flux into the soil</td>
 </tr>
 <tr class="odd">
-<td align="left">Sensible heat flux</td>
-<td align="left">H or L</td>
-<td align="left">sensible_*</td>
-<td align="left">heat flux away from the surface</td>
-</tr>
-<tr class="even">
-<td align="left">Latent heat flux</td>
-<td align="left">LE or V</td>
-<td align="left">latent_*</td>
-<td align="left">heat flux away from the surface</td>
-</tr>
-<tr class="odd">
-<td align="left">Available turbulent energy</td>
-<td align="left">Q* minus B; Rn minus G</td>
+<td align="left">Available energy</td>
+<td align="left">A = Q* - B</td>
 <td align="left">rad_bal minus soil_flux</td>
 <td align="left">energy available for sensible and latent heat
 fluxes</td>
 </tr>
+<tr class="even">
+<td align="left">Sensible heat flux</td>
+<td align="left">H</td>
+<td align="left">sensible_*</td>
+<td align="left">heat flux away from the surface</td>
+</tr>
+<tr class="odd">
+<td align="left">Latent heat flux</td>
+<td align="left">LE</td>
+<td align="left">latent_*</td>
+<td align="left">heat flux away from the surface</td>
+</tr>
+<tr class="even">
+<td align="left">Residual / non-closed energy term</td>
+<td align="left">R_E = Q* - B - H - LE</td>
+<td align="left">closure_residual / unresolved_complement</td>
+<td align="left">remaining energy-balance difference</td>
+</tr>
 </tbody>
 </table>
-<p>With storage and additional transport terms omitted, the reduced
-teaching balance is:</p>
+<p>The reduced available-energy definition is:</p>
 <p><span class="math display">\[
-R_n = G + H + LE
+A = Q^* - B
 \]</span></p>
-<p>Therefore the energy available for turbulent heat fluxes is:</p>
+<p>The diagnostic balance used throughout the documentation is:</p>
 <p><span class="math display">\[
-A = R_n - G
+Q^* - B = H + LE + R_E
 \]</span></p>
-<p>and the reduced closure form becomes:</p>
+<p>or equivalently:</p>
 <p><span class="math display">\[
-A = H + LE
-\]</span></p>
-<p>In the teaching notation used in parts of the original
-<code>fieldClim</code> material, the same balance is:</p>
-<p><span class="math display">\[
-Q^* - B = L + V
+R_E = Q^* - B - H - LE
 \]</span></p>
 <p>The package convention is: <code>soil_flux</code> is consumed as a
 positive heat flux into the soil, while positive sensible and latent
 heat fluxes are interpreted as fluxes away from the surface.</p>
 </div>
 <div class="section level2">
-<h2 id="energy-balance-closure-as-a-modelling-decision">Energy-balance closure as a modelling decision<a class="anchor" aria-label="anchor" href="#energy-balance-closure-as-a-modelling-decision"></a>
+<h2 id="overview-graphic">Overview graphic<a class="anchor" aria-label="anchor" href="#overview-graphic"></a>
 </h2>
-<p>The reduced balance is easy to write down, but it is not
-automatically observed in real field data. Radiation, soil heat flux,
-sensible heat and latent heat are not measured at exactly the same
-place, at the same effective footprint, with the same time response, or
-with the same uncertainty. In addition, energy may be stored in the air
-column, vegetation, biomass, water, litter or the upper soil layer.
-Energy may also be transported horizontally by advection or by coherent
-structures over heterogeneous terrain.</p>
-<p>For this reason, the more honest diagnostic form is:</p>
-<p><span class="math display">\[
-R_E = A - H - LE
-\]</span></p>
-<p>or equivalently:</p>
-<p><span class="math display">\[
-R_E = R_n - G - H - LE
-\]</span></p>
-<p>Here, <code>R_E</code> is the unresolved energy-balance residual. It
-should not be interpreted as one single physical flux. It is a mixed
-remainder. It may include storage, advection, dispersive transport,
-footprint mismatch, measurement error, timing mismatch, parameterization
-error and model error.</p>
-<p>The important point is that different method families treat this
-remainder differently. They may use the same balance frame, but they do
-not give the same status to all terms. Some terms are measured or
-supplied as station inputs. Some are estimated by empirical or profile
-equations. Some are assumed by forcing closure. Some are left
-unresolved.</p>
-<p>A simple non-meteorological way to read the problem is this: the
-equation tells us what should add up. The method decides what to do when
-not all parts are known.</p>
+<p>A compact way to read the problem is this: the equation defines what
+should be accounted for, the flux family defines what is calculated
+first, and the closure regime describes how the resulting terms relate
+to available energy.</p>
 <p><img src="figures/fieldClim_theory.svg"></p>
 </div>
 <div class="section level2">
-<h2 id="energy-balance-closure-approaches-in-fieldclim">Energy-balance closure approaches in fieldClim<a class="anchor" aria-label="anchor" href="#energy-balance-closure-approaches-in-fieldclim"></a>
+<h2 id="energy-accounting-frame">Energy accounting frame<a class="anchor" aria-label="anchor" href="#energy-accounting-frame"></a>
 </h2>
-<p>The heat-flux methods in <code>fieldClim</code> can be understood as
-four energy-balance closure approaches.</p>
-<div class="section level3">
-<h3 id="partition-closure">1. Partition closure<a class="anchor" aria-label="anchor" href="#partition-closure"></a>
-</h3>
-<p>Priestley-Taylor and Bowen-ratio methods are partitioning methods.
-They assume that the available energy can be fully divided into sensible
-and latent heat within the reduced balance:</p>
-<p><span class="math display">\[
-R_E = 0
-\]</span></p>
-<p>The method then decides how available energy is split between
-<code>H</code> and <code>LE</code>. Priestley-Taylor uses an empirical
-evaporation relation. Bowen uses a gradient-derived ratio between
-sensible and latent heat.</p>
-<p>This means the balance is closed by construction. It does not mean
-that the closure has been independently measured. The hidden uncertainty
-lies in the empirical coefficient, the gradient ratio, the omitted
-storage and advection terms, and the measurement/model inputs that
-define available energy.</p>
-</div>
-<div class="section level3">
-<h3 id="residual-assignment">2. Residual assignment<a class="anchor" aria-label="anchor" href="#residual-assignment"></a>
-</h3>
-<p>Bulk-Residual uses a different logic. It first estimates sensible
-heat as <code>H_bulk</code>. The remaining available energy is then
-assigned to latent heat:</p>
-<p><span class="math display">\[
-LE_{res} = A - H_{bulk}
-\]</span></p>
-<p>or:</p>
-<p><span class="math display">\[
-LE_{res} = R_n - G - H_{bulk}
-\]</span></p>
-<p>Here latent heat is the residual term. Any error in net radiation,
-soil heat flux or the bulk sensible-heat estimate is passed directly
-into <code>LE_res</code>.</p>
-</div>
-<div class="section level3">
-<h3 id="le-only-open-balance">3. LE-only open balance<a class="anchor" aria-label="anchor" href="#le-only-open-balance"></a>
-</h3>
-<p>Penman and Penman-type methods estimate latent heat. In
-<code>fieldClim</code>, the Penman path does not provide a paired
-package-defined sensible heat flux. The remaining balance term is:</p>
-<p><span class="math display">\[
-R_{Penman} = A - LE_{Penman}
-\]</span></p>
-<p>This remainder should not simply be called sensible heat. It may
-contain sensible heat, storage, advection, dispersive exchange,
-footprint mismatch and error terms.</p>
-</div>
-<div class="section level3">
-<h3 id="profile-diagnostic-open-balance">4. Profile-diagnostic open balance<a class="anchor" aria-label="anchor" href="#profile-diagnostic-open-balance"></a>
-</h3>
-<p>Monin-Obukhov and profile methods estimate turbulent fluxes from
-profile, roughness and stability assumptions. They are not forced to
-close the available energy balance. Their residual is:</p>
-<p><span class="math display">\[
-R_{profile} = A - H_{profile} - LE_{profile}
-\]</span></p>
-<p>This residual is useful. It shows whether the profile-based flux
-estimates, the radiation balance and the soil heat flux are mutually
-consistent. It should not be removed by forcing the method to close the
-balance.</p>
+<p>The heat-flux methods operate inside a shared surface-energy
+accounting frame. This frame defines available energy and the residual
+term before any method-specific flux estimate is interpreted. Radiation
+and soil helpers belong to this input and accounting layer. They provide
+or model terms that all downstream method families depend on.</p>
 <table class="table">
 <colgroup>
-<col width="9%">
-<col width="20%">
-<col width="18%">
-<col width="20%">
-<col width="30%">
+<col width="13%">
+<col width="14%">
+<col width="8%">
+<col width="63%">
 </colgroup>
 <thead><tr class="header">
-<th align="left">Method family</th>
-<th align="left">What the method primarily does</th>
-<th align="left">Closed by construction?</th>
-<th align="left">Unknown or residual term</th>
+<th align="left">Element</th>
+<th align="left">Role</th>
+<th align="left">Output / term</th>
 <th align="left">Interpretation rule</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
 <td align="left">Master balance</td>
 <td align="left">defines the accounting frame</td>
-<td align="left">no</td>
-<td align="left">energy-balance residual</td>
-<td align="left">the residual is a composite term, not one physical
-flux</td>
+<td align="left">A, R_E</td>
+<td align="left">R_E is a composite residual term. It can contain
+measurement error, storage, advection, model mismatch, and unresolved
+exchange.</td>
 </tr>
 <tr class="even">
 <td align="left">Radiation and soil helpers</td>
-<td align="left">provides or models input terms</td>
-<td align="left">no</td>
-<td align="left">method-dependent downstream residual</td>
-<td align="left">input consistency controls all downstream balances</td>
-</tr>
-<tr class="odd">
-<td align="left">Priestley-Taylor</td>
-<td align="left">partitions available energy</td>
-<td align="left">yes</td>
-<td align="left">hidden in closure and empirical coefficient
-assumptions</td>
-<td align="left">formal closure is not physical validation</td>
-</tr>
-<tr class="even">
-<td align="left">Bowen ratio</td>
-<td align="left">partitions available energy by a gradient-derived
-ratio</td>
-<td align="left">yes, only for finite uncapped cases</td>
-<td align="left">hidden in ratio, gradient and denominator
-assumptions</td>
-<td align="left">singular and capped cases must not be read as exact
-closure</td>
-</tr>
-<tr class="odd">
-<td align="left">Bulk-Residual</td>
-<td align="left">estimates sensible heat first and assigns the
-remainder</td>
-<td align="left">yes, if the bulk sensible heat estimate is finite</td>
-<td align="left">latent heat is the assigned residual</td>
-<td align="left">errors in radiation, soil heat flux or sensible heat
-enter the residual latent heat</td>
-</tr>
-<tr class="even">
-<td align="left">Penman / Penman-type</td>
-<td align="left">estimates latent heat only</td>
-<td align="left">no</td>
-<td align="left">complement of latent heat remains unresolved</td>
-<td align="left">the complement may contain sensible heat, storage,
-advection and error</td>
-</tr>
-<tr class="odd">
-<td align="left">Monin-Obukhov / Profile</td>
-<td align="left">estimates fluxes from profile and stability
-assumptions</td>
-<td align="left">no</td>
-<td align="left">remaining energy-balance difference is diagnostic</td>
-<td align="left">do not force-close; use the residual as a
-diagnostic</td>
+<td align="left">provide or model input terms</td>
+<td align="left">Q<em>, B, A = Q</em> - B</td>
+<td align="left">Input consistency controls all downstream balances.
+Errors in Q* or B propagate into every method.</td>
 </tr>
 </tbody>
 </table>
-</div>
+<p>This accounting layer is not a flux-estimation method. It supplies
+the frame within which flux families are interpreted.</p>
 </div>
 <div class="section level2">
-<h2 id="method-families">Method families<a class="anchor" aria-label="anchor" href="#method-families"></a>
+<h2 id="flux-families">Flux families<a class="anchor" aria-label="anchor" href="#flux-families"></a>
 </h2>
+<p>The flux families differ by what they determine directly. Closure
+behaviour follows from this method role. It should be interpreted after
+the flux family has been identified.</p>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="13%">
+<col width="47%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Flux family</th>
+<th align="left">Method</th>
+<th align="left">What the method primarily does</th>
+<th align="left">Direct output logic</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Available-energy partition</td>
+<td align="left">Priestley-Taylor</td>
+<td align="left">estimates latent heat from available energy and an
+empirical evaporation coefficient</td>
+<td align="left">LE_PT, then H_PT = A - LE_PT</td>
+</tr>
+<tr class="even">
+<td align="left">Gradient partition</td>
+<td align="left">Bowen ratio</td>
+<td align="left">partitions available energy by a gradient-derived
+ratio</td>
+<td align="left">H_BR and LE_BR from beta</td>
+</tr>
+<tr class="odd">
+<td align="left">Direct H plus residual LE</td>
+<td align="left">Bulk-Residual</td>
+<td align="left">estimates sensible heat first and assigns latent heat
+as residual</td>
+<td align="left">H_bulk, then LE_res = A - H_bulk</td>
+</tr>
+<tr class="even">
+<td align="left">LE-only estimate</td>
+<td align="left">Penman / Penman-type</td>
+<td align="left">estimates latent heat only</td>
+<td align="left">LE_Penman; remaining energy is unresolved</td>
+</tr>
+<tr class="odd">
+<td align="left">Profile/stability diagnostic</td>
+<td align="left">Monin-Obukhov / Profile</td>
+<td align="left">estimates fluxes from profile and stability
+assumptions</td>
+<td align="left">H_MO, LE_MO; residual remains visible</td>
+</tr>
+</tbody>
+</table>
 <div class="section level3">
 <h3 id="priestley-taylor-path">Priestley-Taylor path<a class="anchor" aria-label="anchor" href="#priestley-taylor-path"></a>
 </h3>
 <p>The Priestley-Taylor path estimates latent heat flux from available
-energy and an empirical coefficient. The implemented teaching path
-follows the structure:</p>
+energy and an empirical coefficient <span class="citation">(Priestley
+&amp; Taylor, 1972)</span>. It is useful when the analysis needs an
+available-energy partition with relatively few profile assumptions.</p>
 <p><span class="math display">\[
 LE_{PT} =
-\alpha
+\alpha_{PT}
 \frac{\Delta}{\Delta + \gamma}
-(R_n - G)
+(Q^* - B)
 \]</span></p>
 <p>The corresponding sensible heat flux is the remaining available
 energy:</p>
 <p><span class="math display">\[
-H_{PT} = (R_n - G) - LE_{PT}
+H_{PT} = (Q^* - B) - LE_{PT}
 \]</span></p>
-<p>Therefore the closure invariant is:</p>
+<p>Therefore the closure relation is:</p>
 <p><span class="math display">\[
-H_{PT} + LE_{PT} = R_n - G
+H_{PT} + LE_{PT} = Q^* - B
 \]</span></p>
-<p>This is useful for a beginner-safe workflow because it needs fewer
-profile assumptions than Bowen or Monin-Obukhov and avoids the Penman
-LE-only ambiguity. The limitation is also clear: Priestley-Taylor hides
-much of the surface-atmosphere coupling in the coefficient
-<code>alpha</code> and in helper terms such as the saturation-curve
-slope and the psychrometric constant. It is stable and transparent for
-teaching, but it is not a direct measurement of turbulent exchange.</p>
+<p>The method hides much of the surface-atmosphere coupling in
+<code>alpha_PT</code> and in helper terms such as <code>Delta</code> and
+<code>gamma</code>. In the package code, the slope term
+<code>Delta</code> is stored as <code>sc</code>. The method provides an
+interpretable partition of available energy rather than a direct
+turbulent-flux measurement.</p>
 </div>
 <div class="section level3">
 <h3 id="bowen-ratio-path">Bowen-ratio path<a class="anchor" aria-label="anchor" href="#bowen-ratio-path"></a>
 </h3>
 <p>The Bowen-ratio method partitions available energy using the ratio of
-sensible to latent heat flux:</p>
+sensible to latent heat flux <span class="citation">(<strong>bowen1926?</strong>;
+<strong>ohmura1982?</strong>)</span>:</p>
 <p><span class="math display">\[
 \beta = \frac{H}{LE}
 \]</span></p>
 <p>If the ratio is known, the energy balance gives:</p>
 <p><span class="math display">\[
-H =
+H_{BR} =
 \frac{\beta}{1 + \beta}
-(R_n - G)
+(Q^* - B)
 \]</span></p>
 <p>and:</p>
 <p><span class="math display">\[
-LE =
+LE_{BR} =
 \frac{1}{1 + \beta}
-(R_n - G)
+(Q^* - B)
 \]</span></p>
-<p>For finite uncapped denominators, the closure invariant is:</p>
+<p>For finite uncapped denominators, the closure relation is:</p>
 <p><span class="math display">\[
-H + LE = R_n - G
+H_{BR} + LE_{BR} = Q^* - B
 \]</span></p>
 <p>The implemented <code>fieldClim</code> Bowen ratio is based on a
 potential-temperature gradient and an absolute-humidity gradient:</p>
@@ -463,254 +404,446 @@ potential-temperature gradient and an absolute-humidity gradient:</p>
 0.00066
 (1 + 0.000946 t_1)
 \]</span></p>
-<p>The important documentation point is that this is not merely a
-symbol-only formula. The implementation converts air temperature to
-potential temperature, converts relative humidity to absolute humidity,
-and then forms the gradient ratio.</p>
-<p>The Bowen path is physically meaningful when gradients are resolved
-and representative. It is also fragile: small humidity gradients, sign
-changes and near-zero values of the denominator can create very large
-fluxes. Numerical caps are safeguards. When a cap is active, exact
-closure should not be claimed.</p>
+<p>The implementation converts air temperature to potential temperature,
+converts relative humidity to absolute humidity, and then forms the
+gradient ratio. The Bowen path is physically meaningful when gradients
+are resolved and representative. Small humidity gradients, sign changes
+and near-zero denominator values can create very large fluxes. Numerical
+caps are safeguards, and capped cases should be treated as diagnostic
+rather than exact closure cases.</p>
 </div>
 <div class="section level3">
 <h3 id="bulk-residual-path">Bulk-Residual path<a class="anchor" aria-label="anchor" href="#bulk-residual-path"></a>
 </h3>
 <p>The Bulk-Residual path combines a wind- and temperature-gradient
-estimate of sensible heat flux with a residual latent heat flux. It is
-not a direct flux measurement. It is a station-data approximation in the
-aerodynamic-resistance family.</p>
-<p>The sensible heat calculation follows the general form:</p>
+estimate of sensible heat flux with a residual latent heat flux. It is a
+station-data approximation in the aerodynamic-resistance family.</p>
+<p>The sensible heat calculation follows:</p>
 <p><span class="math display">\[
 H_{bulk} =
 \rho c_p
-\frac{\Delta T}{r_a}
+\frac{t_1 - t_2}{r_a}
 \]</span></p>
-<p>with:</p>
-<p><span class="math display">\[
-\Delta T = T_1 - T_2
-\]</span></p>
-<p>A simple neutral resistance formulation is:</p>
+<p>A neutral resistance formulation is:</p>
 <p><span class="math display">\[
 r_a =
-\frac{\ln(z_2 / z_1)}{k u_{scale}}
+\frac{\ln(z_2 / z_1)}{k\, velocity\_scale}
 \]</span></p>
 <p>The current package default uses a wind-speed scale based on observed
 wind speed. If two wind heights are available, the default uses the
 arithmetic mean of <code>v1</code> and <code>v2</code>; otherwise it
-uses <code>v1</code>.</p>
-<p>A two-height station can also support a neutral profile-derived
-friction velocity:</p>
+uses <code>v1</code>. A two-height station can also support a neutral
+profile-derived friction velocity:</p>
 <p><span class="math display">\[
 u_* =
 k
-\frac{u_2 - u_1}{\ln(z_2 / z_1)}
+\frac{v_2 - v_1}{\ln(z_2 / z_1)}
 \]</span></p>
 <p>and then:</p>
 <p><span class="math display">\[
 r_a =
 \frac{\ln(z_2 / z_1)}{k u_*}
 \]</span></p>
-<p>This is conceptually stronger when the two-height wind profile is
-reliable, but it is not automatically more robust. If the wind-speed
-difference is small, noisy or changes sign, the estimated friction
-velocity becomes unstable. A roughness-derived friction velocity is also
-possible when only one wind speed is available, but it then depends on
-roughness length assumptions from surface type or obstacle height.</p>
+<p>This changes the exchange-velocity scale. Stability functions, Monin
+length corrections and roughness sublayer effects are not applied to
+<code>H_bulk</code>. The optional Richardson guard filters invalid or
+very stable cases and leaves valid neutral fluxes unchanged.</p>
 <p>The residual latent heat flux is:</p>
 <p><span class="math display">\[
 LE_{res} =
-R_n - G - H_{bulk}
+Q^* - B - H_{bulk}
 \]</span></p>
 <p>Therefore the Bulk-Residual workflow closes available energy by
-construction:</p>
+definition:</p>
 <p><span class="math display">\[
-H_{bulk} + LE_{res} = R_n - G
+H_{bulk} + LE_{res} = Q^* - B
 \]</span></p>
-<p>This closure is algebraic. It does not prove that <code>H_bulk</code>
-is a perfect physical estimate. It means that the residual latent heat
-flux inherits all errors in <code>Rn</code>, <code>G</code> and the bulk
+<p>This algebraic closure means that the residual latent heat flux
+inherits all errors in <code>Q*</code>, <code>B</code> and the bulk
 sensible heat estimate.</p>
-<div class="section level4">
-<h4 id="bulk-residual-exchange-estimate-and-residual-closure">Bulk-Residual: exchange estimate and residual closure<a class="anchor" aria-label="anchor" href="#bulk-residual-exchange-estimate-and-residual-closure"></a>
-</h4>
-<p>Bulk-Residual must be read on two levels. First,
-<code>sensible_bulk</code> is estimated from a temperature gradient and
-an exchange-velocity scale. This exchange scale may be a simple
-mean-wind approximation, a profile-derived friction velocity, or a
-roughness-based friction velocity. With
-<code>exchange_velocity = "u_star_profile"</code>, the sensible-heat
-estimate uses the two wind measurement heights and moves closer to a
-neutral profile-transfer logic. With
-<code>exchange_velocity = "u_star_roughness"</code>, the estimate
-depends on a roughness-length assumption.</p>
-<p>The closure logic, however, remains residual.
-<code>latent_bulk_residual</code> is still calculated as the remaining
-available energy after subtracting <code>sensible_bulk</code>:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">latent_bulk_residual</span> <span class="op">=</span> <span class="va">rad_bal</span> <span class="op">-</span> <span class="va">soil_flux</span> <span class="op">-</span> <span class="va">sensible_bulk</span></span></code></pre></div>
-<p>A near-zero closure residual therefore confirms the algebraic
-residual construction. It does not prove that the selected
-exchange-velocity assumption is physically correct.</p>
-</div>
 </div>
 <div class="section level3">
 <h3 id="penman-type-latent-heat-path">Penman-type latent heat path<a class="anchor" aria-label="anchor" href="#penman-type-latent-heat-path"></a>
 </h3>
 <p>The Penman family combines an energy term and an aerodynamic
-vapour-pressure term. In <code>fieldClim</code>,
-<code><a href="../reference/latent_penman.html">latent_penman()</a></code> is a latent-heat method only. It does not
-return a paired sensible heat flux.</p>
+vapour-pressure term <span class="citation">(Allen et al., 1998; Penman,
+1948)</span>. In <code>fieldClim</code>, <code><a href="../reference/latent_penman.html">latent_penman()</a></code> is
+a latent-heat method only. It returns no paired package-defined sensible
+heat flux.</p>
 <p>The package convention keeps the energy term as:</p>
 <p><span class="math display">\[
-R_n - G
+Q^* - B
 \]</span></p>
-<p>The Penman path uses saturation vapour pressure, actual vapour
-pressure, vapour-pressure deficit, slope of the saturation curve,
-psychrometric terms and resistance assumptions. Conceptually, it asks
-how much latent heat exchange is implied by radiation, atmospheric
-demand and resistance terms. It does not answer, inside this package,
-how the remaining available energy is divided between sensible heat and
-unresolved storage or transport terms.</p>
-<p>The relevant package distinction is:</p>
+<p>The simplified package interpretation is:</p>
 <p><span class="math display">\[
-\text{Penman path} = LE \text{ only}
+LE_{Penman} = f(A, VPD, r_a, r_s)
 \]</span></p>
-<p>There is no package-defined <code>H_Penman</code>. The complementary
-term is:</p>
+<p>Conceptually, Penman asks how much latent heat exchange is implied by
+radiation, atmospheric demand and resistance terms. The remaining
+available energy is unresolved within the Penman path.</p>
 <p><span class="math display">\[
-R_{Penman} = R_n - G - LE_{Penman}
+U_{Penman} = Q^* - B - LE_{Penman}
 \]</span></p>
-<p>This should be interpreted as an unresolved complement, not as
-measured sensible heat.</p>
+<p><code>U_Penman</code> may contain sensible heat, storage, advection,
+input error and model mismatch. It should be reported as an unresolved
+remainder rather than as <code>H</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="monin-obukhov-and-profile-methods">Monin-Obukhov and profile methods<a class="anchor" aria-label="anchor" href="#monin-obukhov-and-profile-methods"></a>
 </h3>
 <p>Monin-Obukhov similarity theory and related profile-gradient methods
 attempt to represent turbulent transfer through vertical gradients,
-roughness, stability and surface-layer scaling. In package
-interpretation, the Monin/Profile path is diagnostic-only.</p>
+roughness, stability and surface-layer scaling <span class="citation">(Foken, 2006; Stull, 1988;
+<strong>monin1954?</strong>)</span>. In package interpretation, the
+Monin/Profile path is a profile and stability diagnostic.</p>
 <p>The diagnostic rule is:</p>
 <p><span class="math display">\[
-H_{profile} + LE_{profile}
+H_{MO} + LE_{MO}
 \]</span></p>
-<p>is not required to equal:</p>
+<p>is allowed to differ from:</p>
 <p><span class="math display">\[
-R_n - G
+Q^* - B
 \]</span></p>
 <p>The residual is:</p>
 <p><span class="math display">\[
-R_{profile} = R_n - G - H_{profile} - LE_{profile}
+R_{E,MO} = Q^* - B - H_{MO} - LE_{MO}
 \]</span></p>
-<p>This is not a defect. It is a consequence of method class. A profile
-method estimates turbulent fluxes from profile and stability
-assumptions, while Priestley-Taylor, Bowen and Bulk-Residual are
-explicit energy-partition or residual workflows.</p>
+<p>A profile method estimates turbulent fluxes from profile and
+stability assumptions, while Priestley-Taylor, Bowen and Bulk-Residual
+are explicit energy-partition or residual workflows. The visible
+residual is therefore part of the diagnostic output.</p>
 <p>The practical issue is numerical robustness. Zero gradients, very
 small wind shear, invalid height relationships and unstable stability
-functions can produce extreme outputs. For this reason, Monin-Obukhov
-outputs should be interpreted together with stability classification and
+functions can produce extreme outputs. Monin/Profile outputs should
+therefore be interpreted together with stability classification and
 diagnostic warnings. They should not be silently normalized to available
 energy.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="energy-balance-closure-as-a-modelling-decision">Energy-balance closure as a modelling decision<a class="anchor" aria-label="anchor" href="#energy-balance-closure-as-a-modelling-decision"></a>
+</h2>
+<p>The reduced balance is easy to write down, but it is not
+automatically observed in real field data. Radiation, soil heat flux,
+sensible heat and latent heat are not measured at exactly the same
+place, at the same effective footprint, with the same time response, or
+with the same uncertainty. In addition, energy may be stored in the air
+column, vegetation, biomass, water, litter or the upper soil layer.
+Energy may also be transported horizontally by advection or by coherent
+structures over heterogeneous terrain.</p>
+<p>For this reason, <code>R_E</code> should be interpreted as a mixed
+remainder. It may include storage, advection, dispersive transport,
+footprint mismatch, measurement error, timing mismatch, parameterization
+error and model error.</p>
+<p>Different method families treat this remainder differently. They may
+use the same balance frame, but they do not give the same status to all
+terms. Some terms are measured or supplied as station inputs. Some are
+estimated by empirical or profile equations. Some are assumed by
+partitioning or residual definition. Some are left unresolved.</p>
+</div>
+<div class="section level2">
 <h2 id="direct-flux-measurements-and-closure-literature">Direct flux measurements and closure literature<a class="anchor" aria-label="anchor" href="#direct-flux-measurements-and-closure-literature"></a>
 </h2>
-<p>The closure interpretation above is not a package-specific
-bookkeeping trick. It follows the broader micrometeorological literature
-on surface energy balance closure.</p>
-<p>Foken (2008) gives an overview of the energy-balance closure problem
-and argues that non-closure cannot be reduced to simple measurement
-error or storage alone. Larger-scale exchange processes over
-heterogeneous landscapes are central to the problem. Wilson et
-al. (2002) evaluated energy balance closure across 22 FLUXNET sites and
-50 site-years, showing that closure is a network-scale issue rather than
-a local anomaly. Leuning et al. (2012) describe the surface energy
-imbalance problem as a mismatch between turbulent fluxes and available
-energy, and discuss advective flux divergence and related explanations.
-Mauder et al. (2024) revisit FLUXNET energy-balance closure and
-explicitly treat closure as a continuing uncertainty for heat and
-water-vapour flux assessments.</p>
-<p>For <code>fieldClim</code>, the consequence is direct: closure tests
-are necessary implementation contracts, but they are not empirical
-validation. A method can close exactly because its equations force
-closure. Another method can leave a residual because it is diagnostic.
-Neither status alone proves that the flux estimate is physically correct
-or incorrect.</p>
+<p>The closure interpretation in <code>fieldClim</code> connects to the
+broader micrometeorological literature on surface energy balance
+closure. This literature is important because it separates three things
+that are easily confused: measured turbulent fluxes, available energy,
+and the residual that remains between them.</p>
+<p>Eddy-covariance systems estimate <code>H</code> and <code>LE</code>
+directly from turbulent covariance data, but the sum of these turbulent
+fluxes often does not equal <code>Q* - B</code>. Foken’s overview of the
+energy-balance closure problem argues that non-closure cannot be reduced
+to simple measurement error or storage alone; larger-scale exchange
+processes over heterogeneous landscapes are central to the problem <span class="citation">(Foken, 2008)</span>. Wilson et al. evaluated energy
+balance closure across 22 FLUXNET sites and 50 site-years, showing that
+closure is a network-scale issue rather than a local anomaly <span class="citation">(Wilson et al., 2002)</span>. Leuning et al. describe
+the surface energy imbalance problem as a mismatch between turbulent
+fluxes and available energy, and discuss advective flux divergence and
+related explanations <span class="citation">(Leuning et al.,
+2012)</span>. Mauder et al. revisit FLUXNET energy-balance closure and
+treat closure as a continuing uncertainty for heat and water-vapour flux
+assessments <span class="citation">(<span class="nocase">Mauder et
+al.</span>, 2024)</span>.</p>
+<p>For non-meteorological readers, the implication is that
+energy-balance closure is not a simple pass/fail test. A closed method
+result can follow from the equations. An open result can be physically
+informative when it exposes storage, advection, footprint mismatch or
+model mismatch. The interpretation depends on the method family.</p>
+<p>The closure types in <code>fieldClim</code> reflect this distinction.
+Partition methods such as Priestley-Taylor and Bowen allocate available
+energy within the reduced balance. Bulk-Residual assigns the latent flux
+as the remaining available energy after <code>H_bulk</code>. Penman
+leaves an unresolved remainder because it estimates only
+<code>LE</code>. Monin/Profile keeps a diagnostic residual because its
+fluxes are derived from profile and stability assumptions rather than
+forced to equal available energy.</p>
+</div>
+<div class="section level2">
+<h2 id="closure-regimes-in-fieldclim">Closure regimes in fieldClim<a class="anchor" aria-label="anchor" href="#closure-regimes-in-fieldclim"></a>
+</h2>
+<p>Closure describes how method outputs relate to available energy. It
+is a consequence of the flux family and is not an additional flux
+method.</p>
+<table class="table">
+<colgroup>
+<col width="10%">
+<col width="17%">
+<col width="24%">
+<col width="48%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Method</th>
+<th align="left">Closure regime</th>
+<th align="left">Unknown or residual term</th>
+<th align="left">Interpretation rule</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Priestley-Taylor</td>
+<td align="left">partition closure</td>
+<td align="left">hidden in closure and empirical coefficient
+assumptions</td>
+<td align="left">Formal closure follows from the partitioning assumption
+and does not validate the physical split into H and LE.</td>
+</tr>
+<tr class="even">
+<td align="left">Bowen ratio</td>
+<td align="left">partition closure for valid finite cases</td>
+<td align="left">hidden in ratio, gradient and denominator
+assumptions</td>
+<td align="left">Singular and capped cases require explicit filtering
+and must not be read as exact physical closure.</td>
+</tr>
+<tr class="odd">
+<td align="left">Bulk-Residual</td>
+<td align="left">residual closure by definition</td>
+<td align="left">LE_res is the assigned residual</td>
+<td align="left">Errors in Q*, B, or H_bulk enter the residual latent
+heat.</td>
+</tr>
+<tr class="even">
+<td align="left">Penman / Penman-type</td>
+<td align="left">LE-only unresolved remainder</td>
+<td align="left">U_Penman remains unresolved</td>
+<td align="left">The complement remains unresolved and must not be
+labelled H.</td>
+</tr>
+<tr class="odd">
+<td align="left">Monin-Obukhov / Profile</td>
+<td align="left">profile diagnostic; not force-closed</td>
+<td align="left">R_E,MO remains visible</td>
+<td align="left">The residual remains visible and should be interpreted
+diagnostically.</td>
+</tr>
+</tbody>
+</table>
+<div class="section level3">
+<h3 id="partition-closure">Partition closure<a class="anchor" aria-label="anchor" href="#partition-closure"></a>
+</h3>
+<p>Priestley-Taylor and Bowen-ratio methods divide available energy into
+sensible and latent heat within the reduced balance:</p>
+<p><span class="math display">\[
+Q^* - B = H + LE
+\]</span></p>
+<p>The method then decides how available energy is split between
+<code>H</code> and <code>LE</code>. Priestley-Taylor uses an empirical
+evaporation relation. Bowen uses a gradient-derived ratio between
+sensible and latent heat. The hidden uncertainty lies in the empirical
+coefficient, the gradient ratio, omitted storage and advection terms,
+and the measurement/model inputs that define available energy.</p>
+</div>
+<div class="section level3">
+<h3 id="residual-closure">Residual closure<a class="anchor" aria-label="anchor" href="#residual-closure"></a>
+</h3>
+<p>Bulk-Residual first estimates sensible heat as <code>H_bulk</code>.
+The remaining available energy is then assigned to latent heat:</p>
+<p><span class="math display">\[
+LE_{res} = Q^* - B - H_{bulk}
+\]</span></p>
+<p>For finite and consistently computed fields, the closure residual is
+zero by definition:</p>
+<p><span class="math display">\[
+R_E = Q^* - B - H_{bulk} - LE_{res} = 0
+\]</span></p>
+<p>This is algebraic residual closure. It states how <code>LE_res</code>
+was defined and therefore where errors in <code>Q*</code>,
+<code>B</code>, or <code>H_bulk</code> enter the result.</p>
+</div>
+<div class="section level3">
+<h3 id="le-only-unresolved-remainder">LE-only unresolved remainder<a class="anchor" aria-label="anchor" href="#le-only-unresolved-remainder"></a>
+</h3>
+<p>Penman and Penman-type methods estimate latent heat. In
+<code>fieldClim</code>, the Penman path does not provide a paired
+package-defined sensible heat flux. The remaining term is:</p>
+<p><span class="math display">\[
+U_{Penman} = Q^* - B - LE_{Penman}
+\]</span></p>
+<p>This term is an unresolved remainder. It may contain sensible heat,
+storage, advection, dispersive exchange, footprint mismatch and error
+terms.</p>
+</div>
+<div class="section level3">
+<h3 id="profile-diagnostic-residual">Profile-diagnostic residual<a class="anchor" aria-label="anchor" href="#profile-diagnostic-residual"></a>
+</h3>
+<p>Monin-Obukhov and profile methods estimate turbulent fluxes from
+profile, roughness and stability assumptions. They are not forced to
+close the available energy balance. Their residual is:</p>
+<p><span class="math display">\[
+R_{E,MO} = Q^* - B - H_{MO} - LE_{MO}
+\]</span></p>
+<p>This residual shows whether the profile-based flux estimates, the
+radiation balance and the soil heat flux are mutually consistent. It
+should remain visible as a diagnostic output.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="canopy-layer-and-tower-context">Canopy-layer and tower context<a class="anchor" aria-label="anchor" href="#canopy-layer-and-tower-context"></a>
+</h2>
+<p>A tower or canopy setup is not just a question of sensor height above
+ground. The central question is which exchange layer is being
+interpreted: the under-canopy air space, the within-canopy layer, the
+canopy-top transition, or the above-canopy layer. A sensor pair inside
+the canopy, across the canopy top, or above the canopy represents
+different physical processes.</p>
+<p>If one relevant height is used, the result mainly describes the local
+microclimate and available-energy state at that level. If two relevant
+heights are used, Bulk-Residual, Bowen, or Monin/Profile diagnostics can
+be used only after the height pair has been assigned to a canopy-layer
+interpretation. The result should then be reported as exchange or
+coupling diagnostics, not as a generic surface-layer flux.</p>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="21%">
+<col width="26%">
+<col width="34%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Canopy / tower situation</th>
+<th align="left">First decision</th>
+<th align="left">Method role</th>
+<th align="left">Reportable finding</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">One height near forest floor or below canopy</td>
+<td align="left">define local ground or under-canopy context</td>
+<td align="left">Penman, Priestley-Taylor, available-energy diagnostics
+if Q* and B fit that context</td>
+<td align="left">local under-canopy energy context</td>
+</tr>
+<tr class="even">
+<td align="left">One height within canopy</td>
+<td align="left">define local within-canopy context</td>
+<td align="left">Penman, Priestley-Taylor, available-energy diagnostics
+if Q* and B fit that context</td>
+<td align="left">local within-canopy energy context</td>
+</tr>
+<tr class="odd">
+<td align="left">Two heights within canopy</td>
+<td align="left">define whether the target is vertical coupling inside
+the canopy</td>
+<td align="left">diagnostic only; Bulk/Bowen only with caution</td>
+<td align="left">within-canopy coupling or decoupling signal</td>
+</tr>
+<tr class="even">
+<td align="left">One height within canopy and one height above
+canopy</td>
+<td align="left">define whether the target is canopy-top exchange</td>
+<td align="left">Bulk-Residual, Bowen, or Monin/Profile only with
+explicit height and roughness logic</td>
+<td align="left">canopy-top exchange diagnostic</td>
+</tr>
+<tr class="odd">
+<td align="left">Two heights above canopy</td>
+<td align="left">define the above-canopy reference layer</td>
+<td align="left">Bulk-Residual, Bowen, or Monin/Profile diagnostic</td>
+<td align="left">above-canopy exchange comparison</td>
+</tr>
+<tr class="even">
+<td align="left">Unknown canopy-layer context</td>
+<td align="left">do not force flux interpretation</td>
+<td align="left">exploratory diagnostics only</td>
+<td align="left">flux interpretation remains underdefined</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="practical-interpretation-in-fieldclim">Practical interpretation in fieldClim<a class="anchor" aria-label="anchor" href="#practical-interpretation-in-fieldclim"></a>
 </h2>
-<p>The methods should be read as complementary diagnostics.</p>
-<p>Priestley-Taylor is the most stable teaching path. It partitions
-available energy with few profile assumptions and closes exactly by
-construction.</p>
-<p>Bowen is a gradient-ratio partition method. It is physically
-meaningful when gradients are well resolved, but it is highly sensitive
-to small humidity gradients and near-singular denominators.</p>
-<p>Bulk-Residual is transparent and uses directly available station
-data: temperature gradient, wind speed, net radiation and soil heat
-flux. Its latent heat flux is residual and therefore closes exactly, but
-the sensible heat component is a simplified neutral bulk estimate.</p>
-<p>Penman is a latent-heat-only combination method. It should be used as
-an <code>LE</code> estimate, not as an energy-closing <code>H</code> and
-<code>LE</code> pair.</p>
-<p>Monin-Obukhov/Profile is a diagnostic profile and stability path. It
-is methodologically important, but its output should be checked for
-zero-gradient, low-wind and stability singularities. It should not be
-forced to close available energy.</p>
+<p>The methods should be read as complementary diagnostics rather than
+as competitors in a single accuracy ranking.</p>
+<p>Priestley-Taylor partitions available energy through an empirical
+latent-heat formulation. Bulk-Residual estimates sensible heat from a
+two-height gradient and defines latent heat as the residual. Bowen
+partitions available energy through temperature and humidity gradients.
+Penman estimates latent heat and leaves the remaining energy unresolved.
+Monin/Profile provides a profile- and stability-oriented diagnostic and
+keeps the residual visible.</p>
 <p>A robust package summary is therefore:</p>
 <blockquote>
 <p><code>fieldClim</code> implements common micrometeorological
 approximation families for heat-flux analysis from weather-station data.
 Priestley-Taylor, Bowen-ratio, Penman-type, bulk-resistance/residual and
 Monin-Obukhov/profile methods differ in data requirements and
-assumptions. Some methods close the available energy by construction;
-others are latent-heat-only or diagnostic profile estimates. Formal
-closure is not physical validation, and open residuals can be
-diagnostically meaningful.</p>
+assumptions. Some methods close the available energy by partition or by
+residual definition; others are latent-heat-only or diagnostic profile
+estimates. Formal closure describes method semantics and open residuals
+can be diagnostically meaningful.</p>
 </blockquote>
 </div>
 <div class="section level2">
-<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
+<h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>Ala-Konni, J., Mammarella, I., Ojala, A., et al. (2022). Validation
-of turbulent heat transfer models against eddy-covariance flux
-measurements over a seasonally ice-covered lake. <em>Geoscientific Model
-Development</em>, 15, 4739-4755. <a href="https://doi.org/10.5194/gmd-15-4739-2022" class="external-link uri">https://doi.org/10.5194/gmd-15-4739-2022</a></p>
-<p>Allen, R. G., Pereira, L. S., Raes, D., &amp; Smith, M. (1998).
-<em>Crop evapotranspiration: Guidelines for computing crop water
-requirements</em>. FAO Irrigation and Drainage Paper 56. Food and
-Agriculture Organization of the United Nations.</p>
-<p>Billesbach, D. P., Arkebauer, T. J., Walters, D. T., &amp; Verma, S.
-B. (2024). Intercomparison of sensible and latent heat flux measurements
-from combined eddy covariance, energy balance, and Bowen ratio methods
-above a grassland prairie. <em>Scientific Reports</em>, 14, 21486. <a href="https://doi.org/10.1038/s41598-024-67911-z" class="external-link uri">https://doi.org/10.1038/s41598-024-67911-z</a></p>
-<p>Foken, T. (2006). 50 years of the Monin-Obukhov similarity theory.
-<em>Boundary-Layer Meteorology</em>, 119, 431-447. <a href="https://doi.org/10.1007/s10546-006-9048-6" class="external-link uri">https://doi.org/10.1007/s10546-006-9048-6</a></p>
-<p>Foken, T. (2008). The energy balance closure problem: An overview.
-<em>Ecological Applications</em>, 18(6), 1351-1367. <a href="https://doi.org/10.1890/06-0922.1" class="external-link uri">https://doi.org/10.1890/06-0922.1</a></p>
-<p>Leuning, R., van Gorsel, E., Massman, W. J., &amp; Isaac, P. R.
-(2012). Reflections on the surface energy imbalance problem.
-<em>Agricultural and Forest Meteorology</em>, 156, 65-74. <a href="https://doi.org/10.1016/j.agrformet.2011.12.002" class="external-link uri">https://doi.org/10.1016/j.agrformet.2011.12.002</a></p>
-<p>Mauder, M., Jung, M., Stoy, P., et al. (2024). Energy balance closure
-at FLUXNET sites revisited. <em>Agricultural and Forest
-Meteorology</em>, 358, 110235. <a href="https://doi.org/10.1016/j.agrformet.2024.110235" class="external-link uri">https://doi.org/10.1016/j.agrformet.2024.110235</a></p>
-<p>Penman, H. L. (1948). Natural evaporation from open water, bare soil
-and grass. <em>Proceedings of the Royal Society of London. Series
-A</em>, 193, 120-145. <a href="https://doi.org/10.1098/rspa.1948.0037" class="external-link uri">https://doi.org/10.1098/rspa.1948.0037</a></p>
-<p>Priestley, C. H. B., &amp; Taylor, R. J. (1972). On the assessment of
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0" line-spacing="2">
+<div id="ref-allen1998" class="csl-entry">
+Allen, R. G., Pereira, L. S., Raes, D., &amp; Smith, M. (1998). <em>Crop
+evapotranspiration: Guidelines for computing crop water
+requirements</em>. Food; Agriculture Organization of the United Nations.
+<a href="https://www.fao.org/4/x0490e/x0490e00.htm" class="external-link">https://www.fao.org/4/x0490e/x0490e00.htm</a>
+</div>
+<div id="ref-foken2006" class="csl-entry">
+Foken, T. (2006). 50 years of the monin–obukhov similarity theory.
+<em>Boundary-Layer Meteorology</em>, <em>119</em>, 431–447. <a href="https://doi.org/10.1007/s10546-006-9048-6" class="external-link">https://doi.org/10.1007/s10546-006-9048-6</a>
+</div>
+<div id="ref-foken2008closure" class="csl-entry">
+Foken, T. (2008). The energy balance closure problem: An overview.
+<em>Ecological Applications</em>, <em>18</em>(6), 1351–1367. <a href="https://doi.org/10.1890/06-0922.1" class="external-link">https://doi.org/10.1890/06-0922.1</a>
+</div>
+<div id="ref-leuning2012" class="csl-entry">
+Leuning, R., Gorsel, E. van, Massman, W. J., &amp; Isaac, P. R. (2012).
+Reflections on the surface energy imbalance problem. <em>Agricultural
+and Forest Meteorology</em>, <em>156</em>, 65–74. <a href="https://doi.org/10.1016/j.agrformet.2011.12.002" class="external-link">https://doi.org/10.1016/j.agrformet.2011.12.002</a>
+</div>
+<div id="ref-mauder2024" class="csl-entry">
+<span class="nocase">Mauder, M., Jung, M., Stoy, P., et al.</span>
+(2024). Energy balance closure at FLUXNET sites revisited.
+<em>Agricultural and Forest Meteorology</em>, <em>358</em>, 110235. <a href="https://doi.org/10.1016/j.agrformet.2024.110235" class="external-link">https://doi.org/10.1016/j.agrformet.2024.110235</a>
+</div>
+<div id="ref-penman1948" class="csl-entry">
+Penman, H. L. (1948). Natural evaporation from open water, bare soil and
+grass. <em>Proceedings of the Royal Society of London. Series A</em>,
+<em>193</em>(1032), 120–145. <a href="https://doi.org/10.1098/rspa.1948.0037" class="external-link">https://doi.org/10.1098/rspa.1948.0037</a>
+</div>
+<div id="ref-priestley1972" class="csl-entry">
+Priestley, C. H. B., &amp; Taylor, R. J. (1972). On the assessment of
 surface heat flux and evaporation using large-scale parameters.
-<em>Monthly Weather Review</em>, 100(2), 81-92. <a href="https://doi.org/10.1175/1520-0493(1972)100%3C0081:OTAOSH%3E2.3.CO;2" class="external-link uri">https://doi.org/10.1175/1520-0493(1972)100%3C0081:OTAOSH%3E2.3.CO;2</a></p>
-<p>Prueger, J. H., &amp; Kustas, W. P. (2005). Aerodynamic methods for
-estimating turbulent fluxes. In J. L. Hatfield &amp; J. M. Baker (Eds.),
-<em>Micrometeorology in agricultural systems</em>. Agronomy Monograph
-47. ASA, CSSA and SSSA.</p>
-<p>Wilson, K., Goldstein, A., Falge, E., et al. (2002). Energy balance
-closure at FLUXNET sites. <em>Agricultural and Forest Meteorology</em>,
-113, 223-243. <a href="https://doi.org/10.1016/S0168-1923(02)00109-0" class="external-link uri">https://doi.org/10.1016/S0168-1923(02)00109-0</a></p>
+<em>Monthly Weather Review</em>, <em>100</em>(2), 81–92. <a href="https://doi.org/10.1175/1520-0493(1972)100%3C0081:OTAOSH%3E2.3.CO;2" class="external-link">https://doi.org/10.1175/1520-0493(1972)100&lt;0081:OTAOSH&gt;2.3.CO;2</a>
+</div>
+<div id="ref-stull1988" class="csl-entry">
+Stull, R. B. (1988). <em>An introduction to boundary layer
+meteorology</em>. Springer. <a href="https://doi.org/10.1007/978-94-009-3027-8" class="external-link">https://doi.org/10.1007/978-94-009-3027-8</a>
+</div>
+<div id="ref-wilson2002" class="csl-entry">
+Wilson, K. B., Goldstein, A., Falge, E., Aubinet, M., Baldocchi, D.,
+Berbigier, P., Bernhofer, C., Ceulemans, R., Dolman, H., Field, C.,
+Grelle, A., Ibrom, A., Law, B. E., Kowalski, A., Meyers, T., Moncrieff,
+J., Monson, R., Oechel, W., Tenhunen, J., … Verma, S. (2002). Energy
+balance closure at FLUXNET sites. <em>Agricultural and Forest
+Meteorology</em>, <em>113</em>(1–4), 223–243. <a href="https://doi.org/10.1016/S0168-1923(02)00109-0" class="external-link">https://doi.org/10.1016/S0168-1923(02)00109-0</a>
+</div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

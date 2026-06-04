@@ -5,6 +5,7 @@ articles:
   fieldclim_check_rad_soil: fieldclim_check_rad_soil.html
   fieldclim_flux_workflow_en: fieldclim_flux_workflow_en.html
   fieldclim_flux_workflow: fieldclim_flux_workflow.html
+  fieldclim_formula_reference_vignette: fieldclim_formula_reference_vignette.html
   fieldclim_m2m_en: fieldclim_m2m_en.html
   fieldclim_missing_data_en: fieldclim_missing_data_en.html
   fieldclim_missing_data: fieldclim_missing_data.html
@@ -12,7 +13,7 @@ articles:
   fieldclim_update2024: fieldclim_update2024.html
   fieldclim_workflow_steps_en: fieldclim_workflow_steps_en.html
   fieldclim_workflow_steps: fieldclim_workflow_steps.html
-last_built: 2026-06-04T15:21Z
+last_built: 2026-06-04T21:09Z
 urls:
   reference: https://gisma.github.io/migration-fieldclim/reference
   article: https://gisma.github.io/migration-fieldclim/articles

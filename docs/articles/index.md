@@ -4,6 +4,8 @@
 
 - [Scientific background for fieldClim heat-flux
   methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_theory.md):
+- [fieldClim formula
+  reference](https://gisma.github.io/migration-fieldclim/articles/fieldclim_formula_reference_vignette.md):
 
 ### Tutorials & Workflows (EN)
 

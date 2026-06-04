@@ -2,7 +2,7 @@
 title: "fieldClim: Check radiation and soil heat flux"
 subtitle: "Geländeklimatologie SoSe 2023, Philipps-Universität Marburg"
 author: "You-De Chen"
-date: "`r format(Sys.time(), tz = 'UTC', usetz = TRUE)`"
+
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{fieldClim: Check radiation and soil heat flux}

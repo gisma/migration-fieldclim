@@ -1,0 +1,706 @@
+---
+title: "fieldClim formula reference"
+subtitle: "Implemented formulas, package notation, and closure semantics"
+author: "Jörg Bendix, Chris Reudenbach"
+date: "2026-06-04"
+bibliography: fieldclim-methods.bib
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fieldClim formula reference}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center"
+)
+```
+
+# Purpose
+
+This vignette is a compact reference for the formulas and package notations used by `fieldClim`. It is meant as a lookup document: users should be able to identify which package field corresponds to which physical quantity, which formula is implemented by each calculation path, and how closure diagnostics should be interpreted.
+
+The reference is implementation-derived. The source of truth is the package code, with tests used as implementation contracts. Manual pages, vignettes, README material and the package bibliography provide documentation and reference context. The resulting formulas are therefore package formulas, different from a generic micrometeorology textbook reconstruction.
+
+For readers without a meteorological background, the central idea is simple. The surface receives and loses radiative energy. Part of the remaining energy enters or leaves the soil. The rest can be exchanged with the air as sensible heat (`H`) or latent heat (`LE`). Different methods estimate or partition these turbulent fluxes in different ways. Closure describes how the resulting numbers relate to the available energy; empirical validation requires independent observations or a dedicated validation design.
+
+# Reference notation and package mapping
+
+The documentation uses one reference notation. This avoids the earlier ambiguity where `L` could mean sensible heat in some teaching material but longwave radiation in radiation formulas.
+
+| Reference quantity | Meaning | Package field | Tutorial variable | Unit | Notes |
+|---|---|---|---|---|---|
+| `Q*` | net radiation at the surface | `rad_bal` | `Q_star`, `rad_bal` | W m^-2^ | Positive radiative input at the surface. |
+| `B` | soil heat flux | `soil_flux` | `B`, `soil_flux` | W m^-2^ | Positive into the soil in the package sign convention. |
+| `A` | available energy | `available_energy` where returned | `A`, `Q_minus_B` | W m^-2^ | Defined as `Q* - B`. |
+| `H` | sensible heat flux | `sensible_*` | `L_*` in older tutorials | W m^-2^ | Energy that heats or cools the air without phase change. |
+| `LE` | latent heat flux | `latent_*` | `V_*` in older tutorials | W m^-2^ | Energy associated with evaporation or condensation. |
+| `R_E` | residual / non-closed energy term | `closure_residual` | `diff_*`, `closure_residual` | W m^-2^ | Composite residual rather than one physical flux. |
+| `L_down`, `L_up`, `L*` | longwave radiation terms | radiation helper outputs | `L_down`, `L_up`, `L_star` | W m^-2^ | Longwave radiation notation; separate from sensible heat. |
+
+Existing code variables remain unchanged. In older tutorial code, `L_*` corresponds to `H`, and `V_*` corresponds to `LE`. This mapping is only a documentation bridge; package fields such as `sensible_bulk` and `latent_bulk_residual` remain the authoritative output names.
+
+# Energy accounting frame
+
+The master balance defines the accounting frame in which all heat-flux calculations are interpreted.
+
+$$
+A = Q^* - B
+$$
+
+$$
+Q^* - B = H + LE + R_E
+$$
+
+$$
+R_E = Q^* - B - H - LE
+$$
+
+`R_E` is a composite residual. It can contain measurement error, storage terms, advection, spatial mismatch, model mismatch and unresolved exchange processes. It should therefore be read as an accounting residual or diagnostic term, as an accounting residual rather than a single physical flux.
+
+| Element | Package role | Main formula | Interpretation |
+|---|---|---|---|
+| Master balance | defines energy accounting | `A = Q* - B` and `R_E = A - H - LE` | establishes the frame for all methods |
+| Radiation helpers | provide or model `Q*` | component balance | controls the radiative side of `A` |
+| Soil helper | provides or models `B` | conductive gradient or measured `soil_flux` | controls the ground-heat part of `A` |
+| Closure diagnostics | inspect existing method outputs | residuals, ratios and complements | describe output semantics rather than empirical validation |
+
+The distinction matters because errors in `Q*` or `B` propagate into every downstream method. A formally closed method can still be physically wrong if an input term or an intermediate flux estimate is wrong.
+
+# Input fields and unit assumptions
+
+The main input conventions are:
+
+| Input | Used by | Unit | Missing-data behaviour | Notes |
+|---|---|---|---|---|
+| `rad_bal` | all energy-based flux methods, closure diagnostics | W m^-2^ | missing values propagate | maps to `Q*` |
+| `soil_flux` | all energy-based flux methods, closure diagnostics | W m^-2^ | missing values propagate | maps to `B`; positive into soil |
+| `temp` | Priestley--Taylor, Penman, radiation helpers | deg C | missing values propagate | single-height air temperature |
+| `t1`, `t2` | Bulk, Bowen, Monin/Profile | deg C | missing values produce invalid rows | Bulk uses `t1 - t2` |
+| `hum1`, `hum2`, `rh` | Bowen, Monin/Profile, Penman | percent RH | missing values propagate | Penman wrappers prefer `hum1` where available |
+| `v1`, `v2` | Bulk, Penman, Monin/Profile | m s^-1^ | invalid wind can return `NA` | `v2` is required for some Bulk variants |
+| `z1`, `z2` | Bulk, Bowen, Monin/Profile | m | invalid heights stop or return `NA` depending on function | Bulk requires scalar `0 < z1 < z2` |
+| `surface_type` | Priestley--Taylor, Penman, radiation, roughness helpers | package category | invalid classes can stop | supplies lookup parameters |
+| `obs_height` | Penman and roughness/displacement helpers | m | required where used | used to estimate aerodynamic terms |
+| `surface_temp` | longwave-out radiation modelling | deg C | required when modelling `L_up` | explicit model input required by the modelled longwave-out path |
+| `soil_temp1`, `soil_temp2`, `soil_depth1`, `soil_depth2`, `texture`, `moisture` | soil heat flux helper | mixed | invalid depth rows become `NA` | used for conductive soil heat flux |
+
+`inspect_weather_station_inputs()` is an inspection and reporting tool. It flags missingness, gaps and plausibility conditions while leaving repair, interpolation and replacement to explicit user workflows.
+
+# Radiation and soil helper formulas
+
+## Radiation balance
+
+The radiation helpers combine shortwave and longwave radiation components.
+
+$$
+Q^* = R_{sw} + L^*
+$$
+
+$$
+R_{sw} = SW_{in} - SW_{out} + D_{in} - D_{out}
+$$
+
+$$
+L^* = L_{down} - L_{up}
+$$
+
+`L_down`, `L_up` and `L*` refer to longwave radiation. This longwave `L` is unrelated to sensible heat `H`.
+
+When `L_up` is measured, the measured column is used as input. When `rad_lw_out()` models outgoing longwave radiation, it requires an explicit `surface_temp` input:
+
+$$
+L_{up} = \varepsilon(surface\_type) \sigma T_{s,K}^4
+$$
+
+Incoming longwave radiation is implemented from air emissivity, air temperature and sky-view information:
+
+$$
+L_{down} = \varepsilon_{air} \sigma T_{air,K}^4 sky\_view
+$$
+
+The full net-radiation helper combines the component balances:
+
+$$
+Q^* =
+(SW_{in} - SW_{out} + D_{in} - D_{out})
++
+(L_{down} - L_{up})
+$$
+
+The radiation helpers are input-stage calculations. Their correctness controls all later heat-flux balances because all energy methods use `A = Q* - B`.
+
+## Soil heat flux
+
+The conductive soil heat flux helper implements:
+
+$$
+B =
+-\lambda \frac{T_1 - T_2}{z_1 - z_2}
+$$
+
+Invalid depth combinations return row-local `NA`. Measured `soil_flux` can also be supplied directly. In both cases, the package sign convention treats positive `B` as heat flux into the soil.
+
+# Flux families
+
+The flux families differ by what they determine directly. Some methods partition available energy, some estimate one flux first and derive the other as a residual, and some keep the residual visible as a diagnostic result.
+
+| Flux family | Method | What is computed first | Output semantics |
+|---|---|---|---|
+| available-energy partition | Priestley--Taylor | `LE_PT` from available energy and empirical coefficient | `H_PT` is the complement |
+| gradient partition | Bowen ratio | `β` from temperature and humidity gradients | `H_BR` and `LE_BR` partition `A` |
+| direct `H` plus residual `LE` | Bulk--Residual | `H_bulk` from temperature gradient and exchange assumption | `LE_res` is assigned as residual |
+| `LE`-only estimate | Penman / Penman-type | `LE_Penman` from energy and drying power | remaining energy is unresolved |
+| profile/stability diagnostic | Monin--Obukhov / Profile | `H_MO` and `LE_MO` from profile information | `R_E,MO` remains visible |
+
+## Priestley--Taylor
+
+Implemented functions:
+
+- `latent_priestley_taylor()`
+- `sensible_priestley_taylor()`
+- `turb_flux_calc()`
+
+Package outputs:
+
+- `latent_priestley_taylor`
+- `sensible_priestley_taylor`
+
+Required inputs:
+
+- `temp`
+- `rad_bal`
+- `soil_flux`
+- `surface_type`
+
+The conceptual reference form is written with the usual slope term `Δ`:
+
+$$
+LE_{PT} =
+\alpha_{PT}
+\frac{\Delta}{\Delta + \gamma}
+A
+$$
+
+$$
+H_{PT} = A - LE_{PT}
+$$
+
+The package implementation handles the slope term as `sc(temp)` and the psychrometric coefficient as `gam(temp)`:
+
+$$
+LE_{PT} =
+\alpha_{PT}
+\frac{sc(temp)}{sc(temp) + gam(temp)}
+(Q^* - B)
+$$
+
+$$
+H_{PT} =
+\frac{(1-\alpha_{PT})sc(temp) + gam(temp)}
+{sc(temp) + gam(temp)}
+(Q^* - B)
+$$
+
+The tests verify:
+
+$$
+H_{PT} + LE_{PT} = Q^* - B
+$$
+
+`alpha_PT` is looked up from `priestley_taylor_coefficient` by `surface_type`. Invalid surface types stop. Large absolute fluxes can trigger warnings; the method applies no cap.
+
+Priestley--Taylor is a partition method. The closed balance follows from the available-energy partition and the selected coefficient assumptions rather than from an independent validation of the physical split into `H` and `LE`.
+
+Documentation evidence links the method family to Priestley and Taylor and related micrometeorological background [@priestley1972; @stull1988].
+
+## Bulk--Residual
+
+Implemented functions:
+
+- `sensible_bulk()`
+- `latent_bulk_residual()`
+- `turb_flux_bulk_residual()`
+- `turb_flux_calc()`
+
+Package outputs:
+
+- `sensible_bulk`
+- `latent_bulk_residual`
+
+Required inputs for the default sensible Bulk calculation are `t1`, `t2`, `v1`, `z1` and `z2`. The combined Bulk--Residual path additionally requires `rad_bal` and `soil_flux`. `v2` is optional in the default wind-mean path and required for `u_star_profile` and `ri_guard`.
+
+The core sensible-heat formula is:
+
+$$
+H_{bulk} =
+\rho c_p \frac{t_1 - t_2}{r_a}
+$$
+
+The default aerodynamic resistance is:
+
+$$
+r_a =
+\frac{\log(z_2/z_1)}{k u_{mean}}
+$$
+
+with:
+
+$$
+u_{mean} =
+\begin{cases}
+v_1, & v_2\ \text{not supplied} \\
+(v_1 + v_2)/2, & v_2\ \text{supplied}
+\end{cases}
+$$
+
+The profile friction-velocity path computes:
+
+$$
+u_* =
+\frac{k(v_2 - v_1)}{\log(z_2/z_1)}
+$$
+
+$$
+r_a =
+\frac{\log(z_2/z_1)}{k u_*}
+$$
+
+The roughness friction-velocity path computes:
+
+$$
+u_* =
+\frac{k u_{ref}}{\log(z_{ref}/z_0)}
+$$
+
+where `u_ref` and `z_ref` are taken from `v2`/`z2` if `v2` is supplied and from `v1`/`z1` otherwise. The roughness length `z0` is obtained from `turb_roughness_length(surface_type = ...)` or from `turb_roughness_length(obs_height = ...)`.
+
+The residual latent heat is:
+
+$$
+LE_{res} = Q^* - B - H_{bulk}
+$$
+
+Default constants are `rho = 1.225`, `cp = 1005`, `k = 0.41`, `min_wind = 0.1`, and `min_ustar = 0.01`. Bulk requires scalar heights satisfying `0 < z1 < z2`.
+
+With `stability_method = "ri_guard"`, the neutral Bulk estimate is screened by a gradient Richardson diagnostic:
+
+$$
+Ri_g =
+\frac{g}{\bar{\theta}}
+\frac{\Delta \theta / \Delta z}{(\Delta u / \Delta z)^2}
+$$
+
+The guard attaches `bulk_Ri_g` and `bulk_stability` attributes. Invalid or very stable rows are set to `NA`. Valid neutral, stable and unstable rows keep the neutral Bulk value. The guard acts as a validity filter rather than a stability correction.
+
+Bulk--Residual closes algebraically by definition because `LE_res` is assigned as the remaining available energy. Errors in `Q*`, `B` or `H_bulk` enter `LE_res`. The exact implemented Bulk variant set is documented and tested, but the audit found no package-level citation that directly supports every implemented exchange-velocity variant.
+
+## Bowen ratio
+
+Implemented functions:
+
+- `bowen_ratio()`
+- `sensible_bowen()`
+- `latent_bowen()`
+- `turb_flux_calc()`
+
+Package outputs:
+
+- `sensible_bowen`
+- `latent_bowen`
+
+Required inputs are `t1`, `t2`, `hum1`, `hum2`, `z1`, `z2`, `elev`, `rad_bal` and `soil_flux`.
+
+The implementation converts air temperature to potential temperature and relative humidity to absolute humidity. It then forms the vertical gradients:
+
+$$
+\frac{\Delta \theta}{\Delta z}
+=
+\frac{\theta_2 - \theta_1}{z_2 - z_1}
+$$
+
+$$
+\frac{\Delta a_h}{\Delta z}
+=
+\frac{a_{h,2} - a_{h,1}}{z_2 - z_1}
+$$
+
+The implemented ratio is:
+
+$$
+\beta =
+\gamma_{code}
+\frac{\Delta \theta / \Delta z}{\Delta a_h / \Delta z}
+$$
+
+with:
+
+$$
+\gamma_{code} = 0.00066(1 + 0.000946 t_1)
+$$
+
+Fluxes are partitioned as:
+
+$$
+H_{BR} =
+\frac{\beta}{1+\beta}A
+$$
+
+$$
+LE_{BR} =
+\frac{1}{1+\beta}A
+$$
+
+`cap = NULL` by default. If `cap` is supplied, near-zero denominators are replaced by `+cap` or `-cap` before flux calculation. Non-finite ratios or denominators produce row-local `NA` with a warning. Large absolute fluxes warn; no cap is applied.
+
+Bowen closure depends on a finite, valid gradient-derived ratio. Singular, capped or filtered cases require explicit interpretation. Capped cases are finite safeguards; the tests allow them to depart from exact available-energy closure. Documentation cites Bendix for the implemented background; the audit found that some conceptual Bowen vignette keys are missing from the inspected bibliography.
+
+## Penman / Penman-type
+
+Implemented functions:
+
+- `latent_penman()`
+- `turb_flux_calc()`
+
+Package output:
+
+- `latent_penman`
+
+Required inputs are `datetime`, `v1`, `temp`, `rad_bal`, `elev`, `lat`, `lon`, `soil_flux`, `obs_height`, `surface_type`, and either `hum1` or `rh`.
+
+The package implements a Penman-type latent heat flux using available energy and an aerodynamic drying-power term:
+
+$$
+LE_{Penman} =
+\frac{
+\Delta (Q^* - B)
++ \gamma \left(\frac{c_p \rho}{r_a}\right)VPD_{kPa}
+}{
+\Delta + \gamma(1 + r_s/r_a)
+}
+$$
+
+The psychrometric term is computed as:
+
+$$
+\gamma = 0.665 \cdot 10^{-3} p(elev,temp)
+$$
+
+where `pres_p()` returns pressure in hPa. Saturation and actual vapour pressures are computed in hPa and converted to kPa for the vapour pressure deficit:
+
+$$
+VPD_{kPa} = \frac{e_s - e_a}{10}
+$$
+
+The slope term is:
+
+$$
+\Delta =
+\frac{4098 e_{s,kPa}}{(temp + 237.3)^2}
+$$
+
+Aerodynamic resistance is:
+
+$$
+r_a =
+\frac{
+\log((z-d)/z_{om})\log((z-d)/z_{oh})
+}{k^2 v}
+$$
+
+with:
+
+$$
+d = turb\_displacement(obs\_height,\ surroundings = "vegetation")
+$$
+
+$$
+z_{om} = 0.123 obs\_height
+$$
+
+$$
+z_{oh} = 0.1 z_{om}
+$$
+
+Surface resistance `r_s` is looked up in `surface_resistance` after wrapper normalization of `surface_type`. The wrapper prefers `hum1` over `rh` where both are present. Invalid resistance classes stop; invalid aerodynamic log arguments or non-positive wind create row-local `NA` with a warning. Large absolute latent heat warns; no cap is applied. In `turb_flux_calc()`, Penman errors are caught and replaced with `NA` so that the rest of the workflow can continue.
+
+Penman provides `LE` only. The remaining available energy is an unresolved complement:
+
+$$
+U_{Penman} = A - LE_{Penman}
+$$
+
+`U_Penman` remains unresolved unless an explicit additional closure assumption introduces an `H` estimate. The package bibliography and vignettes cite Penman and related environmental-physics references for the general method family [@penman1948; @monteith2013].
+
+## Monin--Obukhov / Profile
+
+Implemented functions include:
+
+- `sensible_monin()`
+- `latent_monin()`
+- `turb_flux_monin()`
+- `turb_flux_grad_rich_no()`
+- `turb_flux_stability()`
+- `turb_ustar()`
+- `turb_roughness_length()`
+- `turb_displacement()`
+
+Package outputs:
+
+- `sensible_monin`
+- `latent_monin`
+- `stability` in the orchestrated workflow
+
+The profile functions require two-height temperature, humidity and wind profile information: `t1`, `t2`, `hum1`, `hum2`, `v1`, `v2`, `z1`, `z2`, and `elev`. Roughness context is provided through `surface_type` or `obs_height`.
+
+The gradient Richardson number is implemented as:
+
+$$
+Ri_g =
+\frac{g}{\theta_1}
+\frac{(\theta_2 - \theta_1)/(z_2-z_1)}
+{((v_2-v_1)/(z_2-z_1))^2}
+$$
+
+The friction velocity helper is:
+
+$$
+u_* =
+\frac{0.4 v}{\log(z/z_0)}
+$$
+
+The sensible profile-gradient expression uses:
+
+$$
+\frac{\Delta \theta}{\Delta z}
+=
+\frac{\theta_2 - \theta_1}{z_2 - z_1}
+$$
+
+and computes:
+
+$$
+H_{MO} =
+-\rho c_p
+\frac{k u_* z_2}{\phi_h}
+\frac{\Delta \theta}{\Delta z}
+$$
+
+The latent expression uses a moisture gradient:
+
+$$
+\frac{\Delta q}{\Delta z}
+=
+\frac{q_2 - q_1}{z_2-z_1}
+$$
+
+and computes:
+
+$$
+LE_{MO} =
+-\rho L_v
+\frac{k u_*}{\phi_q}
+\frac{\Delta q}{\Delta z}
+$$
+
+The implemented stability functions use Businger-type branches based on the gradient Richardson number and `z2 / monin_length`. Zero temperature or moisture gradients return zero flux when the profile is otherwise valid. Invalid heights, wind speeds or numeric profile values produce warnings and row-local `NA`. Weak shear in Richardson calculations produces `NA`. Large absolute fluxes warn; no cap is applied.
+
+Monin/Profile keeps the residual visible because the fluxes are derived from profile information rather than normalized to available energy:
+
+$$
+R_{E,MO} = Q^* - B - H_{MO} - LE_{MO}
+$$
+
+The package references support the general method and helper-equation context, general method and helper-equation context rather than a claim of complete canonical MOST validation [@bendix2004; @foken2006].
+
+# Closure diagnostics
+
+`energy_balance_closure()` inspects an existing `weather_station` object that already contains `rad_bal`, `soil_flux` and method output fields. It returns a long `data.frame` with diagnostic quantities while leaving the input object unchanged.
+
+| Method | Closure type | `H` field | `LE` field | Diagnostic formula | Meaning |
+|---|---|---|---|---|---|
+| `priestley_taylor` | partition closure | `sensible_priestley_taylor` | `latent_priestley_taylor` | `R_E = A - H - LE` | residual reflects partition consistency |
+| `bulk_residual` | residual closure | `sensible_bulk` | `latent_bulk_residual` | `R_E = A - H - LE` | near zero when residual `LE` is finite and inputs align |
+| `bowen` | partition closure | `sensible_bowen` | `latent_bowen` | `R_E = A - H - LE` | capped or invalid cases can remain non-closing or missing |
+| `penman` | `LE`-only unresolved remainder | none | `latent_penman` | `U_Penman = A - LE_Penman` | unresolved complement |
+| `monin` | profile diagnostic | `sensible_monin` | `latent_monin` | `R_E = A - H - LE` | diagnostic residual |
+
+For paired methods:
+
+$$
+turbulent\_sum = H + LE
+$$
+
+$$
+closure\_residual = A - H - LE
+$$
+
+$$
+closure\_ratio = \frac{H + LE}{A}
+$$
+
+For Penman:
+
+$$
+unresolved\_complement = A - LE_{Penman}
+$$
+
+`plot_energy_balance_closure()` visualizes these diagnostics. With `type = "open_terms"`, it plots `latent_bulk_residual`, Penman `unresolved_complement`, and Monin/Profile `closure_residual`. With `type = "closure_check"`, it plots `A - H - LE` for paired methods. With `type = "ratio"`, it plots `(H + LE) / A` for paired methods and excludes Penman.
+
+Closure diagnostics describe how computed outputs relate to available energy. The closure literature treats energy-balance non-closure as a real micrometeorological issue, especially across heterogeneous landscapes and flux networks [@foken2008closure; @wilson2002; @leuning2012; @mauder2024]. In package terms this means that closure checks are implementation contracts and diagnostic summaries; empirical validation requires independent observations or a dedicated validation design.
+
+# Orchestrator workflow
+
+`turb_flux_calc(weather_station, pt_only = FALSE)` adds calculated fields to a copy of the supplied `weather_station` object.
+
+With `pt_only = TRUE`, it adds:
+
+- `sensible_priestley_taylor`
+- `latent_priestley_taylor`
+
+With `pt_only = FALSE`, it attempts:
+
+- `sensible_bulk`
+- `latent_bulk_residual`
+- `stability`
+- `sensible_priestley_taylor`
+- `latent_priestley_taylor`
+- `sensible_bowen`
+- `latent_bowen`
+- `sensible_monin`
+- `latent_monin`
+- `latent_penman`
+
+`latent_penman()` errors are caught in `turb_flux_calc()` and replaced by an `NA` vector with a warning. Other required non-Penman input failures can abort the workflow according to the called function.
+
+`turb_flux_bulk_residual()` is the focused Bulk--Residual wrapper. It checks for Bulk inputs, computes `sensible_bulk`, computes `latent_bulk_residual`, and returns a `weather_station` object with those two fields added.
+
+The guarded Bulk path is enabled by passing `stability_method = "ri_guard"` to `sensible_bulk()` or through `turb_flux_bulk_residual(..., stability_method = "ri_guard")`. It is a guarded variant of the Bulk--Residual calculation path, a guarded variant of the Bulk--Residual calculation path rather than a separate method family.
+
+# Implementation contracts and reference status
+
+The tests verify formulas as implementation contracts. They confirm arithmetic relations, missing-data behaviour, warnings, guards and output semantics. Physical adequacy in a field setting requires an independent validation design.
+
+| Area | Verified by tests | Not verified by tests |
+|---|---|---|
+| radiation balance | component arithmetic | empirical sensor accuracy |
+| soil heat flux | conductive formula | table-source validity |
+| Priestley--Taylor | partition arithmetic and coefficient use | empirical validity of `alpha_PT` |
+| Bulk--Residual | neutral resistance, residual closure, guards | physical adequacy of Bulk exchange assumptions |
+| Bowen | finite uncapped partition and cap behaviour | reliability under weak gradients |
+| Penman | implemented kPa VPD contract and `LE` output | field-scale evaporation accuracy |
+| Monin/Profile | diagnostic output existence and profile contracts | full canonical MOST validity |
+| closure diagnostics | residual/complement semantics | empirical flux validation |
+
+The reference audit found that most method families have general package-level support from cited literature, while some exact implementation variants are defined primarily by code and tests. In particular, the exact Bulk exchange-velocity variant set has no direct package-level reference for every variant. Some conceptual vignette citations require bibliography cleanup, especially missing keys for Bowen and Monin references.
+
+# Compact formula index
+
+This section repeats the formulas as a lookup list. The implementation notes indicate the main package function or diagnostic output associated with each formula.
+
+**Available energy.** Implemented across flux methods and closure diagnostics.
+
+$$
+A = Q^* - B
+$$
+
+**Master residual.** Returned as `closure_residual` by `energy_balance_closure()` for paired methods.
+
+$$
+R_E = Q^* - B - H - LE
+$$
+
+**Shortwave balance.** Implemented by `rad_sw_bal()`.
+
+$$
+R_{sw} = SW_{in} - SW_{out} + D_{in} - D_{out}
+$$
+
+**Longwave balance.** Implemented by `rad_lw_bal()`.
+
+$$
+L^* = L_{down} - L_{up}
+$$
+
+**Net radiation.** Implemented by `rad_bal()`.
+
+$$
+Q^* = R_{sw} + L^*
+$$
+
+**Soil heat flux.** Implemented by `soil_heat_flux()`.
+
+$$
+B = -\lambda \frac{T_1 - T_2}{z_1 - z_2}
+$$
+
+**Priestley--Taylor latent heat.** Implemented by `latent_priestley_taylor()`. The conceptual `Δ` is handled as `sc(temp)` in the package.
+
+$$
+LE_{PT} = \alpha_{PT}\frac{\Delta}{\Delta+\gamma}A
+$$
+
+**Priestley--Taylor sensible heat.** Implemented by `sensible_priestley_taylor()`.
+
+$$
+H_{PT} = A - LE_{PT}
+$$
+
+**Bulk sensible heat.** Implemented by `sensible_bulk()`.
+
+$$
+H_{bulk} = \rho c_p \frac{t_1 - t_2}{r_a}
+$$
+
+**Bulk residual latent heat.** Implemented by `latent_bulk_residual()`.
+
+$$
+LE_{res} = Q^* - B - H_{bulk}
+$$
+
+**Bowen sensible heat.** Implemented by `sensible_bowen()`.
+
+$$
+H_{BR} = \frac{\beta}{1+\beta}A
+$$
+
+**Bowen latent heat.** Implemented by `latent_bowen()`.
+
+$$
+LE_{BR} = \frac{1}{1+\beta}A
+$$
+
+**Penman latent heat.** Implemented by `latent_penman()`.
+
+$$
+LE_{Penman} = f(A,VPD,r_a,r_s)
+$$
+
+**Penman unresolved complement.** Returned by `energy_balance_closure()` for Penman.
+
+$$
+U_{Penman} = A - LE_{Penman}
+$$
+
+**Monin/Profile diagnostic residual.** Returned by `energy_balance_closure()` for Monin/Profile outputs.
+
+$$
+R_{E,MO} = Q^* - B - H_{MO} - LE_{MO}
+$$
+
+# Documentation notes
+
+The following documentation points should remain visible in user-facing material:
+
+- `L_*` and `V_*` are tutorial variables only; reference notation uses `H` and `LE`.
+- `L_down`, `L_up` and `L*` refer to longwave radiation and remain separate from sensible heat `H`.
+- `surface_temp` is an explicit model input for longwave-out modelling; package code requires it where modelled longwave output is requested.
+- Bulk--Residual closure is algebraic by definition.
+- Penman provides `LE` only; its complement is unresolved.
+- Monin/Profile is diagnostic and keeps the residual visible.
+- Closure diagnostics are implementation and interpretation tools rather than empirical validation.
+
+# References

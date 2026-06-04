@@ -44,6 +44,7 @@
 <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Theory</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_theory.html">Scientific background for fieldClim heat-flux methods</a></li>
+    <li><a class="dropdown-item" href="../articles/fieldclim_formula_reference_vignette.html">fieldClim formula reference</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><h6 class="dropdown-header" data-toc-skip>Tutorials &amp; Workflows (EN)</h6></li>
     <li><a class="dropdown-item" href="../articles/fieldclim_missing_data_en.html">fieldClim: Missing-data inspection and input checks</a></li>
@@ -92,10 +93,14 @@ Chris Reudenbach</h4>
 <h2 id="aim-of-this-vignette">Aim of this vignette<a class="anchor" aria-label="anchor" href="#aim-of-this-vignette"></a>
 </h2>
 <p>This vignette complements the energy-balance workflow vignette. That
-vignette focuses on the coherent Caldern workflow with <span class="math inline">\(Q^{*}\)</span>, <span class="math inline">\(B\)</span>, <span class="math inline">\(L\)</span>, and <span class="math inline">\(V\)</span>. This page presents the additional
+vignette focuses on the coherent Caldern workflow with <span class="math inline">\(Q^{*}\)</span>, <span class="math inline">\(B\)</span>, <span class="math inline">\(H\)</span>, and <span class="math inline">\(LE\)</span>. This page presents the additional
 package functions as <strong>follow-up workflows</strong>: radiation
 checks, modelled radiation, soil parameters, meteorological helper
 variables, stability variables, and object control.</p>
+<p>A systematic decision guide for matching heat-flux methods to
+measurement architecture is provided in <a href="fieldclim_m2m_en.html">Choosing fieldClim Heat-Flux Methods by
+Measurement Design</a>. This vignette applies that logic to the
+follow-up workflows around the Caldern example dataset.</p>
 <p>The text is not a second comparison of methods. The central question
 here is: Which groups of functions exist beyond the main workflow, what
 are they practically useful for, and which limitations must be
@@ -152,8 +157,8 @@ temperature?</td>
 <td>How are the wind profile, Richardson number, and stability variables
 checked?</td>
 <td>
-<code>turb_*</code>, <code>bound_*</code>
-</td>
+<code>turb_*</code>, <code>bound_*</code> as diagnostic follow-up
+functions</td>
 </tr>
 <tr class="odd">
 <td>6</td>
@@ -170,6 +175,87 @@ exported?</td>
 not replace a complete physical derivation, nor does it provide testing
 against independent flux measurements. Its purpose is to show which
 package functions fit which workflow steps.</p>
+</div>
+<div class="section level2">
+<h2 id="reference-notation-and-code-variables">Reference notation and code variables<a class="anchor" aria-label="anchor" href="#reference-notation-and-code-variables"></a>
+</h2>
+<p>This vignette uses the reference notation from the method-selection
+page. <code>Q*</code> is net radiation, <code>B</code> is soil heat
+flux, <code>A = Q* - B</code> is available energy, <code>H</code> is
+sensible heat flux, <code>LE</code> is latent heat flux, and
+<code>R_E</code> is the residual or non-closed energy term.</p>
+<p>Longwave radiation is kept separate from turbulent heat flux
+notation. <code>L_down</code>, <code>L_up</code>, and <code>L*</code>
+refer to longwave radiation components. This <code>L</code> is not
+sensible heat flux. Sensible heat flux is denoted as <code>H</code>.</p>
+<p>The R code variables used in this tutorial are not renamed. Existing
+objects such as <code>L_monin_no_cap</code>,
+<code>V_bowen_no_cap</code>, or other <code>L_*</code> and
+<code>V_*</code> objects are kept because they belong to the current
+tutorial workflow. In the explanatory text, however, <code>L_*</code> is
+interpreted as <code>H</code>, and <code>V_*</code> is interpreted as
+<code>LE</code>.</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th>Reference quantity</th>
+<th>Meaning</th>
+<th>
+<code>fieldClim</code> field or output</th>
+<th>Tutorial code variable</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>Q*</code></td>
+<td>net radiation</td>
+<td><code>rad_bal</code></td>
+<td><code>Q_star</code></td>
+</tr>
+<tr class="even">
+<td><code>B</code></td>
+<td>soil heat flux</td>
+<td><code>soil_flux</code></td>
+<td>
+<code>B</code>, <code>B_measured</code>, <code>B_model</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>A = Q* - B</code></td>
+<td>available energy</td>
+<td><code>rad_bal - soil_flux</code></td>
+<td>
+<code>available_energy</code>, <code>Q_minus_B</code>
+</td>
+</tr>
+<tr class="even">
+<td><code>H</code></td>
+<td>sensible heat flux</td>
+<td><code>sensible_*</code></td>
+<td>
+<code>L_*</code> where used as tutorial working variable</td>
+</tr>
+<tr class="odd">
+<td><code>LE</code></td>
+<td>latent heat flux</td>
+<td><code>latent_*</code></td>
+<td>
+<code>V_*</code> where used as tutorial working variable</td>
+</tr>
+<tr class="even">
+<td><code>R_E = Q* - B - H - LE</code></td>
+<td>residual / non-closed energy term</td>
+<td>closure diagnostic output</td>
+<td>
+<code>closure_residual</code>, <code>diff_*</code>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level2">
 <h2 id="shared-data-and-object-setup">Shared data and object setup<a class="anchor" aria-label="anchor" href="#shared-data-and-object-setup"></a>
@@ -245,6 +331,8 @@ included in the installed package under <code>inst/extdata/</code>.</p>
 <span>  valley <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span></span>
 <span>  surface_type <span class="op">=</span> <span class="st">"field"</span>,</span>
+<span>  <span class="co"># surface_temp is an explicit model input for radiation functions, not an</span></span>
+<span>  <span class="co"># automatically available standard station measurement.</span></span>
 <span>  surface_temp <span class="op">=</span> <span class="va">caldern</span><span class="op">$</span><span class="va">Ts</span>,</span>
 <span></span>
 <span>  texture <span class="op">=</span> <span class="st">"peat"</span>,</span>
@@ -369,6 +457,9 @@ longwave radiation [W/m²]</li>
 <span class="math inline">\(L_{\uparrow}\)</span>: longwave emission
 from the surface [W/m²]</li>
 </ul>
+<p>Here, <code>L</code> denotes longwave radiation. It does not denote
+sensible heat flux; sensible heat is denoted as <code>H</code> in the
+reference notation used in this vignette.</p>
 <p>The net radiation is theoretically given by:</p>
 <p><span class="math display">\[
 Q^{*} = K^{*} + L^{*}
@@ -574,7 +665,7 @@ correction levels, or sign conventions.</p>
 </h2>
 <p>The radiation functions can be used to check the plausibility of
 measurements or to model missing radiation components. The package
-workflow follows a chain:</p>
+calculation logic follows a chain:</p>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -626,6 +717,7 @@ transmission</td>
 <span><span class="va">exposition</span> <span class="op">&lt;-</span> <span class="fl">0</span></span>
 <span><span class="va">valley</span> <span class="op">&lt;-</span> <span class="cn">FALSE</span></span>
 <span><span class="va">surface_type</span> <span class="op">&lt;-</span> <span class="st">"field"</span></span>
+<span><span class="co"># Explicit model input for longwave radiation; not a standard station sensor.</span></span>
 <span><span class="va">surface_temp</span> <span class="op">&lt;-</span> <span class="fl">20</span></span>
 <span></span>
 <span><span class="co"># Solar and topographic partial variables.</span></span>
@@ -644,7 +736,7 @@ transmission</td>
 <span><span class="fu"><a href="../reference/rad_lw_bal.html">rad_lw_bal</a></span><span class="op">(</span><span class="va">temp</span>, <span class="va">rh</span>, <span class="va">slope</span>, <span class="va">valley</span>, <span class="va">surface_type</span>, <span class="va">surface_temp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] -105.0535</span></span>
 <span></span>
-<span><span class="co"># Modelled net radiation.</span></span>
+<span><span class="co"># Modelled net radiation. This also uses Ts as explicit surface-temperature input.</span></span>
 <span><span class="fu"><a href="../reference/rad_bal.html">rad_bal</a></span><span class="op">(</span></span>
 <span>  <span class="va">example_time</span>, <span class="va">lon</span>, <span class="va">lat</span>, <span class="va">elev</span>, <span class="va">temp</span>, <span class="va">rh</span>,</span>
 <span>  <span class="va">slope</span>, <span class="va">exposition</span>, <span class="va">valley</span>, <span class="va">surface_type</span>, <span class="va">surface_temp</span></span>
@@ -661,8 +753,10 @@ type, terrain parameters, sensor processing, or differently defined
 radiation components. The time basis is technically important here: the
 current package version handles POSIXct and POSIXlt timestamps
 consistently. The key point remains that the time zone must be set
-explicitly because solar position and radiation depend on local
-time.</p>
+explicitly because solar position and radiation depend on local time.
+<code>surface_temp</code> is used here only as an explicit model input
+for longwave radiation. It is not treated as a standard automatically
+available station sensor.</p>
 <div class="section level3">
 <h3 id="compare-measured-and-modelled-radiation-as-a-diurnal-cycle">2.1 Compare measured and modelled radiation as a diurnal cycle<a class="anchor" aria-label="anchor" href="#compare-measured-and-modelled-radiation-as-a-diurnal-cycle"></a>
 </h3>
@@ -682,7 +776,7 @@ time.</p>
 <span>  <span class="va">slope</span>, <span class="va">exposition</span>, <span class="va">valley</span>, <span class="va">surface_type</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Modelled longwave balance.</span></span>
+<span><span class="co"># Modelled longwave balance. This uses Ts as explicit surface-temperature input.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">L_star_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_lw_bal.html">rad_lw_bal</a></span><span class="op">(</span></span>
 <span>  <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>,</span>
 <span>  <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span>
@@ -692,7 +786,7 @@ time.</p>
 <span>  <span class="va">caldern</span><span class="op">$</span><span class="va">Ts</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Modelled net radiation.</span></span>
+<span><span class="co"># Modelled net radiation. This also uses Ts as explicit surface-temperature input.</span></span>
 <span><span class="va">caldern</span><span class="op">$</span><span class="va">Q_star_model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/rad_bal.html">rad_bal</a></span><span class="op">(</span></span>
 <span>  <span class="va">caldern</span><span class="op">$</span><span class="va">datetime</span>,</span>
 <span>  <span class="va">lon</span>, <span class="va">lat</span>, <span class="va">elev</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Ta_2m</span>, <span class="va">caldern</span><span class="op">$</span><span class="va">Huma_2m</span>,</span>
@@ -757,8 +851,8 @@ transmission assumptions produce realistic orders of magnitude.</p>
 <h2 id="workflow-module-3-soil-parameters-and-soil-heat-flux">Workflow module 3: Soil parameters and soil heat flux<a class="anchor" aria-label="anchor" href="#workflow-module-3-soil-parameters-and-soil-heat-flux"></a>
 </h2>
 <p>Soil heat flux can be measured or estimated from the temperature
-gradient, depth, moisture, and soil texture. The package workflow
-is:</p>
+gradient, depth, moisture, and soil texture. The package calculation
+logic is:</p>
 <p><span class="math display">\[
 B = -\lambda_s \frac{T_1 - T_2}{z_1 - z_2}
 \]</span></p>
@@ -912,17 +1006,18 @@ and heat-flux methods.</p>
 <p><strong>Interpretation.</strong> These helper variables are
 intermediate steps, not independent result fluxes. Absolute humidity,
 potential temperature, air density, and latent heat of vaporisation
-later enter gradient analyses, Bowen, Penman, and profile methods. This
-is exactly why they matter: a small unit or scaling error in a helper
-variable can later appear as a large difference in heat flux.</p>
+later enter gradient analyses, Bowen, Penman, and profile-related
+calculation paths. This is exactly why they matter: a small unit or
+scaling error in a helper variable can later appear as a large
+difference in heat flux.</p>
 </div>
 <div class="section level2">
 <h2 id="workflow-module-5-wind-profile-richardson-number-and-stability">Workflow module 5: Wind profile, Richardson number, and
 stability<a class="anchor" aria-label="anchor" href="#workflow-module-5-wind-profile-richardson-number-and-stability"></a>
 </h2>
-<p>Before using more complex heat-flux methods, the wind profile,
-roughness, and stability should be checked. The package provides several
-<code>turb_*</code> functions for this purpose.</p>
+<p>Before using profile-related heat-flux calculation paths, the wind
+profile, roughness, and stability should be checked. The package
+provides several <code>turb_*</code> functions for this purpose.</p>
 <div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Roughness length from the surface type.</span></span>
 <span><span class="va">z0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_roughness_length.html">turb_roughness_length</a></span><span class="op">(</span><span class="st">"field"</span><span class="op">)</span></span>
@@ -1021,10 +1116,12 @@ which denominators are close to zero, intermediate values are
 non-finite, or profile conditions are extremely sensitive.</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Bowen with and without cap.</span></span>
+<span><span class="co"># Existing tutorial variables are kept: V_* corresponds to LE.</span></span>
 <span><span class="va">V_bowen_no_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/latent_bowen.html">latent_bowen</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
 <span><span class="va">V_bowen_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/latent_bowen.html">latent_bowen</a></span><span class="op">(</span><span class="va">ws</span>, cap <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Monin-Obukhov with and without cap.</span></span>
+<span><span class="co"># Monin-Obukhov/Profile with and without cap.</span></span>
+<span><span class="co"># Existing tutorial variables are kept: L_* corresponds to H.</span></span>
 <span><span class="va">L_monin_no_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensible_monin.html">sensible_monin</a></span><span class="op">(</span><span class="va">ws</span><span class="op">)</span></span>
 <span><span class="va">L_monin_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/sensible_monin.html">sensible_monin</a></span><span class="op">(</span><span class="va">ws</span>, cap <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span></span>
@@ -1099,7 +1196,7 @@ assumption.</p>
 additional fields. These can be printed as a table, plotted, or exported
 for further analyses.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># PT path as an example calculation.</span></span>
+<code class="sourceCode R"><span><span class="co"># Priestley-Taylor calculation path as an example calculation.</span></span>
 <span><span class="va">ws_pt</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/turb_flux_calc.html">turb_flux_calc</a></span><span class="op">(</span><span class="va">ws</span>, pt_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Convert the result object into a table.</span></span>
@@ -1175,30 +1272,29 @@ checks the function is practical.</p>
 model. It summarizes existing output fields of a
 <code>weather_station</code> object as energy-balance diagnostics. The
 starting point is available energy, defined as
-<code>rad_bal - soil_flux</code>. For methods with paired sensible and
-latent heat fluxes, the function calculates
+<code>rad_bal - soil_flux</code>, or <code>A = Q* - B</code> in the
+reference notation. For methods with paired <code>H</code> and
+<code>LE</code> fluxes, the function calculates
 <code>available_energy - sensible - latent</code> as the closure
-residual. For Penman, no artificial sensible heat flux is created;
-instead, the function reports an <code>unresolved_complement</code>.
+residual, corresponding to <code>R_E = Q* - B - H - LE</code>. For
+Penman, no artificial sensible heat flux is created; instead, the
+function reports an <code>unresolved_complement</code>.
 Monin-Obukhov/Profile outputs are treated diagnostically and are not
 forced to close the energy balance.</p>
-<p>Bulk-Residual is therefore not a uniformly “simple” approach. What
-becomes simple or more profile-like is mainly the estimate of
-<code>sensible_bulk</code>. With
-<code>exchange_velocity = "wind_mean"</code>, a simple mean-wind
-exchange scale is used. With
-<code>exchange_velocity = "u_star_profile"</code>, the estimate uses the
-two wind measurement heights and moves closer to a neutral
-profile-transfer logic. With
-<code>exchange_velocity = "u_star_roughness"</code>, the exchange
-velocity is derived from roughness length. The energy balance, however,
-remains residual: <code>latent_bulk_residual</code> is still the
-remaining available energy after subtracting <code>sensible_bulk</code>.
-Bulk can therefore be profile-like in the <code>H</code> estimate while
-still residual-closing in <code>LE</code>.</p>
+<p>Bulk-Residual is a calculation path with two distinct parts. First,
+<code>sensible_bulk</code> estimates <code>H</code> from a two-height
+temperature gradient and an exchange assumption. Then
+<code>latent_bulk_residual</code> is defined as the remaining available
+energy after subtracting <code>sensible_bulk</code>. Different
+<code>exchange_velocity</code> settings change the estimate of
+<code>sensible_bulk</code>; they do not change the residual definition
+of <code>latent_bulk_residual</code>, and they do not validate the
+exchange assumption.</p>
 <p>In this workflow, <code>ws_pt</code> is the existing Priestley-Taylor
 result object. The diagnostic call is therefore restricted to
-<code>priestley_taylor</code>.</p>
+<code>priestley_taylor</code>. This section demonstrates the package
+graphic and diagnostic structure rather than recalculating all heat-flux
+methods.</p>
 <div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">closure_diag</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/energy_balance_closure.html">energy_balance_closure</a></span><span class="op">(</span><span class="va">ws_pt</span>, methods <span class="op">=</span> <span class="st">"priestley_taylor"</span><span class="op">)</span></span>
 <span></span>
@@ -1231,18 +1327,19 @@ result object. The diagnostic call is therefore restricted to
 <span>  layout <span class="op">=</span> <span class="st">"facets"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p><img src="fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-open-en-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
-<p>The plot does not show the same residual concept for all methods. It
-shows the term that is open or residualized in each method family. For
-Bulk-Residual, this is <code>latent_bulk_residual</code>: latent heat is
-calculated as the remaining available energy after estimating
-<code>sensible_bulk</code>. For Penman, it is the unresolved complement
-after subtracting <code>latent_penman</code>; this term is not
-automatically sensible heat. For Monin-Obukhov/Profile, it is the
+<p>The plot does not show the same residual concept for all methods.
+Depending on the calculation path, it shows a residual <code>LE</code>
+term, an unresolved complement, or a diagnostic energy-balance residual.
+For Bulk-Residual, this is <code>latent_bulk_residual</code>:
+<code>LE</code> is calculated as the remaining available energy after
+estimating <code>sensible_bulk</code>. For Penman, it is the unresolved
+complement after subtracting <code>latent_penman</code>; this term is
+not automatically <code>H</code>. For Monin-Obukhov/Profile, it is the
 diagnostic balance residual
 <code>rad_bal - soil_flux - sensible - latent</code>. Priestley-Taylor
 and Bowen are not shown because they partition available energy and do
-not return an explicit open term. In the Priestley-Taylor path shown
-here, this plot is therefore empty.</p>
+not return an explicit open term. In the Priestley-Taylor calculation
+path shown here, this plot is therefore empty.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
 <span>  <span class="va">closure_diag</span>,</span>
@@ -1252,12 +1349,14 @@ here, this plot is therefore empty.</p>
 <p><img src="fieldclim_workflow_steps_en_files/figure-html/closure-diagnostics-check-en-1.png" class="r-plt" alt="" width="100%" style="display: block; margin: auto;"></p>
 <p>The closure check shows
 <code>rad_bal - soil_flux - sensible - latent</code> for methods with
-paired fluxes. For Priestley-Taylor, Bowen and Bulk-Residual, values
-close to zero are expected by construction. This indicates formal
-closure, not physical validation. For Monin-Obukhov/Profile, non-zero
-values are diagnostic and show the difference between profile-derived
-flux estimates and available energy. Penman is not shown because no
-paired sensible heat flux is calculated.</p>
+paired <code>H</code> and <code>LE</code> fluxes. For Priestley-Taylor,
+Bowen and Bulk-Residual, values close to zero are methodically expected
+because these paths partition or define the available energy. This
+indicates formal closure, not physical validation. For
+Monin-Obukhov/Profile, non-zero values are diagnostic and show the
+difference between profile-derived flux estimates and available energy.
+Penman is not shown because no paired <code>H</code> flux is
+calculated.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_energy_balance_closure.html">plot_energy_balance_closure</a></span><span class="op">(</span></span>
 <span>  <span class="va">closure_diag</span>,</span>
@@ -1272,7 +1371,7 @@ are not better or worse method values; they indicate unstable ratios,
 often caused by small available energy or strongly deviating
 profile-derived fluxes. The table above contains the untrimmed
 diagnostic values. Penman is not shown in the ratio plot because
-<code>fieldClim</code> does not return a paired sensible heat flux for
+<code>fieldClim</code> does not return a paired <code>H</code> flux for
 Penman.</p>
 </div>
 </div>
@@ -1297,6 +1396,9 @@ scientific confirmation.</li>
 <li>
 <code><a href="../reference/plot_weather_station.html">plot_weather_station()</a></code> and <code><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame()</a></code>
 make the object accessible for checking and further processing.</li>
+<li>Method selection itself is controlled by measurement architecture
+and target quantity; see <a href="fieldclim_m2m_en.html">Choosing
+fieldClim Heat-Flux Methods by Measurement Design</a>.</li>
 </ol>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -19,6 +19,7 @@ articles:
   navbar: Theory
   contents:
   - fieldclim_theory
+  - fieldclim_formula_reference_vignette
 
 - title: Tutorials & Workflows (EN)
   navbar: Tutorials & Workflows (EN)
@@ -39,4 +40,4 @@ articles:
   contents:
   - fieldclim_update2024
   - fieldclim_check_rad_soil
-  
+
