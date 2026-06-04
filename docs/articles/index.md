@@ -13,6 +13,8 @@
   methods](https://gisma.github.io/migration-fieldclim/articles/fieldclim_flux_workflow_en.md):
 - [fieldClim: Follow-up workflows and additional package
   functions](https://gisma.github.io/migration-fieldclim/articles/fieldclim_workflow_steps_en.md):
+- [Choosing fieldClim Heat-Flux Methods by Measurement
+  Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md):
 
 ### Tutorials & Workflows (DE)
 

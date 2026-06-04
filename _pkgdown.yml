@@ -26,6 +26,7 @@ articles:
   - fieldclim_missing_data_en
   - fieldclim_flux_workflow_en
   - fieldclim_workflow_steps_en
+  - fieldclim_m2m_en
 
 - title: Tutorials & Workflows (DE)
   navbar: Tutorials & Workflows (DE)
@@ -38,3 +39,4 @@ articles:
   contents:
   - fieldclim_update2024
   - fieldclim_check_rad_soil
+  
