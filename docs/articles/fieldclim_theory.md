@@ -105,6 +105,8 @@ should be accounted for, the flux family defines what is calculated
 first, and the closure regime describes how the resulting terms relate
 to available energy.
 
+![](figures/station.png)
+
 ![](figures/fieldClim_theory.svg)
 
 ## Energy accounting frame
@@ -123,19 +125,21 @@ terms that all downstream method families depend on.
 This accounting layer is not a flux-estimation method. It supplies the
 frame within which flux families are interpreted.
 
-## Flux families
+## Method classes
 
-The flux families differ by what they determine directly. Closure
-behaviour follows from this method role. It should be interpreted after
-the flux family has been identified.
+The methods belong to different micrometeorological method classes. In
+`fieldClim`, these classes are implemented as distinct calculation paths
+with different output semantics. The important distinction is what each
+method estimates directly and what is then derived, assigned, or left
+unresolved.
 
-| Flux family | Method | What the method primarily does | Direct output logic |
+| Method class | Package method | Primary estimate | Package output logic |
 |:---|:---|:---|:---|
-| Available-energy partition | Priestley-Taylor | estimates latent heat from available energy and an empirical evaporation coefficient | LE_PT, then H_PT = A - LE_PT |
-| Gradient partition | Bowen ratio | partitions available energy by a gradient-derived ratio | H_BR and LE_BR from beta |
-| Direct H plus residual LE | Bulk-Residual | estimates sensible heat first and assigns latent heat as residual | H_bulk, then LE_res = A - H_bulk |
-| LE-only estimate | Penman / Penman-type | estimates latent heat only | LE_Penman; remaining energy is unresolved |
-| Profile/stability diagnostic | Monin-Obukhov / Profile | estimates fluxes from profile and stability assumptions | H_MO, LE_MO; residual remains visible |
+| Available-energy evaporation method | Priestley–Taylor | LE from available energy and alpha | LE_PT, then H_PT = A - LE_PT |
+| Bowen-ratio energy-balance method | Bowen ratio | H/LE partition from beta | H_BR and LE_BR from beta |
+| Bulk-transfer method with residual closure | Bulk–Residual | H from temperature gradient and exchange assumption | H_bulk, then LE_res = A - H_bulk |
+| Combination evaporation method | Penman / Penman-type | LE from available energy and atmospheric demand | LE_Penman; U_Penman = A - LE_Penman remains unresolved |
+| Profile-gradient / similarity-based diagnostic | Monin–Obukhov / Profile | H and LE from profile/stability assumptions | H_MO, LE_MO; R_E,MO = A - H_MO - LE_MO remains visible |
 
 ### Priestley-Taylor path
 

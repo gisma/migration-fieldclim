@@ -237,6 +237,7 @@ heat fluxes are interpreted as fluxes away from the surface.</p>
 should be accounted for, the flux family defines what is calculated
 first, and the closure regime describes how the resulting terms relate
 to available energy.</p>
+<p><img src="figures/station.png"></p>
 <p><img src="figures/fieldClim_theory.svg"></p>
 </div>
 <div class="section level2">
@@ -282,58 +283,59 @@ Errors in Q* or B propagate into every method.</td>
 the frame within which flux families are interpreted.</p>
 </div>
 <div class="section level2">
-<h2 id="flux-families">Flux families<a class="anchor" aria-label="anchor" href="#flux-families"></a>
+<h2 id="method-classes">Method classes<a class="anchor" aria-label="anchor" href="#method-classes"></a>
 </h2>
-<p>The flux families differ by what they determine directly. Closure
-behaviour follows from this method role. It should be interpreted after
-the flux family has been identified.</p>
+<p>The methods belong to different micrometeorological method classes.
+In <code>fieldClim</code>, these classes are implemented as distinct
+calculation paths with different output semantics. The important
+distinction is what each method estimates directly and what is then
+derived, assigned, or left unresolved.</p>
 <table class="table">
 <colgroup>
-<col width="16%">
+<col width="26%">
 <col width="13%">
-<col width="47%">
-<col width="23%">
+<col width="29%">
+<col width="30%">
 </colgroup>
 <thead><tr class="header">
-<th align="left">Flux family</th>
-<th align="left">Method</th>
-<th align="left">What the method primarily does</th>
-<th align="left">Direct output logic</th>
+<th align="left">Method class</th>
+<th align="left">Package method</th>
+<th align="left">Primary estimate</th>
+<th align="left">Package output logic</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="left">Available-energy partition</td>
-<td align="left">Priestley-Taylor</td>
-<td align="left">estimates latent heat from available energy and an
-empirical evaporation coefficient</td>
+<td align="left">Available-energy evaporation method</td>
+<td align="left">Priestley–Taylor</td>
+<td align="left">LE from available energy and alpha</td>
 <td align="left">LE_PT, then H_PT = A - LE_PT</td>
 </tr>
 <tr class="even">
-<td align="left">Gradient partition</td>
+<td align="left">Bowen-ratio energy-balance method</td>
 <td align="left">Bowen ratio</td>
-<td align="left">partitions available energy by a gradient-derived
-ratio</td>
+<td align="left">H/LE partition from beta</td>
 <td align="left">H_BR and LE_BR from beta</td>
 </tr>
 <tr class="odd">
-<td align="left">Direct H plus residual LE</td>
-<td align="left">Bulk-Residual</td>
-<td align="left">estimates sensible heat first and assigns latent heat
-as residual</td>
+<td align="left">Bulk-transfer method with residual closure</td>
+<td align="left">Bulk–Residual</td>
+<td align="left">H from temperature gradient and exchange
+assumption</td>
 <td align="left">H_bulk, then LE_res = A - H_bulk</td>
 </tr>
 <tr class="even">
-<td align="left">LE-only estimate</td>
+<td align="left">Combination evaporation method</td>
 <td align="left">Penman / Penman-type</td>
-<td align="left">estimates latent heat only</td>
-<td align="left">LE_Penman; remaining energy is unresolved</td>
+<td align="left">LE from available energy and atmospheric demand</td>
+<td align="left">LE_Penman; U_Penman = A - LE_Penman remains
+unresolved</td>
 </tr>
 <tr class="odd">
-<td align="left">Profile/stability diagnostic</td>
-<td align="left">Monin-Obukhov / Profile</td>
-<td align="left">estimates fluxes from profile and stability
-assumptions</td>
-<td align="left">H_MO, LE_MO; residual remains visible</td>
+<td align="left">Profile-gradient / similarity-based diagnostic</td>
+<td align="left">Monin–Obukhov / Profile</td>
+<td align="left">H and LE from profile/stability assumptions</td>
+<td align="left">H_MO, LE_MO; R_E,MO = A - H_MO - LE_MO remains
+visible</td>
 </tr>
 </tbody>
 </table>
