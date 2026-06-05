@@ -1,5 +1,5 @@
 ---
-title: "Scientific background for fieldClim heat-flux methods"
+title: "fieldClim: The scientific background"
 author: "Jörg Bendix, Chris Reudenbach"
 date: "2026-06-01"
 bibliography: fieldclim-methods.bib

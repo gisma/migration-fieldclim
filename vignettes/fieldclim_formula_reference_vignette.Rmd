@@ -1,5 +1,5 @@
 ---
-title: "fieldClim formula reference"
+title: "fieldClim: formula reference"
 subtitle: "Implemented formulas, package notation, and closure semantics"
 author: "Jörg Bendix, Chris Reudenbach"
 date: "2026-06-04"

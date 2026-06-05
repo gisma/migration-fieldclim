@@ -1,4 +1,4 @@
-# Scientific background for fieldClim heat-flux methods
+# fieldClim: The scientific background
 
 ## Purpose of this vignette
 
