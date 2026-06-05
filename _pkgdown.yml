@@ -29,12 +29,6 @@ articles:
   - fieldclim_workflow_steps_en
   - fieldclim_m2m_en
 
-- title: Tutorials & Workflows (DE)
-  navbar: Tutorials & Workflows (DE)
-  contents:
-  - fieldclim_missing_data
-  - fieldclim_flux_workflow
-  - fieldclim_workflow_steps
 
 - title: Deprecated
   contents:

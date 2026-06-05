@@ -449,15 +449,6 @@ changes are:
 - [fieldClim: Choosing fieldClim Heat-Flux Methods by Measurement
   Design](https://gisma.github.io/migration-fieldclim/articles/fieldclim_m2m_en.md):
 
-### Tutorials & Workflows (DE)
-
-- [fieldClim: Manuelle Datenprüfung für Energiebilanz und
-  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_missing_data.md):
-- [fieldClim: fieldClim-Workflow für
-  Wärmeflussmethoden](https://gisma.github.io/migration-fieldclim/articles/fieldclim_flux_workflow.md):
-- [fieldClim: Anschlussworkflows und weitere
-  Paketfunktionen](https://gisma.github.io/migration-fieldclim/articles/fieldclim_workflow_steps.md):
-
 ### Deprecated
 
 - [FieldClim Package Update
