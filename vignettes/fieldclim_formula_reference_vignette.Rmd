@@ -6,7 +6,7 @@ date: "2026-06-04"
 bibliography: fieldclim-methods.bib
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{fieldClim formula reference}
+  %\VignetteIndexEntry{fieldClim: formula reference}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

@@ -6,7 +6,7 @@ bibliography: fieldclim-methods.bib
 csl: apa.csl
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Scientific background for fieldClim heat-flux methods}
+  %\VignetteIndexEntry{fieldClim: The scientific background}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
